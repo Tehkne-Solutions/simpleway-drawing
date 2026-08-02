@@ -1,0 +1,14 @@
+key: cycle.swd.c0
+version: 1
+stageKey: stage.swd.awaken
+title:
+  pt-BR: Eu consigo desenhar
+transformation:
+  pt-BR: Eu consigo observar, tentar, corrigir e melhorar.
+unitKeys:
+  - unit.swd.c0.orientation
+  - unit.swd.c0.drawing_zero
+  - unit.swd.c0.intentional_marks
+  - unit.swd.c0.seeing_before_naming
+  - unit.swd.c0.simple_construction
+  - unit.swd.c0.first_correction_loop
