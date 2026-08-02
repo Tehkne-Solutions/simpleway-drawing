@@ -3,12 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@swd/domain": "workspace:*",
     "drizzle-orm": "^0.44.0",
     "postgres": "^3.4.7"
   },
