@@ -36,14 +36,19 @@ export interface FileAssetRepository {
   markReady(fileAssetId: string, ownerUserId: UserId): Promise<void>;
 }
 
+export interface IdGenerator {
+  next(): string;
+}
+
 export class PreparePrivateUpload {
   constructor(
     private readonly storage: FileStoragePort,
     private readonly files: FileAssetRepository,
+    private readonly ids: IdGenerator,
   ) {}
 
   async execute(input: Omit<CreatePrivateUploadInput, "fileAssetId">): Promise<PrivateUploadIntent> {
-    const fileAssetId = crypto.randomUUID();
+    const fileAssetId = this.ids.next();
     const intent = await this.storage.createPrivateUpload({ ...input, fileAssetId });
 
     await this.files.createPending({
