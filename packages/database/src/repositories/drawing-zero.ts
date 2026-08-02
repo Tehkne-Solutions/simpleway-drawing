@@ -12,6 +12,7 @@ import {
   fileAssets,
   outboxEvents,
 } from "../schema/core";
+import { journeyEntries } from "../schema/journey";
 
 export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
   constructor(private readonly db: Database) {}
@@ -21,11 +22,17 @@ export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
       const [file] = await tx
         .select({ id: fileAssets.id })
         .from(fileAssets)
-        .where(and(eq(fileAssets.id, input.fileAssetId), eq(fileAssets.ownerUserId, input.userId)))
+        .where(
+          and(
+            eq(fileAssets.id, input.fileAssetId),
+            eq(fileAssets.ownerUserId, input.userId),
+            eq(fileAssets.status, "READY"),
+          ),
+        )
         .limit(1);
 
       if (!file) {
-        throw new Error("DRAWING_ZERO_FILE_NOT_FOUND");
+        throw new Error("DRAWING_ZERO_FILE_NOT_READY");
       }
 
       const [artwork] = await tx
@@ -86,6 +93,18 @@ export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
       if (!attempt) {
         throw new Error("DRAWING_ZERO_ATTEMPT_CREATE_FAILED");
       }
+
+      await tx.insert(journeyEntries).values({
+        userId: input.userId,
+        artworkId: artwork.id,
+        type: "DRAWING_ZERO",
+        title: "Minha jornada começou",
+        metadata: {
+          exerciseKey: "exercise.swd.c0.drawing_zero",
+          baselineOnly: true,
+          visibility: "PRIVATE",
+        },
+      });
 
       await tx.insert(outboxEvents).values({
         eventType: "drawing.drawing_zero.submitted.v1",
