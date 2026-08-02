@@ -106,3 +106,6 @@ export interface LearnerSkillState {
   nextReviewAt: Date | null;
   masteryAlgorithmVersion: string;
 }
+
+export * from "./artwork/drawing-zero";
+export * from "./artwork/file-storage";
