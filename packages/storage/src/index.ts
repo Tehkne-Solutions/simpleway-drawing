@@ -19,7 +19,7 @@ export class S3FileStorage implements FileStoragePort {
   constructor(private readonly config: S3FileStorageConfig) {
     this.ttlSeconds = config.uploadTtlSeconds ?? 900;
     this.client = new S3Client({
-      endpoint: config.endpoint,
+      ...(config.endpoint ? { endpoint: config.endpoint } : {}),
       region: config.region,
       forcePathStyle: config.forcePathStyle ?? Boolean(config.endpoint),
       credentials: {
