@@ -1,0 +1,29 @@
+- key: skill.drawing.meta.learning_process
+  version: 1
+  domain: meta
+  type: META
+  retentionMode: STANDARD
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Processo de aprendizagem
+
+- key: skill.drawing.meta.self_observation
+  version: 1
+  domain: meta
+  type: META
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Auto-observação
+
+- key: skill.drawing.meta.retry
+  version: 1
+  domain: meta
+  type: META
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Repetição após feedback
