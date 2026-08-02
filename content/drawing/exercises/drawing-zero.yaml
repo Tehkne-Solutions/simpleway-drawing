@@ -1,0 +1,31 @@
+key: exercise.swd.c0.drawing_zero
+version: 1
+title:
+  pt-BR: Drawing Zero
+objective:
+  pt-BR: Registrar o ponto de partida do aluno antes de qualquer instrução técnica.
+type: COPY
+baselineOnly: true
+artifactType: BASELINE
+defaultVisibility: PRIVATE
+submissionModes:
+  - PHOTO
+  - UPLOAD
+  - CANVAS
+assistance:
+  min: 0
+  max: 0
+primarySkills:
+  - skill.drawing.meta.self_observation
+secondarySkills:
+  - skill.drawing.meta.learning_process
+evaluationPolicy: SELF
+contexts:
+  - object
+difficulty:
+  complexity: 1
+  precision: 1
+  memory: 0
+  speed: 0
+  spatial: 1
+  creative: 0
