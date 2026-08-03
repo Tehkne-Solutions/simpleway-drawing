@@ -12,6 +12,7 @@ import {
   DrizzleGymRepository,
   DrizzleLearningProgressRepository,
   DrizzleObservationRepository,
+  DrizzleOperationsRepository,
   type Database,
 } from "@swd/database";
 import { ConfirmPrivateUpload, PreparePrivateUpload } from "@swd/domain";
@@ -62,3 +63,4 @@ export function getAlphaRepository(): DrizzleAlphaRepository { return new Drizzl
 export function getActivationRepository(): DrizzleActivationRepository { return new DrizzleActivationRepository(getDatabase()); }
 export function getClosedAlphaRepository(): DrizzleClosedAlphaRepository { return new DrizzleClosedAlphaRepository(getDatabase()); }
 export function getClosedAlphaFeedbackRepository(): DrizzleClosedAlphaFeedbackRepository { return new DrizzleClosedAlphaFeedbackRepository(getDatabase()); }
+export function getOperationsRepository(): DrizzleOperationsRepository { return new DrizzleOperationsRepository(getDatabase()); }
