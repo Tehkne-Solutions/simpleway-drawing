@@ -119,14 +119,25 @@ const inviteListPayload = await inviteList.json();
 assert.equal(inviteListPayload.invites[0].status, "CONSUMED");
 assert.equal(inviteListPayload.invites[0].uses, 1);
 
+const cohorts = await fetch(`${baseUrl}/api/ops/cohorts`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(cohorts.status, 200);
+const cohortPayload = await cohorts.json();
+const invitedCohort = cohortPayload.cohorts.find((item) => item.label === "Invited Tester");
+assert.ok(invitedCohort, "created invite must appear in cohort analytics");
+assert.equal(invitedCohort.redeemed, 1);
+assert.equal(invitedCohort.onboarded, 0);
+assert.equal(invitedCohort.activationRate, 0);
+
 const controlCenter = await fetch(`${baseUrl}/ops`, { headers: { cookie: opsCookie }, redirect: "manual" });
 assert.equal(controlCenter.status, 200);
 const controlHtml = await controlCenter.text();
 assert.match(controlHtml, /Control Center/);
 assert.match(controlHtml, /Alpha Tester/);
+assert.match(controlHtml, /Cohort analytics/);
+assert.match(controlHtml, /Invited Tester/);
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cookie }, cache: "no-store" });
 assert.equal(diagnostics.status, 200);
 assert.ok((await diagnostics.json()).diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center invite_create invite_redeem invite_one_time private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center invite_create invite_redeem invite_one_time cohort_analytics private_diagnostics");
