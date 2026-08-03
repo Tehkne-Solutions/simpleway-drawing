@@ -1,6 +1,7 @@
 import { getFoundationLesson } from "@swd/content";
 import { getC2Lesson } from "@swd/content/c2";
 import { getC3Lesson } from "@swd/content/c3";
+import { getC4Lesson } from "@swd/content/c4";
 import { NextResponse } from "next/server";
 import { getLearningProgressRepository } from "../../../../../../server/runtime";
 import { requireSessionUserId } from "../../../../../../server/session";
@@ -9,7 +10,7 @@ export async function POST(request: Request, context: { params: Promise<{ lesson
   try {
     const userId = await requireSessionUserId();
     const { lessonKey } = await context.params;
-    const lesson = getFoundationLesson(lessonKey) ?? getC2Lesson(lessonKey) ?? getC3Lesson(lessonKey);
+    const lesson = getFoundationLesson(lessonKey) ?? getC2Lesson(lessonKey) ?? getC3Lesson(lessonKey) ?? getC4Lesson(lessonKey);
     if (!lesson) return NextResponse.json({ code: "LESSON_NOT_FOUND" }, { status: 404 });
 
     const body = (await request.json().catch(() => ({}))) as { reflection?: Record<string, unknown> };
