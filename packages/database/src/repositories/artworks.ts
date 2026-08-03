@@ -119,7 +119,21 @@ export class DrizzleArtworkRepository {
   async getOwned(userId: string, artworkId: string) {
     const [artwork] = await this.db.select().from(artworks).where(and(eq(artworks.id, artworkId), eq(artworks.ownerUserId, userId))).limit(1);
     if (!artwork) return null;
-    const versions = await this.db.select({ id: artworkVersions.id, versionNumber: artworkVersions.versionNumber, fileAssetId: artworkVersions.fileAssetId, source: artworkVersions.source, notes: artworkVersions.notes, createdAt: artworkVersions.createdAt }).from(artworkVersions).where(eq(artworkVersions.artworkId, artworkId)).orderBy(desc(artworkVersions.versionNumber));
+    const versions = await this.db
+      .select({
+        id: artworkVersions.id,
+        versionNumber: artworkVersions.versionNumber,
+        fileAssetId: artworkVersions.fileAssetId,
+        storageKey: fileAssets.storageKey,
+        mimeType: fileAssets.mimeType,
+        source: artworkVersions.source,
+        notes: artworkVersions.notes,
+        createdAt: artworkVersions.createdAt,
+      })
+      .from(artworkVersions)
+      .innerJoin(fileAssets, eq(fileAssets.id, artworkVersions.fileAssetId))
+      .where(eq(artworkVersions.artworkId, artworkId))
+      .orderBy(desc(artworkVersions.versionNumber));
     return { artwork, versions };
   }
 }
