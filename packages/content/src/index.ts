@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { C1_LESSONS as C1_RAW_LESSONS } from "./c1-lessons.js";
+import { C1_LESSONS as C1_RAW_LESSONS } from "./c1-lessons";
 
 export const localizedTextSchema = z.record(z.string(), z.string().min(1));
 
