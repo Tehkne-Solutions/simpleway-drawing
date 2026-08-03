@@ -1,7 +1,7 @@
 import type { AlphaFeedbackCategory } from "@swd/database";
 import { NextResponse } from "next/server";
 import { getClosedAlphaFeedbackRepository } from "../../../server/runtime";
-import { readJsonBody, securityErrorResponse } from "../../../server/request-security";
+import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../server/request-security";
 import { requireSessionUserId } from "../../../server/session";
 
 const categories = new Set<AlphaFeedbackCategory>(["LEARNING", "USABILITY", "BUG", "CONTENT", "OTHER"]);
@@ -26,6 +26,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     const userId = await requireSessionUserId();
     const body = await readJsonBody<FeedbackBody>(request, 8_192);
     const category = body.category as AlphaFeedbackCategory | undefined;
