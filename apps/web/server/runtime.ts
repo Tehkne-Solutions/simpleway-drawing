@@ -2,11 +2,12 @@ import {
   createDatabase,
   DrizzleDrawingZeroRepository,
   DrizzleFileAssetRepository,
+  type Database,
 } from "@swd/database";
 import { ConfirmPrivateUpload, PreparePrivateUpload } from "@swd/domain";
 import { CryptoUuidGenerator, S3FileStorage } from "@swd/storage";
 
-let database: ReturnType<typeof createDatabase> | undefined;
+let database: Database | undefined;
 let storage: S3FileStorage | undefined;
 
 function required(name: string): string {
@@ -15,12 +16,12 @@ function required(name: string): string {
   return value;
 }
 
-export function getDatabase() {
+export function getDatabase(): Database {
   database ??= createDatabase(required("DATABASE_URL"));
   return database;
 }
 
-export function getStorage() {
+export function getStorage(): S3FileStorage {
   storage ??= new S3FileStorage({
     ...(process.env.STORAGE_ENDPOINT ? { endpoint: process.env.STORAGE_ENDPOINT } : {}),
     region: process.env.STORAGE_REGION ?? "auto",
@@ -31,7 +32,10 @@ export function getStorage() {
   return storage;
 }
 
-export function getFileServices() {
+export function getFileServices(): {
+  prepare: PreparePrivateUpload;
+  confirm: ConfirmPrivateUpload;
+} {
   const files = new DrizzleFileAssetRepository(getDatabase());
   const objectStorage = getStorage();
   return {
@@ -40,6 +44,6 @@ export function getFileServices() {
   };
 }
 
-export function getDrawingZeroRepository() {
+export function getDrawingZeroRepository(): DrizzleDrawingZeroRepository {
   return new DrizzleDrawingZeroRepository(getDatabase());
 }
