@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Database } from "../client";
 import { exerciseAttempts, outboxEvents } from "../schema/core";
 import { cycleProgress, lessonProgress } from "../schema/learning";
+import { journeyEntries } from "../schema/journey";
 
 export const C0_CYCLE_KEY = "cycle.swd.c0";
 export const C0_LESSON_KEYS = [
@@ -57,6 +58,12 @@ export class DrizzleLearningProgressRepository {
         if (!baseline) throw new Error("DRAWING_ZERO_REQUIRED");
       }
 
+      const [previousCycle] = await tx
+        .select({ status: cycleProgress.status })
+        .from(cycleProgress)
+        .where(and(eq(cycleProgress.userId, input.userId), eq(cycleProgress.cycleKey, C0_CYCLE_KEY)))
+        .limit(1);
+
       const now = new Date();
       await tx
         .insert(lessonProgress)
@@ -87,6 +94,7 @@ export class DrizzleLearningProgressRepository {
       const c0Completed = new Set(completedRows.map((row) => row.lessonKey));
       const completedLessons = C0_LESSON_KEYS.filter((key) => c0Completed.has(key)).length;
       const cycleCompleted = completedLessons === C0_LESSON_KEYS.length;
+      const newlyCompleted = cycleCompleted && previousCycle?.status !== "COMPLETED";
 
       await tx
         .insert(cycleProgress)
@@ -108,10 +116,23 @@ export class DrizzleLearningProgressRepository {
           },
         });
 
+      if (newlyCompleted) {
+        await tx.insert(journeyEntries).values({
+          userId: input.userId,
+          type: "CYCLE_COMPLETED",
+          title: "C0 · I Can Draw concluído",
+          metadata: {
+            cycleKey: C0_CYCLE_KEY,
+            transformation: "Eu consigo observar, tentar, comparar e corrigir.",
+          },
+          occurredAt: now,
+        });
+      }
+
       await tx.insert(outboxEvents).values({
-        eventType: cycleCompleted ? "learning.cycle.completed.v1" : "learning.lesson.completed.v1",
-        aggregateType: cycleCompleted ? "cycle_progress" : "lesson_progress",
-        aggregateId: `${input.userId}:${cycleCompleted ? C0_CYCLE_KEY : input.lessonKey}`,
+        eventType: newlyCompleted ? "learning.cycle.completed.v1" : "learning.lesson.completed.v1",
+        aggregateType: newlyCompleted ? "cycle_progress" : "lesson_progress",
+        aggregateId: `${input.userId}:${newlyCompleted ? C0_CYCLE_KEY : input.lessonKey}`,
         payload: {
           userId: input.userId,
           lessonKey: input.lessonKey,
