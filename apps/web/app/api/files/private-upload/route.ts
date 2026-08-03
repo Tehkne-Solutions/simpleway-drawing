@@ -1,5 +1,6 @@
 import type { SupportedArtworkMimeType } from "@swd/domain";
 import { NextResponse } from "next/server";
+import { logServerError } from "../../../../server/logger";
 import { getFileServices } from "../../../../server/runtime";
 import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 import { requireSessionUserId } from "../../../../server/session";
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
     const security = securityErrorResponse(error);
     if (security) return NextResponse.json({ code: security.code }, { status: security.status });
     const code = error instanceof Error ? error.message : "UPLOAD_PREPARE_FAILED";
+    logServerError("files.private_upload.prepare_failed", request, error);
     return NextResponse.json({ code }, { status: code === "UNAUTHENTICATED" ? 401 : 500 });
   }
 }
