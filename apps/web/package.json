@@ -12,6 +12,7 @@
     "e2e:create": "node scripts/create-runtime-smoke.mjs",
     "e2e:learning": "node scripts/learning-runtime-smoke.mjs",
     "e2e:practice": "node scripts/practice-runtime-smoke.mjs",
+    "e2e:visual-labs": "node scripts/visual-labs-runtime-smoke.mjs",
     "deploy:check": "node scripts/verify-production-env.mjs",
     "deploy:smoke": "node scripts/remote-smoke.mjs"
   },
