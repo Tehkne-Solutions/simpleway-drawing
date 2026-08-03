@@ -19,6 +19,29 @@ export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
 
   async createBaseline(input: CreateDrawingZeroInput): Promise<CreateDrawingZeroResult> {
     return this.db.transaction(async (tx) => {
+      const [existing] = await tx
+        .select({ id: exerciseAttempts.id, artworkId: exerciseAttempts.artworkId })
+        .from(exerciseAttempts)
+        .where(
+          and(
+            eq(exerciseAttempts.userId, input.userId),
+            eq(exerciseAttempts.exerciseKey, "exercise.swd.c0.drawing_zero"),
+            eq(exerciseAttempts.status, "SUBMITTED"),
+          ),
+        )
+        .limit(1);
+
+      if (existing?.artworkId) {
+        return {
+          artworkId: existing.artworkId,
+          attemptId: existing.id,
+          exerciseKey: "exercise.swd.c0.drawing_zero",
+          exerciseVersion: 1,
+          baselineOnly: true,
+          visibility: "PRIVATE",
+        };
+      }
+
       const [file] = await tx
         .select({ id: fileAssets.id })
         .from(fileAssets)
@@ -31,9 +54,7 @@ export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
         )
         .limit(1);
 
-      if (!file) {
-        throw new Error("DRAWING_ZERO_FILE_NOT_READY");
-      }
+      if (!file) throw new Error("DRAWING_ZERO_FILE_NOT_READY");
 
       const [artwork] = await tx
         .insert(artworks)
@@ -46,28 +67,16 @@ export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
         })
         .returning({ id: artworks.id });
 
-      if (!artwork) {
-        throw new Error("DRAWING_ZERO_ARTWORK_CREATE_FAILED");
-      }
+      if (!artwork) throw new Error("DRAWING_ZERO_ARTWORK_CREATE_FAILED");
 
       const [version] = await tx
         .insert(artworkVersions)
-        .values({
-          artworkId: artwork.id,
-          versionNumber: 1,
-          fileAssetId: input.fileAssetId,
-          source: input.source,
-        })
+        .values({ artworkId: artwork.id, versionNumber: 1, fileAssetId: input.fileAssetId, source: input.source })
         .returning({ id: artworkVersions.id });
 
-      if (!version) {
-        throw new Error("DRAWING_ZERO_VERSION_CREATE_FAILED");
-      }
+      if (!version) throw new Error("DRAWING_ZERO_VERSION_CREATE_FAILED");
 
-      await tx
-        .update(artworks)
-        .set({ currentVersionId: version.id, updatedAt: new Date() })
-        .where(eq(artworks.id, artwork.id));
+      await tx.update(artworks).set({ currentVersionId: version.id, updatedAt: new Date() }).where(eq(artworks.id, artwork.id));
 
       const [attempt] = await tx
         .insert(exerciseAttempts)
@@ -77,33 +86,20 @@ export class DrizzleDrawingZeroRepository implements DrawingZeroRepository {
           exerciseVersion: 1,
           status: "SUBMITTED",
           assistanceLevel: 0,
-          difficultySnapshot: {
-            complexity: 1,
-            precision: 1,
-            memory: 0,
-            speed: 0,
-            spatial: 1,
-            creative: 0,
-          },
+          difficultySnapshot: { complexity: 1, precision: 1, memory: 0, speed: 0, spatial: 1, creative: 0 },
           artworkId: artwork.id,
           submittedAt: new Date(),
         })
         .returning({ id: exerciseAttempts.id });
 
-      if (!attempt) {
-        throw new Error("DRAWING_ZERO_ATTEMPT_CREATE_FAILED");
-      }
+      if (!attempt) throw new Error("DRAWING_ZERO_ATTEMPT_CREATE_FAILED");
 
       await tx.insert(journeyEntries).values({
         userId: input.userId,
         artworkId: artwork.id,
         type: "DRAWING_ZERO",
         title: "Minha jornada começou",
-        metadata: {
-          exerciseKey: "exercise.swd.c0.drawing_zero",
-          baselineOnly: true,
-          visibility: "PRIVATE",
-        },
+        metadata: { exerciseKey: "exercise.swd.c0.drawing_zero", baselineOnly: true, visibility: "PRIVATE" },
       });
 
       await tx.insert(outboxEvents).values({

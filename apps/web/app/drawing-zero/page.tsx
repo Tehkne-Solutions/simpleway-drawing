@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DrawingZeroClient } from "./drawing-zero-client";
 
 export default function DrawingZeroPage() {
   return (
@@ -23,19 +24,15 @@ export default function DrawingZeroPage() {
           <ol>
             <li>Observe primeiro a composição inteira.</li>
             <li>Desenhe no papel, tablet ou ferramenta que preferir.</li>
-            <li>Não apague o que ficou imperfeito só para esconder o erro.</li>
-            <li>Quando terminar, envie uma foto ou arquivo.</li>
+            <li>Não esconda o que ficou imperfeito: este desenho é seu ponto de partida.</li>
+            <li>Fotografe ou exporte o resultado e envie abaixo.</li>
           </ol>
         </section>
 
-        <section className="upload-placeholder" aria-label="Envio do Drawing Zero em desenvolvimento">
-          <p><strong>Upload seguro</strong></p>
-          <p>O adapter de storage será conectado nesta mesma sprint. A obra será privada por padrão e registrada como <code>BASELINE</code>.</p>
-        </section>
+        <DrawingZeroClient />
 
-        <div className="flow-actions split-actions">
-          <Link className="secondary link-button" href="/onboarding">Voltar</Link>
-          <button className="primary" type="button" disabled>Enviar Drawing Zero</button>
+        <div className="flow-actions">
+          <Link className="secondary link-button" href="/onboarding">Voltar ao onboarding</Link>
         </div>
       </section>
     </main>

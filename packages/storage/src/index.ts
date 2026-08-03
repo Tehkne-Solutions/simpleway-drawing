@@ -1,6 +1,6 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { CreatePrivateUploadInput, FileStoragePort, PrivateUploadIntent } from "@swd/domain";
+import type { CreatePrivateUploadInput, FileStoragePort, PrivateUploadIntent, StoredFileMetadata } from "@swd/domain";
 
 export interface S3FileStorageConfig {
   endpoint?: string;
@@ -45,21 +45,29 @@ export class S3FileStorage implements FileStoragePort {
       { expiresIn: this.ttlSeconds },
     );
 
+    return { fileAssetId: input.fileAssetId, storageKey, uploadUrl, expiresAt };
+  }
+
+  async verifyPrivateFile(storageKey: string): Promise<StoredFileMetadata> {
+    const result = await this.client.send(
+      new HeadObjectCommand({ Bucket: this.config.bucket, Key: storageKey }),
+    );
     return {
-      fileAssetId: input.fileAssetId,
-      storageKey,
-      uploadUrl,
-      expiresAt,
+      byteSize: result.ContentLength ?? 0,
+      mimeType: result.ContentType ?? null,
     };
   }
 
-  async deletePrivateFile(storageKey: string): Promise<void> {
-    await this.client.send(
-      new DeleteObjectCommand({
-        Bucket: this.config.bucket,
-        Key: storageKey,
-      }),
+  async createPrivateReadUrl(storageKey: string, ttlSeconds = 600): Promise<string> {
+    return getSignedUrl(
+      this.client,
+      new GetObjectCommand({ Bucket: this.config.bucket, Key: storageKey }),
+      { expiresIn: ttlSeconds },
     );
+  }
+
+  async deletePrivateFile(storageKey: string): Promise<void> {
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.config.bucket, Key: storageKey }));
   }
 }
 
