@@ -51,6 +51,30 @@ jobs:
         run: pnpm db:migrate
       - name: Verify database schema and transactional writes
         run: pnpm --filter @swd/database verify:ci
+      - name: Start S3-compatible MinIO service
+        run: |
+          docker run -d --name swd-minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=simpleway \
+            -e MINIO_ROOT_PASSWORD=simpleway-storage-secret \
+            minio/minio:latest server /data
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              echo "MINIO_READY=PASS"
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs swd-minio || true
+          exit 1
+      - name: Verify real S3-compatible storage lifecycle
+        env:
+          STORAGE_ENDPOINT: http://127.0.0.1:9000
+          STORAGE_BUCKET: simpleway-drawing-ci
+          STORAGE_REGION: us-east-1
+          STORAGE_ACCESS_KEY: simpleway
+          STORAGE_SECRET_KEY: simpleway-storage-secret
+        run: pnpm --filter @swd/storage verify:ci
       - name: Deployment environment contract
         env:
           NODE_ENV: production
@@ -71,5 +95,5 @@ jobs:
         run: |
           pnpm --filter @swd/web exec next start -p 3100 > /tmp/simpleway-drawing-next.log 2>&1 &
           SERVER_PID=$!
-          trap 'STATUS=$?; if [ $STATUS -ne 0 ]; then cat /tmp/simpleway-drawing-next.log || true; fi; kill $SERVER_PID 2>/dev/null || true; exit $STATUS' EXIT
+          trap 'STATUS=$?; if [ $STATUS -ne 0 ]; then cat /tmp/simpleway-drawing-next.log || true; fi; kill $SERVER_PID 2>/dev/null || true; docker rm -f swd-minio 2>/dev/null || true; exit $STATUS' EXIT
           pnpm --filter @swd/web e2e:smoke
