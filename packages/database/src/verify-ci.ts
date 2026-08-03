@@ -22,6 +22,7 @@ const requiredTables = [
   "alpha_tester_activity",
   "alpha_invites",
   "alpha_invite_redemptions",
+  "swd_schema_migrations",
 ] as const;
 
 try {
@@ -33,8 +34,16 @@ try {
 
   const present = new Set(rows.map((row) => row.table_name));
   const missing = requiredTables.filter((table) => !present.has(table));
-
   if (missing.length > 0) throw new Error(`Database schema verification failed. Missing tables: ${missing.join(", ")}`);
+
+  const [migration] = await sql<{ name: string; checksum: string }[]>`
+    select name, checksum
+    from swd_schema_migrations
+    where name = '0000_foundation_alpha.sql'
+  `;
+  if (!migration || migration.checksum.length !== 64) {
+    throw new Error("Versioned migration registry verification failed");
+  }
 
   await sql.begin(async (transaction) => {
     const [user] = await transaction<{ id: string }[]>`
@@ -78,7 +87,7 @@ try {
     if (!(error instanceof Error) || error.message !== "ROLLBACK_CI_VERIFICATION") throw error;
   });
 
-  console.log(`DATABASE_VERIFY=PASS tables=${requiredTables.length} transaction=PASS`);
+  console.log(`DATABASE_VERIFY=PASS tables=${requiredTables.length} migration_registry=PASS transaction=PASS`);
 } finally {
   await sql.end();
 }
