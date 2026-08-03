@@ -116,6 +116,20 @@ export const C0_LESSONS: LessonDefinition[] = [
     ],
   },
   {
+    key: "lesson.swd.c0.simple_construction",
+    version: 1,
+    unitKey: "unit.swd.c0.simple_construction",
+    title: pt("Construa do grande para o pequeno"),
+    objective: pt("Aprender a decompor um objeto simples em poucas formas antes de adicionar detalhes."),
+    estimatedActiveMinutes: 7,
+    blocks: [
+      { type: "HOOK", text: pt("Objetos complexos ficam mais fáceis quando você para de tentar desenhá-los de uma vez.") },
+      { type: "TEXT", title: pt("Encontre a estrutura"), text: pt("Comece pela maior forma, adicione a forma secundária e compare a relação entre elas. Detalhes entram somente depois que a estrutura funciona.") },
+      { type: "DEMONSTRATION", title: pt("Big before small"), steps: [pt("Encontre a forma maior"), pt("Marque a forma secundária"), pt("Compare tamanho e posição"), pt("Só então acrescente detalhes mínimos")] },
+      { type: "CHECKPOINT", text: pt("Construção simples não é reduzir qualidade. É organizar o problema antes de refiná-lo.") },
+    ],
+  },
+  {
     key: "lesson.swd.c0.first_correction",
     version: 1,
     unitKey: "unit.swd.c0.first_correction_loop",
