@@ -69,6 +69,73 @@ const heartbeat = await fetch(`${baseUrl}/api/activity/heartbeat`, {
 assert.equal(heartbeat.status, 200);
 assert.equal((await heartbeat.json()).stage, "DRAWING_ZERO");
 
+const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZxkAAAAASUVORK5CYII=", "base64");
+const prepareUpload = await fetch(`${baseUrl}/api/files/private-upload`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ mimeType: "image/png", byteSize: png.byteLength }),
+});
+assert.equal(prepareUpload.status, 201, `prepare upload failed: ${await prepareUpload.text()}`);
+const uploadIntent = await prepareUpload.json();
+assert.match(uploadIntent.fileAssetId, /^[0-9a-f-]{36}$/i);
+assert.match(uploadIntent.storageKey, new RegExp(`^private/${guestPayload.userId}/artwork/`));
+assert.match(uploadIntent.uploadUrl, /^http:\/\/127\.0\.0\.1:9000\//);
+
+const directUpload = await fetch(uploadIntent.uploadUrl, {
+  method: "PUT",
+  headers: {
+    "content-type": "image/png",
+    "content-length": String(png.byteLength),
+  },
+  body: png,
+});
+assert.equal(directUpload.status, 200, `presigned app upload failed: ${directUpload.status} ${await directUpload.text()}`);
+
+const confirmUpload = await fetch(`${baseUrl}/api/files/confirm`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId }),
+});
+assert.equal(confirmUpload.status, 200, `confirm upload failed: ${await confirmUpload.text()}`);
+assert.equal((await confirmUpload.json()).ready, true);
+
+const blockedDrawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json", origin: "https://malicious.example" },
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
+});
+assert.equal(blockedDrawingZero.status, 403);
+assert.equal((await blockedDrawingZero.json()).code, "CROSS_ORIGIN_REQUEST_BLOCKED");
+
+const drawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
+});
+assert.equal(drawingZero.status, 201, `Drawing Zero failed: ${await drawingZero.text()}`);
+const drawingZeroPayload = await drawingZero.json();
+assert.match(drawingZeroPayload.artworkId, /^[0-9a-f-]{36}$/i);
+assert.equal(drawingZeroPayload.baselineOnly, true);
+assert.equal(drawingZeroPayload.visibility, "PRIVATE");
+
+const idempotentDrawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
+});
+assert.equal(idempotentDrawingZero.status, 201);
+assert.equal((await idempotentDrawingZero.json()).artworkId, drawingZeroPayload.artworkId);
+
+const resumeAfterDrawingZero = await fetch(`${baseUrl}/api/resume`, { headers: { cookie }, cache: "no-store" });
+assert.equal(resumeAfterDrawingZero.status, 200);
+assert.equal((await resumeAfterDrawingZero.json()).activation.stage, "FIRST_LESSON");
+
+const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
+assert.equal(journey.status, 200);
+const journeyHtml = await journey.text();
+assert.match(journeyHtml, /Minha jornada começou/);
+assert.match(journeyHtml, /baseline privado/i);
+
 const unauthorizedOps = await fetch(`${baseUrl}/api/ops/alpha`, { cache: "no-store" });
 assert.equal(unauthorizedOps.status, 401);
 
@@ -185,6 +252,8 @@ assert.match(controlHtml, /NO_PROGRESS/);
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cookie }, cache: "no-store" });
 assert.equal(diagnostics.status, 200);
-assert.ok((await diagnostics.json()).diagnostics);
+const diagnosticsPayload = await diagnostics.json();
+assert.ok(diagnosticsPayload.diagnostics);
+assert.equal(diagnosticsPayload.diagnostics.hasBaseline, true);
 
-console.log("E2E_SMOKE=PASS health readiness privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat app_upload_prepare presigned_put app_upload_confirm drawing_zero_csrf drawing_zero_submit drawing_zero_idempotency journey_baseline protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
