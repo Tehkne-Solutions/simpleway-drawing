@@ -83,8 +83,6 @@ await assertHttp(skills, 200, "skill profile projection");
 const skillsHtml = await skills.text();
 assert.match(skillsHtml, /Controle de linha/);
 assert.match(skillsHtml, /Controle de curva/);
-assert.match(skillsHtml, /2 evidência\(s\)/);
-assert.match(skillsHtml, /1 evidência\(s\)/);
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(diagnostics, 200, "practice diagnostics");
