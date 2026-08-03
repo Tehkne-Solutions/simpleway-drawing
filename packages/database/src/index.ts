@@ -12,3 +12,4 @@ export * from "./repositories/construction";
 export * from "./repositories/form";
 export * from "./repositories/alpha";
 export * from "./repositories/closed-alpha";
+export * from "./repositories/closed-alpha-feedback";
