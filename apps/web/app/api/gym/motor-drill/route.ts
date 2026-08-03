@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "../../../../server/logger";
+import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 import { getGymRepository } from "../../../../server/runtime";
 import { requireSessionUserId } from "../../../../server/session";
 
@@ -14,8 +16,9 @@ const finite = (value: unknown): value is number => typeof value === "number" &&
 
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     const userId = await requireSessionUserId();
-    const body = (await request.json()) as Payload;
+    const body = await readJsonBody<Payload>(request, 4_096);
     if (
       typeof body.exerciseKey !== "string" ||
       !finite(body.accuracy) || !finite(body.smoothness) || !finite(body.durationMs) || !finite(body.pointCount) ||
@@ -30,10 +33,13 @@ export async function POST(request: Request) {
       durationMs: body.durationMs,
       pointCount: Math.round(body.pointCount),
     });
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "cache-control": "no-store" } });
   } catch (error) {
+    const security = securityErrorResponse(error);
+    if (security) return NextResponse.json({ code: security.code }, { status: security.status });
     const code = error instanceof Error ? error.message : "GYM_SUBMIT_FAILED";
+    if (code !== "UNAUTHENTICATED" && code !== "GYM_EXERCISE_NOT_SUPPORTED") logServerError("gym.motor_drill_failed", request, error);
     const status = code === "UNAUTHENTICATED" ? 401 : code === "GYM_EXERCISE_NOT_SUPPORTED" ? 400 : 500;
-    return NextResponse.json({ code }, { status });
+    return NextResponse.json({ code }, { status, headers: { "cache-control": "no-store" } });
   }
 }
