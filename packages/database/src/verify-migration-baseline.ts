@@ -18,13 +18,16 @@ if (generatedFiles.length !== 1) {
   throw new Error(`MIGRATION_BASELINE_GENERATED_COUNT expected=1 actual=${generatedFiles.length}`);
 }
 
+const generatedFile = generatedFiles.at(0);
+if (!generatedFile) throw new Error("MIGRATION_BASELINE_GENERATED_FILE_MISSING");
+
 const [baseline, generated] = await Promise.all([
   readFile(baselinePath, "utf8"),
-  readFile(resolve(generatedDir, generatedFiles[0]), "utf8"),
+  readFile(resolve(generatedDir, generatedFile), "utf8"),
 ]);
 
 if (normalize(baseline) !== normalize(generated)) {
   throw new Error("MIGRATION_BASELINE_DRIFT schema differs from frozen 0000_foundation_alpha.sql");
 }
 
-console.log(`MIGRATION_BASELINE=PASS generated=${generatedFiles[0]}`);
+console.log(`MIGRATION_BASELINE=PASS generated=${generatedFile}`);
