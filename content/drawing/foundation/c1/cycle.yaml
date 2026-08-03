@@ -1,0 +1,16 @@
+key: cycle.swd.c1
+version: 1
+stageKey: stage.swd.awaken
+title:
+  pt-BR: Control
+transformation:
+  pt-BR: Eu consigo planejar e executar um traço com mais intenção e consistência.
+unitKeys:
+  - unit.swd.c1.movement
+  - unit.swd.c1.straight_lines
+  - unit.swd.c1.curves
+  - unit.swd.c1.circles_ellipses
+  - unit.swd.c1.direction_parallelism
+  - unit.swd.c1.pressure
+  - unit.swd.c1.rhythm_confidence
+  - unit.swd.c1.applied_line
