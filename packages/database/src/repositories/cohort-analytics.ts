@@ -1,6 +1,7 @@
-import { desc, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { alphaInvites } from "../schema/operations";
+import { outboxEvents } from "../schema/core";
+import { alphaInviteRedemptions, alphaInvites } from "../schema/operations";
 
 export type AlphaCohortAnalytics = {
   inviteId: string;
@@ -23,75 +24,77 @@ export class DrizzleCohortAnalyticsRepository {
   constructor(private readonly db: Database) {}
 
   async list(limit = 50): Promise<AlphaCohortAnalytics[]> {
-    const rows = await this.db
-      .select({
-        inviteId: alphaInvites.id,
-        label: alphaInvites.label,
-        status: alphaInvites.status,
-        createdAt: alphaInvites.createdAt,
-        maxUses: alphaInvites.maxUses,
-        redeemed: sql<number>`(
-          select count(*)::int from alpha_invite_redemptions r where r.invite_id = ${alphaInvites.id}
-        )`,
-        onboarded: sql<number>`(
-          select count(*)::int
-          from alpha_invite_redemptions r
-          join profiles p on p.user_id = r.user_id
-          where r.invite_id = ${alphaInvites.id} and p.onboarding_completed_at is not null
-        )`,
-        active7d: sql<number>`(
-          select count(*)::int
-          from alpha_invite_redemptions r
-          join alpha_tester_activity a on a.user_id = r.user_id
-          where r.invite_id = ${alphaInvites.id} and a.last_seen_at >= now() - interval '7 days'
-        )`,
-        evidenceUsers: sql<number>`(
-          select count(*)::int
-          from alpha_invite_redemptions r
-          where r.invite_id = ${alphaInvites.id}
-            and exists (
-              select 1
-              from learner_skill_states s
-              where s.user_id = r.user_id and s.evidence_count > 0
-            )
-        )`,
-        completed: sql<number>`(
-          select count(*)::int
-          from alpha_invite_redemptions r
-          join alpha_tester_activity a on a.user_id = r.user_id
-          where r.invite_id = ${alphaInvites.id} and a.last_stage = 'COMPLETE'
-        )`,
-        feedbackCount: sql<number>`(
-          select count(*)::int
-          from system_outbox_events o
-          where o.aggregate_type = 'USER'
-            and o.event_type = 'alpha.feedback.submitted.v1'
-            and exists (
-              select 1
-              from alpha_invite_redemptions r
-              where r.invite_id = ${alphaInvites.id} and r.user_id::text = o.aggregate_id
-            )
-        )`,
-        averageRating: sql<string | null>`(
-          select round(avg((o.payload->>'rating')::numeric), 2)::text
-          from system_outbox_events o
-          where o.aggregate_type = 'USER'
-            and o.event_type = 'alpha.feedback.submitted.v1'
-            and exists (
-              select 1
-              from alpha_invite_redemptions r
-              where r.invite_id = ${alphaInvites.id} and r.user_id::text = o.aggregate_id
-            )
-        )`,
-      })
-      .from(alphaInvites)
-      .orderBy(desc(alphaInvites.createdAt))
-      .limit(Math.max(1, Math.min(limit, 100)));
+    const [rows, feedbackRows] = await Promise.all([
+      this.db
+        .select({
+          inviteId: alphaInvites.id,
+          label: alphaInvites.label,
+          status: alphaInvites.status,
+          createdAt: alphaInvites.createdAt,
+          maxUses: alphaInvites.maxUses,
+          redeemed: sql<number>`(
+            select count(*)::int from alpha_invite_redemptions r where r.invite_id = ${alphaInvites.id}
+          )`,
+          onboarded: sql<number>`(
+            select count(*)::int
+            from alpha_invite_redemptions r
+            join profiles p on p.user_id = r.user_id
+            where r.invite_id = ${alphaInvites.id} and p.onboarding_completed_at is not null
+          )`,
+          active7d: sql<number>`(
+            select count(*)::int
+            from alpha_invite_redemptions r
+            join alpha_tester_activity a on a.user_id = r.user_id
+            where r.invite_id = ${alphaInvites.id} and a.last_seen_at >= now() - interval '7 days'
+          )`,
+          evidenceUsers: sql<number>`(
+            select count(*)::int
+            from alpha_invite_redemptions r
+            where r.invite_id = ${alphaInvites.id}
+              and exists (
+                select 1
+                from learner_skill_states s
+                where s.user_id = r.user_id and s.evidence_count > 0
+              )
+          )`,
+          completed: sql<number>`(
+            select count(*)::int
+            from alpha_invite_redemptions r
+            join alpha_tester_activity a on a.user_id = r.user_id
+            where r.invite_id = ${alphaInvites.id} and a.last_stage = 'COMPLETE'
+          )`,
+        })
+        .from(alphaInvites)
+        .orderBy(desc(alphaInvites.createdAt))
+        .limit(Math.max(1, Math.min(limit, 100))),
+      this.db
+        .select({
+          inviteId: alphaInviteRedemptions.inviteId,
+          feedbackCount: sql<number>`count(${outboxEvents.id})::int`,
+          averageRating: sql<string | null>`round(avg((${outboxEvents.payload}->>'rating')::numeric), 2)::text`,
+        })
+        .from(alphaInviteRedemptions)
+        .innerJoin(
+          outboxEvents,
+          and(
+            eq(outboxEvents.aggregateType, "USER"),
+            eq(outboxEvents.eventType, "alpha.feedback.submitted.v1"),
+            sql`${outboxEvents.aggregateId} = ${alphaInviteRedemptions.userId}::text`,
+          ),
+        )
+        .groupBy(alphaInviteRedemptions.inviteId),
+    ]);
+
+    const feedbackByInvite = new Map(feedbackRows.map((row) => [row.inviteId, {
+      feedbackCount: Number(row.feedbackCount ?? 0),
+      averageRating: row.averageRating === null ? null : Number(row.averageRating),
+    }]));
 
     return rows.map((row) => {
       const redeemed = Number(row.redeemed ?? 0);
       const onboarded = Number(row.onboarded ?? 0);
       const completed = Number(row.completed ?? 0);
+      const feedback = feedbackByInvite.get(row.inviteId) ?? { feedbackCount: 0, averageRating: null };
       return {
         inviteId: row.inviteId,
         label: row.label,
@@ -103,8 +106,8 @@ export class DrizzleCohortAnalyticsRepository {
         active7d: Number(row.active7d ?? 0),
         evidenceUsers: Number(row.evidenceUsers ?? 0),
         completed,
-        feedbackCount: Number(row.feedbackCount ?? 0),
-        averageRating: row.averageRating === null ? null : Number(row.averageRating),
+        feedbackCount: feedback.feedbackCount,
+        averageRating: feedback.averageRating,
         activationRate: redeemed > 0 ? Math.round((onboarded / redeemed) * 100) : 0,
         completionRate: redeemed > 0 ? Math.round((completed / redeemed) * 100) : 0,
       };
