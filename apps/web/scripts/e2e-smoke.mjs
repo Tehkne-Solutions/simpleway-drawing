@@ -38,12 +38,7 @@ const blockedPayload = await blocked.json();
 assert.equal(blockedPayload.code, "CROSS_ORIGIN_REQUEST_BLOCKED");
 assert.ok(blocked.headers.get("x-request-id"));
 
-// The CSRF contract explicitly permits requests without Origin. This keeps the
-// database E2E independent from Next.js localhost/127.0.0.1 normalization while
-// the malicious-origin case above still proves the global cross-origin block.
-const guest = await fetch(`${baseUrl}/api/session/guest`, {
-  method: "POST",
-});
+const guest = await fetch(`${baseUrl}/api/session/guest`, { method: "POST" });
 assert.equal(guest.status, 201);
 const guestPayload = await guest.json();
 assert.match(guestPayload.userId, /^[0-9a-f-]{36}$/i);
@@ -51,6 +46,26 @@ assert.match(guestPayload.userId, /^[0-9a-f-]{36}$/i);
 const setCookie = guest.headers.get("set-cookie");
 assert.ok(setCookie, "guest session must set a cookie");
 const cookie = setCookie.split(";", 1)[0];
+
+const onboarding = await fetch(`${baseUrl}/api/onboarding`, {
+  method: "POST",
+  headers: {
+    cookie,
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({
+    displayName: "Alpha Tester",
+    preferredPath: "MANGA",
+    experienceLevel: "NEW",
+    primaryGoal: "CAREER",
+    preferredTool: "BOTH",
+  }),
+});
+assert.equal(onboarding.status, 200);
+const onboardingPayload = await onboarding.json();
+assert.equal(onboardingPayload.profile.displayName, "Alpha Tester");
+assert.equal(onboardingPayload.profile.preferredPath, "MANGA");
+assert.equal(onboardingPayload.next, "/drawing-zero");
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, {
   headers: { cookie },
@@ -60,4 +75,4 @@ assert.equal(diagnostics.status, 200);
 const diagnosticsPayload = await diagnostics.json();
 assert.ok(diagnosticsPayload.diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding private_diagnostics");
