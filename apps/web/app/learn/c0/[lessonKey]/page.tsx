@@ -1,6 +1,6 @@
 import { C0_LESSONS, getC0Lesson } from "@swd/content";
 import { notFound } from "next/navigation";
-import { LessonPlayer } from "./lesson-player";
+import { FoundationLessonPlayer } from "../../lesson-player";
 
 export default async function LessonPage({ params }: { params: Promise<{ lessonKey: string }> }) {
   const { lessonKey } = await params;
@@ -17,7 +17,7 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonK
         <p className="eyebrow">C0 · Lição {index + 1} de {C0_LESSONS.length}</p>
         <h1 className="flow-title">{lesson.title["pt-BR"]}</h1>
         <p className="lead compact">{lesson.objective["pt-BR"]}</p>
-        <LessonPlayer lesson={lesson} nextLessonKey={nextLessonKey} />
+        <FoundationLessonPlayer lesson={lesson} cycleSlug="c0" nextLessonKey={nextLessonKey} />
       </article>
     </main>
   );

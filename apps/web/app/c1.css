@@ -1,0 +1,23 @@
+.learn-foundation-card { width: min(1080px, 100%); }
+.foundation-cycles { margin-top: 36px; display: grid; gap: 22px; }
+.cycle-panel { border: 1px solid #deded9; border-radius: 24px; padding: 24px; background: #fbfbf9; }
+.cycle-panel.is-locked { background: #f4f4f0; color: #777771; }
+.cycle-panel-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+.cycle-panel-head h2 { margin: 4px 0 0; font-size: 34px; letter-spacing: -.03em; }
+.cycle-panel-head > strong { font-size: 28px; }
+.cycle-description { margin: 14px 0 22px; color: #666660; line-height: 1.55; max-width: 720px; }
+.cycle-lock-message { padding: 18px; border: 1px dashed #c8c8c1; border-radius: 16px; color: #777771; }
+.practice-lesson-block { background: #f3f3ef; }
+.practice-lesson-block .eyebrow { margin-bottom: 8px; }
+.gym-drill-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 32px; }
+.gym-drill-nav a { display: grid; gap: 4px; padding: 14px; border: 1px solid #d9d9d3; border-radius: 16px; background: #fbfbf9; color: #171717; text-decoration: none; }
+.gym-drill-nav a:hover { border-color: #999992; }
+.gym-drill-nav a.is-active { background: #171717; border-color: #171717; color: #fff; }
+.gym-drill-nav span { font-size: 11px; opacity: .65; }
+.gym-guide-path { fill: none; stroke: #c9c9c1; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 7 9; }
+.gym-secondary-guide { fill: none; stroke: #a7a79f; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 4 8; }
+
+@media (max-width: 700px) {
+  .cycle-panel-head { flex-direction: column; }
+  .gym-drill-nav { grid-template-columns: 1fr 1fr; }
+}

@@ -2,8 +2,98 @@
   version: 1
   domain: motor
   type: MOTOR
-  retentionMode: STANDARD
+  retentionMode: MAINTENANCE
   foundational: true
   transferable: true
   title:
     pt-BR: Controle de linha
+
+- key: skill.drawing.motor.line_straight
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Linha reta
+
+- key: skill.drawing.motor.stroke_confidence
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Confiança de traço
+
+- key: skill.drawing.motor.curve_c
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Curva C
+
+- key: skill.drawing.motor.curve_s
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Curva S
+
+- key: skill.drawing.motor.circle
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Círculo
+
+- key: skill.drawing.motor.ellipse
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Elipse
+
+- key: skill.drawing.motor.line_parallel
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Paralelismo
+
+- key: skill.drawing.motor.stroke_pressure
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Pressão do traço
+
+- key: skill.drawing.motor.repetition_consistency
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Consistência de repetição
