@@ -188,5 +188,15 @@ await assertHttp(journey, 200, "resume Journey projection");
 const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Foundation Alpha concluída/);
 assert.match(journeyHtml, /C4 · Form concluído/);
+assert.match(journeyHtml, /Foundation Alpha · Graduation/);
+assert.match(journeyHtml, /Você concluiu o primeiro arco integrado/);
+assert.match(journeyHtml, /Drawing Zero · Before \/ After/);
+assert.match(journeyHtml, /Drawing Zero original/);
+assert.match(journeyHtml, /Drawing Zero revisitado/);
+assert.match(journeyHtml, /Motor/);
+assert.match(journeyHtml, /Perception/);
+assert.match(journeyHtml, /Shape/);
+assert.match(journeyHtml, /Form/);
+assert.match(journeyHtml, /Continuar desenvolvendo habilidades/);
 
-console.log("RESUME_ORCHESTRATION_E2E=PASS unauthenticated_resume onboarding_stage drawing_zero_stage first_lesson_stage first_practice_stage foundation_stage all_cycles alpha_gate_stage cross_domain_evidence form_skill_contract capstone revisit alpha_gate_csrf alpha_gate_completion complete_stage home_projection journey_projection gate_idempotency");
+console.log("RESUME_ORCHESTRATION_E2E=PASS unauthenticated_resume onboarding_stage drawing_zero_stage first_lesson_stage first_practice_stage foundation_stage all_cycles alpha_gate_stage cross_domain_evidence form_skill_contract capstone revisit alpha_gate_csrf alpha_gate_completion complete_stage home_projection graduation_summary before_after_projection graduation_domains journey_projection gate_idempotency");

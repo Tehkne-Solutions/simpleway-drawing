@@ -1,7 +1,7 @@
 import { artworkVersions, artworks, fileAssets, journeyEntries } from "@swd/database";
 import { and, desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
-import { getDatabase, getStorage } from "../../server/runtime";
+import { getAlphaRepository, getDatabase, getStorage } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 
 export const dynamic = "force-dynamic";
@@ -27,11 +27,13 @@ export default async function JourneyPage() {
   }
 
   const db = getDatabase();
-  const [entries, baseline, revisit] = await Promise.all([
+  const [entries, baseline, revisit, alpha] = await Promise.all([
     db.select().from(journeyEntries).where(eq(journeyEntries.userId, userId)).orderBy(desc(journeyEntries.occurredAt)),
     artworkPreview(userId, "BASELINE"),
     artworkPreview(userId, "REVISIT"),
+    getAlphaRepository().getSnapshot(userId),
   ]);
+  const graduation = entries.find((entry) => entry.type === "ALPHA_GATE") ?? null;
   const items = await Promise.all(entries.map(async (entry) => {
     if (!entry.artworkId) return { ...entry, imageUrl: null };
     const [row] = await db.select({ storageKey: fileAssets.storageKey }).from(artworks)
@@ -47,6 +49,32 @@ export default async function JourneyPage() {
         <p className="eyebrow">Your Art Journey</p>
         <h1 className="flow-title">Sua evolução começa a ficar visível.</h1>
         <p className="lead compact">Cada marco importante registra o que você conseguiu fazer naquele momento.</p>
+
+        {graduation ? (
+          <section className="journey-before-after">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Foundation Alpha · Graduation</p>
+                <h2>Você concluiu o primeiro arco integrado.</h2>
+              </div>
+              <span className="alpha-status status-ready">Concluído</span>
+            </div>
+            <p>O fechamento combina currículo, prática deliberada, percepção, construção, forma e criação. A conclusão registra Evidence real — não apenas aulas assistidas.</p>
+            <div className="alpha-domain-grid">
+              {alpha.domains.map((domain) => (
+                <Link href={domain.href} className="alpha-domain" key={domain.skillKey}>
+                  <div><strong>{domain.domain}</strong><span>{domain.masteryLevel ?? "SEM EVIDÊNCIA"}</span></div>
+                  <b>{domain.masteryScore == null ? "—" : `${Math.round(domain.masteryScore * 100)}%`}</b>
+                  <small>{domain.evidenceCount} evidência(s)</small>
+                </Link>
+              ))}
+            </div>
+            <div className="flow-actions split-actions">
+              <span>Concluído em {new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(graduation.occurredAt)}</span>
+              <Link className="primary link-button" href="/skills">Continuar desenvolvendo habilidades</Link>
+            </div>
+          </section>
+        ) : null}
 
         {baseline && revisit ? (
           <section className="journey-before-after">
