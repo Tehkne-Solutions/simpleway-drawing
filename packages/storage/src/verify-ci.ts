@@ -8,6 +8,7 @@ const bucket = process.env.STORAGE_BUCKET;
 const region = process.env.STORAGE_REGION ?? "us-east-1";
 const accessKeyId = process.env.STORAGE_ACCESS_KEY;
 const secretAccessKey = process.env.STORAGE_SECRET_KEY;
+const keepBucket = process.env.STORAGE_KEEP_BUCKET === "1";
 
 assert.ok(endpoint, "STORAGE_ENDPOINT is required");
 assert.ok(bucket, "STORAGE_BUCKET is required");
@@ -65,6 +66,6 @@ assert.equal(read.status, 200);
 assert.equal(Buffer.from(await read.arrayBuffer()).toString("utf8"), body.toString("utf8"));
 
 await storage.deletePrivateFile(intent.storageKey);
-await client.send(new DeleteBucketCommand({ Bucket: bucket }));
+if (!keepBucket) await client.send(new DeleteBucketCommand({ Bucket: bucket }));
 
-console.log("STORAGE_VERIFY=PASS create_bucket presigned_put head presigned_get delete_object delete_bucket");
+console.log(`STORAGE_VERIFY=PASS create_bucket presigned_put head presigned_get delete_object ${keepBucket ? "keep_bucket" : "delete_bucket"}`);
