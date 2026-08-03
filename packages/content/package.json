@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./c2": "./src/c2-runtime.ts"
+    "./c2": "./src/c2-runtime.ts",
+    "./c3": "./src/c3-runtime.ts"
   },
   "scripts": {
     "validate": "tsx src/validate.ts",
