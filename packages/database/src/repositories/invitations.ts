@@ -1,12 +1,14 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, desc, eq, gt, isNull, lt, or, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { profiles, users } from "../schema/core";
+import { outboxEvents, profiles, users } from "../schema/core";
 import { alphaInviteRedemptions, alphaInvites } from "../schema/operations";
 
 function hashCode(code: string): string {
   return createHash("sha256").update(code).digest("hex");
 }
+
+export const ALPHA_CONSENT_VERSION = "closed-alpha-v1";
 
 export type AlphaInvite = {
   id: string;
@@ -45,8 +47,9 @@ export class DrizzleInvitationRepository {
     }).from(alphaInvites).orderBy(desc(alphaInvites.createdAt)).limit(Math.max(1, Math.min(limit, 100)));
   }
 
-  async redeem(code: string): Promise<{ userId: string; invite: AlphaInvite }> {
+  async redeem(code: string, consentVersion: string): Promise<{ userId: string; invite: AlphaInvite }> {
     if (code.length < 20 || code.length > 128) throw new Error("INVITE_INVALID");
+    if (consentVersion !== ALPHA_CONSENT_VERSION) throw new Error("CONSENT_REQUIRED");
     const now = new Date();
     return this.db.transaction(async (tx) => {
       const [row] = await tx.select().from(alphaInvites).where(and(
@@ -61,6 +64,17 @@ export class DrizzleInvitationRepository {
       await tx.insert(users).values({ id: userId, email: `alpha+${userId}@simpleway.local`, status: "GUEST" });
       await tx.insert(profiles).values({ userId, displayName: row.label });
       await tx.insert(alphaInviteRedemptions).values({ inviteId: row.id, userId });
+      await tx.insert(outboxEvents).values({
+        eventType: "alpha.consent.accepted.v1",
+        aggregateType: "USER",
+        aggregateId: userId,
+        payload: {
+          consentVersion,
+          inviteId: row.id,
+          scope: ["learning-progress", "artwork-uploads", "alpha-operations", "feedback"],
+          acceptedAt: now.toISOString(),
+        },
+      });
 
       const [updated] = await tx.update(alphaInvites).set({
         uses: sql`${alphaInvites.uses} + 1`,

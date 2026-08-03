@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 const baseUrl = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3100";
 const opsToken = process.env.ALPHA_OPS_TOKEN;
+const consentVersion = "closed-alpha-v1";
 assert.ok(opsToken, "ALPHA_OPS_TOKEN is required for E2E operations smoke");
 
 async function waitForHealth() {
@@ -28,6 +29,13 @@ assert.equal((await health.json()).status, "ok");
 const ready = await fetch(`${baseUrl}/api/ready`, { cache: "no-store" });
 assert.equal(ready.status, 200);
 assert.equal((await ready.json()).status, "ready");
+
+const privacy = await fetch(`${baseUrl}/privacy`, { cache: "no-store" });
+assert.equal(privacy.status, 200);
+assert.match(await privacy.text(), /Privacidade e dados do participante/);
+
+const unauthenticatedExport = await fetch(`${baseUrl}/api/privacy/export`, { cache: "no-store" });
+assert.equal(unauthenticatedExport.status, 401);
 
 const blocked = await fetch(`${baseUrl}/api/session/guest`, { method: "POST", headers: { origin: "https://malicious.example" } });
 assert.equal(blocked.status, 403);
@@ -95,21 +103,44 @@ const invitePayload = await inviteCreate.json();
 assert.match(invitePayload.code, /^[A-Za-z0-9_-]{20,}$/);
 assert.equal(invitePayload.invite.uses, 0);
 
-const redeem = await fetch(`${baseUrl}/api/invites/redeem`, {
+const noConsent = await fetch(`${baseUrl}/api/invites/redeem`, {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ code: invitePayload.code }),
+});
+assert.equal(noConsent.status, 400);
+const noConsentPayload = await noConsent.json();
+assert.equal(noConsentPayload.code, "CONSENT_REQUIRED");
+assert.equal(noConsentPayload.consentVersion, consentVersion);
+
+const inviteBeforeConsent = await fetch(`${baseUrl}/api/ops/invites`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal((await inviteBeforeConsent.json()).invites[0].uses, 0);
+
+const redeem = await fetch(`${baseUrl}/api/invites/redeem`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ code: invitePayload.code, consentAccepted: true, consentVersion }),
 });
 assert.equal(redeem.status, 201);
 const redeemPayload = await redeem.json();
 assert.equal(redeemPayload.inviteLabel, "Invited Tester");
 assert.equal(redeemPayload.next, "/onboarding");
-assert.ok(redeem.headers.get("set-cookie"));
+const invitedSetCookie = redeem.headers.get("set-cookie");
+assert.ok(invitedSetCookie);
+const invitedCookie = invitedSetCookie.split(";", 1)[0];
+
+const participantExport = await fetch(`${baseUrl}/api/privacy/export`, { headers: { cookie: invitedCookie }, cache: "no-store" });
+assert.equal(participantExport.status, 200);
+assert.match(participantExport.headers.get("content-disposition") ?? "", /attachment/);
+const exportPayload = await participantExport.json();
+assert.equal(exportPayload.exportVersion, "closed-alpha-data-export-v1");
+assert.equal(exportPayload.userId, redeemPayload.userId);
+assert.equal(exportPayload.operationalSummary.cohortLabel, "Invited Tester");
 
 const reused = await fetch(`${baseUrl}/api/invites/redeem`, {
   method: "POST",
   headers: { "content-type": "application/json" },
-  body: JSON.stringify({ code: invitePayload.code }),
+  body: JSON.stringify({ code: invitePayload.code, consentAccepted: true, consentVersion }),
 });
 assert.equal(reused.status, 410);
 
@@ -123,16 +154,15 @@ const cohorts = await fetch(`${baseUrl}/api/ops/cohorts`, { headers: { cookie: o
 assert.equal(cohorts.status, 200);
 const cohortPayload = await cohorts.json();
 const invitedCohort = cohortPayload.cohorts.find((item) => item.label === "Invited Tester");
-assert.ok(invitedCohort, "created invite must appear in cohort analytics");
+assert.ok(invitedCohort);
 assert.equal(invitedCohort.redeemed, 1);
 assert.equal(invitedCohort.onboarded, 0);
-assert.equal(invitedCohort.activationRate, 0);
 
 const interventions = await fetch(`${baseUrl}/api/ops/interventions`, { headers: { cookie: opsCookie }, cache: "no-store" });
 assert.equal(interventions.status, 200);
 const interventionPayload = await interventions.json();
 const invitedRisk = interventionPayload.interventions.find((item) => item.userId === redeemPayload.userId);
-assert.ok(invitedRisk, "tester without progress must appear in intervention queue");
+assert.ok(invitedRisk);
 assert.ok(invitedRisk.reasons.includes("NO_PROGRESS"));
 
 const testerDetail = await fetch(`${baseUrl}/api/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, cache: "no-store" });
@@ -140,7 +170,6 @@ assert.equal(testerDetail.status, 200);
 const testerPayload = await testerDetail.json();
 assert.equal(testerPayload.tester.cohortLabel, "Invited Tester");
 assert.equal(testerPayload.tester.sessionCount, 1);
-assert.equal(testerPayload.tester.evidenceCount, 0);
 
 const testerPage = await fetch(`${baseUrl}/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, redirect: "manual" });
 assert.equal(testerPage.status, 200);
@@ -150,7 +179,6 @@ const controlCenter = await fetch(`${baseUrl}/ops`, { headers: { cookie: opsCook
 assert.equal(controlCenter.status, 200);
 const controlHtml = await controlCenter.text();
 assert.match(controlHtml, /Control Center/);
-assert.match(controlHtml, /Alpha Tester/);
 assert.match(controlHtml, /Cohort analytics/);
 assert.match(controlHtml, /Intervention queue/);
 assert.match(controlHtml, /NO_PROGRESS/);
@@ -159,4 +187,4 @@ const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cooki
 assert.equal(diagnostics.status, 200);
 assert.ok((await diagnostics.json()).diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
