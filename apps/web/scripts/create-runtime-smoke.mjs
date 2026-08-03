@@ -71,19 +71,25 @@ const listed = (await list.json()).artworks.find((item) => item.id === created.i
 assert.ok(listed);
 assert.equal(listed.visibility, "PRIVATE");
 
-const detailV1 = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
-await assertHttp(detailV1, 200, "artwork detail v1");
-const detailV1Html = await detailV1.text();
-assert.match(detailV1Html, /Estudo E2E/);
-assert.match(detailV1Html, /v1/);
-const srcMatch = detailV1Html.match(/src="(http:\/\/127\.0\.0\.1:9000[^\"]+)"/);
-assert.ok(srcMatch?.[1], "private signed image URL must be rendered");
-const privateReadUrl = srcMatch[1].replaceAll("&amp;", "&");
-const privateRead = await fetch(privateReadUrl);
+const detailV1 = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(detailV1, 200, "owned artwork detail v1");
+const detailV1Payload = await detailV1.json();
+assert.equal(detailV1Payload.artwork.title, "Estudo E2E");
+assert.equal(detailV1Payload.versions.length, 1);
+assert.equal(detailV1Payload.versions[0].versionNumber, 1);
+assert.equal(detailV1Payload.versions[0].notes, "Primeira versão E2E");
+assert.match(detailV1Payload.versions[0].readUrl, /^http:\/\/127\.0\.0\.1:9000\//);
+const privateRead = await fetch(detailV1Payload.versions[0].readUrl);
 await assertHttp(privateRead, 200, "private signed artwork read");
 assert.deepEqual(Buffer.from(await privateRead.arrayBuffer()), png1);
 
+const ownerPage = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(ownerPage, 200, "owner artwork page");
+assert.match(await ownerPage.text(), /Estudo E2E/);
+
 const outsider = await createSession();
+const outsiderApi = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
+assert.equal(outsiderApi.status, 404);
 const outsiderDetail = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: outsider.cookie }, redirect: "manual" });
 assert.equal(outsiderDetail.status, 404);
 
@@ -101,17 +107,18 @@ const addVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`,
   body: JSON.stringify({ fileAssetId: secondUpload.fileAssetId, source: "UPLOAD", notes: "Segunda versão E2E" }),
 });
 await assertHttp(addVersion, 201, "add artwork version");
-const version = (await addVersion.json()).version;
-assert.equal(version.versionNumber, 2);
+assert.equal((await addVersion.json()).version.versionNumber, 2);
 
-const detailV2 = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
-await assertHttp(detailV2, 200, "artwork detail v2");
-const detailV2Html = await detailV2.text();
-assert.match(detailV2Html, /2 versão\(ões\) preservada\(s\)/);
-assert.match(detailV2Html, /v2/);
-assert.match(detailV2Html, /v1/);
-assert.match(detailV2Html, /Segunda versão E2E/);
-assert.match(detailV2Html, /Primeira versão E2E/);
+const detailV2 = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(detailV2, 200, "owned artwork detail v2");
+const detailV2Payload = await detailV2.json();
+assert.equal(detailV2Payload.versions.length, 2);
+assert.deepEqual(detailV2Payload.versions.map((item) => item.versionNumber), [2, 1]);
+assert.equal(detailV2Payload.versions[0].notes, "Segunda versão E2E");
+assert.equal(detailV2Payload.versions[1].notes, "Primeira versão E2E");
+const privateReadV2 = await fetch(detailV2Payload.versions[0].readUrl);
+await assertHttp(privateReadV2, 200, "private signed artwork read v2");
+assert.deepEqual(Buffer.from(await privateReadV2.arrayBuffer()), png2);
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie: owner.cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "Create Journey projection");
