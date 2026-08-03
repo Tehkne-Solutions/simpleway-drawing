@@ -1,0 +1,53 @@
+/* Shared interaction and accessibility affordances for the Alpha UI. */
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #171717;
+  outline-offset: 3px;
+}
+
+:where(button, .link-button, .choice) {
+  min-height: 44px;
+}
+
+:where(input, select, textarea)[aria-invalid="true"] {
+  border-color: #8c2420;
+  box-shadow: 0 0 0 1px #8c2420;
+}
+
+.upload-drop:focus-within {
+  border-color: #171717;
+  box-shadow: 0 0 0 3px rgba(23, 23, 23, .15);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid CanvasText;
+  }
+
+  .choice.selected,
+  .lesson-row.is-complete,
+  .practice-priority {
+    border: 2px solid CanvasText;
+  }
+}
