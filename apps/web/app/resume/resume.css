@@ -1,0 +1,12 @@
+.resume-card { width: min(920px, 100%); }
+.resume-steps { display: grid; gap: 10px; margin-top: 28px; }
+.resume-step { display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: center; padding: 16px 18px; border: 1px solid #deded9; border-radius: 17px; background: #fbfbf9; }
+.resume-step.is-complete { background: #f4f7f1; }
+.resume-step strong, .resume-step small { display: block; }
+.resume-step small { margin-top: 4px; color: #777771; }
+.resume-next { margin-top: 30px; }
+.resume-meta { margin: 24px 0 0; color: #777771; font-size: 13px; }
+@media (max-width: 620px) {
+  .resume-next { display: grid; gap: 18px; }
+  .resume-next .primary { width: 100%; }
+}
