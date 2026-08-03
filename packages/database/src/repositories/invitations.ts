@@ -1,7 +1,8 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, desc, eq, gt, isNull, lt, or, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { alphaInvites } from "../schema/operations";
+import { profiles, users } from "../schema/core";
+import { alphaInviteRedemptions, alphaInvites } from "../schema/operations";
 
 function hashCode(code: string): string {
   return createHash("sha256").update(code).digest("hex");
@@ -26,12 +27,7 @@ export class DrizzleInvitationRepository {
     if (label.length < 2 || label.length > 120) throw new Error("INVITE_LABEL_INVALID");
     const maxUses = Math.max(1, Math.min(input.maxUses ?? 1, 100));
     const code = randomBytes(24).toString("base64url");
-    const [row] = await this.db.insert(alphaInvites).values({
-      codeHash: hashCode(code),
-      label,
-      maxUses,
-      expiresAt: input.expiresAt ?? null,
-    }).returning();
+    const [row] = await this.db.insert(alphaInvites).values({ codeHash: hashCode(code), label, maxUses, expiresAt: input.expiresAt ?? null }).returning();
     if (!row) throw new Error("INVITE_CREATE_FAILED");
     return { invite: row, code };
   }
@@ -49,7 +45,7 @@ export class DrizzleInvitationRepository {
     }).from(alphaInvites).orderBy(desc(alphaInvites.createdAt)).limit(Math.max(1, Math.min(limit, 100)));
   }
 
-  async consume(code: string): Promise<AlphaInvite> {
+  async redeem(code: string): Promise<{ userId: string; invite: AlphaInvite }> {
     if (code.length < 20 || code.length > 128) throw new Error("INVITE_INVALID");
     const now = new Date();
     return this.db.transaction(async (tx) => {
@@ -60,13 +56,19 @@ export class DrizzleInvitationRepository {
         or(isNull(alphaInvites.expiresAt), gt(alphaInvites.expiresAt, now)),
       )).limit(1).for("update");
       if (!row) throw new Error("INVITE_INVALID_OR_EXPIRED");
+
+      const userId = randomUUID();
+      await tx.insert(users).values({ id: userId, email: `alpha+${userId}@simpleway.local`, status: "GUEST" });
+      await tx.insert(profiles).values({ userId, displayName: row.label });
+      await tx.insert(alphaInviteRedemptions).values({ inviteId: row.id, userId });
+
       const [updated] = await tx.update(alphaInvites).set({
         uses: sql`${alphaInvites.uses} + 1`,
         lastUsedAt: now,
         status: row.uses + 1 >= row.maxUses ? "CONSUMED" : "ACTIVE",
       }).where(eq(alphaInvites.id, row.id)).returning();
       if (!updated) throw new Error("INVITE_CONSUME_FAILED");
-      return updated;
+      return { userId, invite: updated };
     });
   }
 
