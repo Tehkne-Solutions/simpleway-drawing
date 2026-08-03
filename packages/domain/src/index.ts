@@ -109,3 +109,4 @@ export interface LearnerSkillState {
 
 export * from "./artwork/drawing-zero";
 export * from "./artwork/file-storage";
+export * from "./mastery/engine";
