@@ -1,5 +1,6 @@
 import {
   createDatabase,
+  DrizzleActivationRepository,
   DrizzleAlphaRepository,
   DrizzleArtworkRepository,
   DrizzleClosedAlphaFeedbackRepository,
@@ -58,5 +59,6 @@ export function getConstructionRepository(): DrizzleConstructionRepository { ret
 export function getFormRepository(): DrizzleFormRepository { return new DrizzleFormRepository(getDatabase()); }
 export function getArtworkRepository(): DrizzleArtworkRepository { return new DrizzleArtworkRepository(getDatabase()); }
 export function getAlphaRepository(): DrizzleAlphaRepository { return new DrizzleAlphaRepository(getDatabase()); }
+export function getActivationRepository(): DrizzleActivationRepository { return new DrizzleActivationRepository(getDatabase()); }
 export function getClosedAlphaRepository(): DrizzleClosedAlphaRepository { return new DrizzleClosedAlphaRepository(getDatabase()); }
 export function getClosedAlphaFeedbackRepository(): DrizzleClosedAlphaFeedbackRepository { return new DrizzleClosedAlphaFeedbackRepository(getDatabase()); }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAlphaRepository } from "../server/runtime";
+import { getActivationRepository } from "../server/runtime";
 import { getLearnerProfile } from "../server/learner-profile";
 import { getSessionUserId } from "../server/session";
 
@@ -22,17 +22,14 @@ const pathLabels: Record<string, string> = {
 export default async function HomePage() {
   const userId = await getSessionUserId();
   const profile = userId ? await getLearnerProfile(userId) : null;
-  const onboardingRequired = !userId || !profile?.onboardingComplete;
-  const snapshot = userId && !onboardingRequired ? await getAlphaRepository().getSnapshot(userId) : null;
-  const primary = onboardingRequired
-    ? { title: "Definir meu ponto de partida", description: "Onboarding · 2 minutos", href: "/onboarding" }
-    : snapshot?.nextAction ?? { title: "Continuar minha jornada", description: "Foundation Alpha", href: "/learn" };
+  const activation = userId ? await getActivationRepository().getSnapshot(userId) : null;
+  const primary = activation?.nextAction ?? { title: "Definir meu ponto de partida", description: "Onboarding · 2 minutos", href: "/onboarding" };
 
   return (
     <main className="shell">
       <section className="hero">
         <p className="eyebrow">SimpleWay Drawing</p>
-        <h1>{profile?.onboardingComplete && profile.displayName ? `${profile.displayName}, construa habilidade de verdade.` : "Aprenda a desenhar construindo habilidade de verdade."}</h1>
+        <h1>{profile?.onboardingComplete && profile.displayName ? `${profile.displayName}, continue construindo habilidade.` : "Aprenda a desenhar construindo habilidade de verdade."}</h1>
         <p className="lead">Aprenda, desenhe, pratique, corrija e crie. O sistema transforma cada etapa em uma jornada clara de evolução.</p>
         <div className="actions">
           <Link href={primary.href} className="primary home-cta">{primary.title}</Link>
@@ -40,15 +37,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {profile?.onboardingComplete ? (
+      {activation && profile?.onboardingComplete ? (
         <section className="home-next-card">
           <div>
-            <p className="eyebrow">HNK · Próxima ação</p>
+            <p className="eyebrow">HNK · Retomar</p>
             <h2>{primary.title}</h2>
             <p>{primary.description}</p>
-            <p>Direção escolhida: <strong>{pathLabels[profile.preferredPath ?? ""] ?? "Exploração"}</strong>. O Foundation continua comum antes das especializações.</p>
+            <p>Ativação: <strong>{activation.completedSteps}/{activation.totalSteps}</strong> · Direção futura: <strong>{pathLabels[profile.preferredPath ?? ""] ?? "Exploração"}</strong>.</p>
           </div>
-          <Link className="secondary link-button" href="/alpha">Abrir Alpha Gate</Link>
+          <Link className="secondary link-button" href="/resume">Ver minha continuidade</Link>
         </section>
       ) : null}
 

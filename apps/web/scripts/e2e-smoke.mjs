@@ -67,6 +67,17 @@ assert.equal(onboardingPayload.profile.displayName, "Alpha Tester");
 assert.equal(onboardingPayload.profile.preferredPath, "MANGA");
 assert.equal(onboardingPayload.next, "/drawing-zero");
 
+const resume = await fetch(`${baseUrl}/api/resume`, {
+  headers: { cookie },
+  cache: "no-store",
+});
+assert.equal(resume.status, 200);
+const resumePayload = await resume.json();
+assert.equal(resumePayload.activation.stage, "DRAWING_ZERO");
+assert.equal(resumePayload.activation.nextAction.href, "/drawing-zero");
+assert.equal(resumePayload.activation.steps[0].complete, true);
+assert.equal(resumePayload.activation.steps[1].complete, false);
+
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, {
   headers: { cookie },
   cache: "no-store",
@@ -75,4 +86,4 @@ assert.equal(diagnostics.status, 200);
 const diagnosticsPayload = await diagnostics.json();
 assert.ok(diagnosticsPayload.diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection private_diagnostics");
