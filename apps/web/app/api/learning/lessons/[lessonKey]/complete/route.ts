@@ -1,4 +1,4 @@
-import { getC0Lesson } from "@swd/content";
+import { getFoundationLesson } from "@swd/content";
 import { NextResponse } from "next/server";
 import { getLearningProgressRepository } from "../../../../../../server/runtime";
 import { requireSessionUserId } from "../../../../../../server/session";
@@ -10,7 +10,7 @@ export async function POST(
   try {
     const userId = await requireSessionUserId();
     const { lessonKey } = await context.params;
-    const lesson = getC0Lesson(lessonKey);
+    const lesson = getFoundationLesson(lessonKey);
     if (!lesson) return NextResponse.json({ code: "LESSON_NOT_FOUND" }, { status: 404 });
 
     const body = (await request.json().catch(() => ({}))) as { reflection?: Record<string, unknown> };
@@ -26,9 +26,9 @@ export async function POST(
     const code = error instanceof Error ? error.message : "LESSON_COMPLETE_FAILED";
     const status = code === "UNAUTHENTICATED"
       ? 401
-      : code === "DRAWING_ZERO_REQUIRED" || code === "LESSON_PREREQUISITES_REQUIRED"
+      : code === "DRAWING_ZERO_REQUIRED" || code === "LESSON_PREREQUISITES_REQUIRED" || code === "CYCLE_PREREQUISITE_REQUIRED"
         ? 409
-        : code === "LESSON_NOT_IN_C0"
+        : code === "LESSON_NOT_IN_FOUNDATION"
           ? 400
           : 500;
     return NextResponse.json({ code }, { status });
