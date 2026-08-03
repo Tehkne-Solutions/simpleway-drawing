@@ -17,6 +17,10 @@ export const profiles = pgTable("profiles", {
   displayName: varchar("display_name", { length: 120 }),
   bio: text("bio"),
   preferredPath: varchar("preferred_path", { length: 64 }),
+  experienceLevel: varchar("experience_level", { length: 32 }),
+  primaryGoal: varchar("primary_goal", { length: 64 }),
+  preferredTool: varchar("preferred_tool", { length: 32 }),
+  onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true }),
   ...timestamps,
 });
 
