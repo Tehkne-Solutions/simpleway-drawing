@@ -1,0 +1,9 @@
+- key: skill.drawing.motor.line_control
+  version: 1
+  domain: motor
+  type: MOTOR
+  retentionMode: STANDARD
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Controle de linha

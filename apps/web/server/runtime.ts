@@ -2,6 +2,7 @@ import {
   createDatabase,
   DrizzleDrawingZeroRepository,
   DrizzleFileAssetRepository,
+  DrizzleGymRepository,
   DrizzleLearningProgressRepository,
   type Database,
 } from "@swd/database";
@@ -48,4 +49,8 @@ export function getDrawingZeroRepository(): DrizzleDrawingZeroRepository {
 
 export function getLearningProgressRepository(): DrizzleLearningProgressRepository {
   return new DrizzleLearningProgressRepository(getDatabase());
+}
+
+export function getGymRepository(): DrizzleGymRepository {
+  return new DrizzleGymRepository(getDatabase());
 }

@@ -10,10 +10,17 @@ async function readYaml(path: string): Promise<unknown> {
 }
 
 async function main(): Promise<void> {
-  const skills = await readYaml("skills/meta.yaml");
+  const metaSkills = skillSchema.array().parse(await readYaml("skills/meta.yaml"));
+  const motorSkills = skillSchema.array().parse(await readYaml("skills/motor.yaml"));
   const cycle = await readYaml("foundation/c0/cycle.yaml");
 
-  skillSchema.array().parse(skills);
+  const skillKeys = new Set<string>();
+  for (const skill of [...metaSkills, ...motorSkills]) {
+    if (skillKeys.has(skill.key)) throw new Error(`DUPLICATE_SKILL_KEY:${skill.key}`);
+    skillKeys.add(skill.key);
+  }
+  if (!skillKeys.has("skill.drawing.motor.line_control")) throw new Error("LINE_CONTROL_SKILL_REQUIRED");
+
   const parsedCycle = cycleSchema.parse(cycle);
   lessonSchema.array().parse(C0_LESSONS);
 
@@ -32,7 +39,7 @@ async function main(): Promise<void> {
     if (!coveredUnits.has(unitKey)) throw new Error(`C0_UNIT_WITHOUT_LESSON:${unitKey}`);
   }
 
-  console.info(`Content validation PASS · ${C0_LESSONS.length} C0 lessons · ${coveredUnits.size} units covered`);
+  console.info(`Content validation PASS · ${skillKeys.size} skills · ${C0_LESSONS.length} C0 lessons · ${coveredUnits.size} units covered`);
 }
 
 main().catch((error: unknown) => {

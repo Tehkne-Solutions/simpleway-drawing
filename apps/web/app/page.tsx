@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const pillars = [
   ["Learn", "Fundamentos organizados em ciclos curtos e ativos.", "/learn"],
-  ["Gym", "Prática deliberada baseada nas habilidades que precisam evoluir.", "/learn"],
+  ["Gym", "Prática deliberada baseada nas habilidades que precisam evoluir.", "/gym"],
   ["Create", "Transforme fundamentos em estudos, projetos e arte autoral.", "/drawing-zero"],
   ["Journey", "Veja evidências reais da sua evolução artística.", "/journey"],
 ] as const;
