@@ -203,7 +203,7 @@ export function MotorDrillClient({ exerciseKey }: { exerciseKey: MotorExerciseKe
       ) : null}
 
       <div className="flow-actions split-actions">
-        <Link className="secondary link-button" href="/gym/skill">Ver plano adaptativo</Link>
+        <Link className="secondary link-button" href="/skills">Ver plano adaptativo</Link>
         <button className="primary" type="button" onClick={reset} disabled={status === "saving"}>Nova tentativa</button>
       </div>
     </div>
