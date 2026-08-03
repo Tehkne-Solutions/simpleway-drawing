@@ -20,6 +20,8 @@ const requiredTables = [
   "learner_skill_states",
   "system_outbox_events",
   "alpha_tester_activity",
+  "alpha_invites",
+  "alpha_invite_redemptions",
 ] as const;
 
 try {
@@ -32,9 +34,7 @@ try {
   const present = new Set(rows.map((row) => row.table_name));
   const missing = requiredTables.filter((table) => !present.has(table));
 
-  if (missing.length > 0) {
-    throw new Error(`Database schema verification failed. Missing tables: ${missing.join(", ")}`);
-  }
+  if (missing.length > 0) throw new Error(`Database schema verification failed. Missing tables: ${missing.join(", ")}`);
 
   await sql.begin(async (transaction) => {
     const [user] = await transaction<{ id: string }[]>`
@@ -42,7 +42,6 @@ try {
       values (${`ci-${crypto.randomUUID()}@simpleway.invalid`})
       returning id
     `;
-
     if (!user) throw new Error("Failed to create CI verification user");
 
     await transaction`
@@ -50,22 +49,28 @@ try {
       values (${user.id}, 'ONBOARDING', '/onboarding', 1)
     `;
 
+    const [invite] = await transaction<{ id: string }[]>`
+      insert into alpha_invites (code_hash, label)
+      values (${crypto.randomUUID().replaceAll("-", "").padEnd(64, "0")}, 'CI Invite')
+      returning id
+    `;
+    if (!invite) throw new Error("Failed to create CI verification invite");
+
+    await transaction`
+      insert into alpha_invite_redemptions (invite_id, user_id)
+      values (${invite.id}, ${user.id})
+    `;
+
     const [artwork] = await transaction<{ id: string }[]>`
       insert into artworks (owner_user_id, type, status, visibility)
       values (${user.id}, 'BASELINE', 'ACTIVE', 'PRIVATE')
       returning id
     `;
-
     if (!artwork) throw new Error("Failed to create CI verification artwork");
 
     await transaction`
       insert into system_outbox_events (event_type, aggregate_type, aggregate_id, payload)
-      values (
-        'ci.database.verified.v1',
-        'artwork',
-        ${artwork.id},
-        ${JSON.stringify({ source: "github-actions" })}::jsonb
-      )
+      values ('ci.database.verified.v1', 'artwork', ${artwork.id}, ${JSON.stringify({ source: "github-actions" })}::jsonb)
     `;
 
     throw new Error("ROLLBACK_CI_VERIFICATION");
