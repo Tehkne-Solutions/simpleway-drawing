@@ -168,6 +168,21 @@ const feedback = await fetch(`${baseUrl}/api/feedback`, {
   body: JSON.stringify({ category: "LEARNING", rating: 5, message: "Fluxo completo do Closed Alpha validado.", path: "/journey" }),
 });
 await assertHttp(feedback, 201, "cohort feedback");
+assert.ok((await feedback.json()).id);
+
+const feedbackRead = await fetch(`${baseUrl}/api/feedback`, { headers: { cookie }, cache: "no-store" });
+await assertHttp(feedbackRead, 200, "cohort feedback readback");
+const feedbackRecords = (await feedbackRead.json()).feedback;
+assert.equal(feedbackRecords.length, 1);
+assert.equal(feedbackRecords[0].rating, 5);
+
+const testerDetailBeforeAnalytics = await fetch(`${baseUrl}/api/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, cache: "no-store" });
+await assertHttp(testerDetailBeforeAnalytics, 200, "cohort tester feedback projection");
+const testerBeforeAnalytics = (await testerDetailBeforeAnalytics.json()).tester;
+assert.equal(testerBeforeAnalytics.cohortLabel, cohortLabel);
+assert.equal(testerBeforeAnalytics.stage, "COMPLETE");
+assert.equal(testerBeforeAnalytics.feedbackCount, 1);
+assert.equal(testerBeforeAnalytics.averageRating, 5);
 
 const cohorts = await fetch(`${baseUrl}/api/ops/cohorts`, { headers: { cookie: opsCookie }, cache: "no-store" });
 await assertHttp(cohorts, 200, "cohort analytics");
@@ -183,16 +198,10 @@ assert.equal(cohort.averageRating, 5);
 assert.equal(cohort.activationRate, 100);
 assert.equal(cohort.completionRate, 100);
 
-const testerDetail = await fetch(`${baseUrl}/api/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, cache: "no-store" });
-await assertHttp(testerDetail, 200, "cohort tester detail");
-const tester = (await testerDetail.json()).tester;
-assert.equal(tester.cohortLabel, cohortLabel);
-assert.equal(tester.lastStage, "COMPLETE");
-
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "cohort graduation Journey");
 const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Foundation Alpha · Graduation/);
 assert.match(journeyHtml, /Drawing Zero · Before \/ After/);
 
-console.log("COHORT_COMPLETION_E2E=PASS ops_session invite consent invited_identity onboarding drawing_zero foundation cross_domain_evidence capstone revisit alpha_gate complete_resume complete_heartbeat feedback_csrf feedback cohort_activation cohort_completion cohort_rating tester_detail graduation_projection");
+console.log("COHORT_COMPLETION_E2E=PASS ops_session invite consent invited_identity onboarding drawing_zero foundation cross_domain_evidence capstone revisit alpha_gate complete_resume complete_heartbeat feedback_csrf feedback feedback_readback tester_feedback_projection cohort_activation cohort_completion cohort_rating graduation_projection");
