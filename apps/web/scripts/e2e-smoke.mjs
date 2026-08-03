@@ -254,6 +254,6 @@ const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cooki
 assert.equal(diagnostics.status, 200);
 const diagnosticsPayload = await diagnostics.json();
 assert.ok(diagnosticsPayload.diagnostics);
-assert.equal(diagnosticsPayload.diagnostics.hasBaseline, true);
+assert.equal(diagnosticsPayload.diagnostics.baselineCount, 1);
 
 console.log("E2E_SMOKE=PASS health readiness privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat app_upload_prepare presigned_put app_upload_confirm drawing_zero_csrf drawing_zero_submit drawing_zero_idempotency journey_baseline protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
