@@ -1,0 +1,59 @@
+- key: skill.drawing.perception.proportion
+  version: 1
+  domain: perception
+  type: PERCEPTUAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Proporção
+
+- key: skill.drawing.perception.angle
+  version: 1
+  domain: perception
+  type: PERCEPTUAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Ângulo
+
+- key: skill.drawing.perception.alignment
+  version: 1
+  domain: perception
+  type: PERCEPTUAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Alinhamento
+
+- key: skill.drawing.perception.negative_space
+  version: 1
+  domain: perception
+  type: PERCEPTUAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Espaço negativo
+
+- key: skill.drawing.perception.landmark
+  version: 1
+  domain: perception
+  type: PERCEPTUAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Landmarks
+
+- key: skill.drawing.perception.visual_simplification
+  version: 1
+  domain: perception
+  type: PERCEPTUAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Simplificação visual
