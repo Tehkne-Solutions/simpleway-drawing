@@ -9,13 +9,19 @@ function text(value: Record<string, string>): string {
   return value["pt-BR"] ?? Object.values(value)[0] ?? "";
 }
 
+function practiceHref(exerciseKey: string): string {
+  return exerciseKey.startsWith("exercise.swd.observation.")
+    ? `/observation?exercise=${encodeURIComponent(exerciseKey)}`
+    : `/gym?exercise=${encodeURIComponent(exerciseKey)}`;
+}
+
 export function FoundationLessonPlayer({
   lesson,
   cycleSlug,
   nextLessonKey,
 }: {
   lesson: LessonDefinition;
-  cycleSlug: "c0" | "c1";
+  cycleSlug: "c0" | "c1" | "c2";
   nextLessonKey: string | null;
 }) {
   const router = useRouter();
@@ -63,7 +69,7 @@ export function FoundationLessonPlayer({
         if (block.type === "DEMONSTRATION") return <section className="lesson-block" key={index}><h2>{text(block.title)}</h2><ol className="demo-steps">{block.steps.map((step, stepIndex) => <li key={stepIndex}>{text(step)}</li>)}</ol></section>;
         if (block.type === "CHECKPOINT") return <aside className="lesson-checkpoint" key={index}>{text(block.text)}</aside>;
         if (block.type === "DRAWING_ZERO") return <section className="lesson-block lesson-action" key={index}><h2>Registre seu ponto de partida</h2><p>Seu Drawing Zero fica privado e não recebe nota. Ele existe para que você consiga enxergar sua evolução depois.</p><Link className="primary link-button" href="/drawing-zero">Fazer Drawing Zero</Link></section>;
-        if (block.type === "PRACTICE") return <section className="lesson-block lesson-action practice-lesson-block" key={index}><p className="eyebrow">Practice</p><h2>{text(block.title)}</h2><p>{text(block.text)}</p><Link className="primary link-button" href={`/gym?exercise=${encodeURIComponent(block.exerciseKey)}`}>Abrir treino</Link></section>;
+        if (block.type === "PRACTICE") return <section className="lesson-block lesson-action practice-lesson-block" key={index}><p className="eyebrow">Practice</p><h2>{text(block.title)}</h2><p>{text(block.text)}</p><Link className="primary link-button" href={practiceHref(block.exerciseKey)}>Abrir treino</Link></section>;
         if (block.type === "REFLECTION") {
           const id = `reflection-${index}`;
           return <fieldset className="lesson-reflection" key={index}><legend>{text(block.prompt)}</legend>{block.options.map((option) => {
