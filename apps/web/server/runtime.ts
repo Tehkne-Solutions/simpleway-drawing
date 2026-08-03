@@ -5,6 +5,7 @@ import {
   DrizzleArtworkRepository,
   DrizzleClosedAlphaFeedbackRepository,
   DrizzleClosedAlphaRepository,
+  DrizzleCohortAnalyticsRepository,
   DrizzleConstructionRepository,
   DrizzleDrawingZeroRepository,
   DrizzleFileAssetRepository,
@@ -66,3 +67,4 @@ export function getClosedAlphaRepository(): DrizzleClosedAlphaRepository { retur
 export function getClosedAlphaFeedbackRepository(): DrizzleClosedAlphaFeedbackRepository { return new DrizzleClosedAlphaFeedbackRepository(getDatabase()); }
 export function getOperationsRepository(): DrizzleOperationsRepository { return new DrizzleOperationsRepository(getDatabase()); }
 export function getInvitationRepository(): DrizzleInvitationRepository { return new DrizzleInvitationRepository(getDatabase()); }
+export function getCohortAnalyticsRepository(): DrizzleCohortAnalyticsRepository { return new DrizzleCohortAnalyticsRepository(getDatabase()); }
