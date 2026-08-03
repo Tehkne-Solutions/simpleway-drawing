@@ -50,7 +50,8 @@ export function OnboardingClient() {
     [displayName, preferredPath, experienceLevel, primaryGoal, preferredTool],
   );
 
-  async function submit() {
+  async function submit(event?: React.FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
     if (!canContinue || status === "saving") return;
     setStatus("saving");
     setMessage("");
@@ -76,23 +77,35 @@ export function OnboardingClient() {
   }
 
   return (
-    <section className="flow-card onboarding-card">
+    <form className="flow-card onboarding-card" onSubmit={submit} aria-busy={status === "saving"} noValidate>
       <p className="eyebrow">Sua jornada começa aqui</p>
       <h1 className="flow-title">Vamos adaptar a experiência sem pular fundamentos.</h1>
-      <p className="lead compact">
+      <p className="lead compact" id="onboarding-intro">
         Sua direção artística muda exemplos, contexto e recomendações futuras. A base C0–C4 continua a mesma para todos.
       </p>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {status === "saving" ? "Salvando seu ponto de partida." : ""}
+      </div>
 
       <div className="onboarding-field">
         <label htmlFor="display-name">Como quer ser chamado?</label>
         <input
           id="display-name"
           value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
+          onChange={(event) => {
+            setDisplayName(event.target.value);
+            if (status === "error") {
+              setStatus("idle");
+              setMessage("");
+            }
+          }}
           maxLength={80}
           placeholder="Seu nome ou nome artístico"
           autoComplete="name"
+          aria-required="true"
+          aria-describedby="display-name-help"
         />
+        <small id="display-name-help">Use pelo menos 2 caracteres.</small>
       </div>
 
       <ChoiceSection title="Qual direção artística mais te atrai hoje?">
@@ -149,19 +162,19 @@ export function OnboardingClient() {
           <strong>Próximo: Drawing Zero</strong>
           <span className="onboarding-note"> Sem nota e sem julgamento.</span>
         </div>
-        <button className="primary" type="button" disabled={!canContinue || status === "saving"} onClick={submit}>
+        <button className="primary" type="submit" disabled={!canContinue || status === "saving"}>
           {status === "saving" ? "Salvando..." : "Começar meu diagnóstico"}
         </button>
       </div>
-    </section>
+    </form>
   );
 }
 
 function ChoiceSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="choice-section">
-      <h2>{title}</h2>
+    <fieldset className="choice-section">
+      <legend>{title}</legend>
       {children}
-    </div>
+    </fieldset>
   );
 }
