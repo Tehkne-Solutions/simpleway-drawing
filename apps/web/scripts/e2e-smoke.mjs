@@ -38,9 +38,11 @@ const blockedPayload = await blocked.json();
 assert.equal(blockedPayload.code, "CROSS_ORIGIN_REQUEST_BLOCKED");
 assert.ok(blocked.headers.get("x-request-id"));
 
+// The CSRF contract explicitly permits requests without Origin. This keeps the
+// database E2E independent from Next.js localhost/127.0.0.1 normalization while
+// the malicious-origin case above still proves the global cross-origin block.
 const guest = await fetch(`${baseUrl}/api/session/guest`, {
   method: "POST",
-  headers: { origin: baseUrl },
 });
 assert.equal(guest.status, 201);
 const guestPayload = await guest.json();
