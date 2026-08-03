@@ -1,0 +1,45 @@
+name: Release Candidate Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_url:
+        description: "HTTPS URL of the deployed release candidate"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simpleway-drawing-release-candidate
+  cancel-in-progress: false
+
+jobs:
+  verify-release-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DEPLOY_BASE_URL: ${{ inputs.deploy_url }}
+    steps:
+      - name: Checkout release gate
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify deployed release candidate
+        run: node apps/web/scripts/remote-smoke.mjs
+
+      - name: Publish verification summary
+        if: success()
+        run: |
+          echo "## SimpleWay Drawing · Release Candidate" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Result: **PASS**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Gate: health, readiness/database, security headers, product identity, privacy, Ops guard, secure session cookie, Resume, diagnostics, privacy export, CSRF" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"
