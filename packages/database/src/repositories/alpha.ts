@@ -9,7 +9,7 @@ const DOMAIN_SKILLS = [
   { domain: "Motor", skillKey: "skill.drawing.motor.line_control", href: "/gym", recovery: "Line Control Recovery" },
   { domain: "Perception", skillKey: "skill.drawing.perception.proportion", href: "/observation", recovery: "Proportion Recovery" },
   { domain: "Shape", skillKey: "skill.drawing.shape.decomposition", href: "/construction", recovery: "Shape Decomposition Recovery" },
-  { domain: "Form", skillKey: "skill.drawing.form.box_orientation", href: "/form", recovery: "Form Orientation Recovery" },
+  { domain: "Form", skillKey: "skill.drawing.form.box", href: "/form", recovery: "Form Orientation Recovery" },
 ] as const;
 
 export type AlphaGateStatus = "NOT_READY" | "SUPPORT_REQUIRED" | "READY_WITH_REVIEW" | "READY";
