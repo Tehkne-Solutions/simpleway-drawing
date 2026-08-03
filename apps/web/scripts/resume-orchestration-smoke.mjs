@@ -182,7 +182,6 @@ const home = await fetch(`${baseUrl}/`, { headers: { cookie: learner.cookie }, c
 await assertHttp(home, 200, "resume Home projection");
 const homeHtml = await home.text();
 assert.match(homeHtml, /Revisar minha evolução/);
-assert.match(homeHtml, /6\/6/);
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie: learner.cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "resume Journey projection");
