@@ -8,7 +8,9 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test server/**/*.test.ts",
-    "e2e:smoke": "node scripts/e2e-smoke.mjs"
+    "e2e:smoke": "node scripts/e2e-smoke.mjs",
+    "deploy:check": "node scripts/verify-production-env.mjs",
+    "deploy:smoke": "node scripts/remote-smoke.mjs"
   },
   "dependencies": {
     "@swd/content": "workspace:*",

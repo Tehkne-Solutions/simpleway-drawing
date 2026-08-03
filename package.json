@@ -16,6 +16,10 @@
     "format:check": "prettier --check .",
     "content:validate": "pnpm --filter @swd/content validate",
     "content:compile": "pnpm --filter @swd/content compile",
+    "db:generate": "pnpm --filter @swd/database generate",
+    "db:migrate": "pnpm --filter @swd/database migrate",
+    "deploy:check": "pnpm --filter @swd/web deploy:check",
+    "deploy:smoke": "pnpm --filter @swd/web deploy:smoke",
     "ci": "pnpm lint && pnpm typecheck && pnpm content:validate && pnpm test && pnpm build"
   },
   "devDependencies": {
