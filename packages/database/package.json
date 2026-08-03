@@ -8,7 +8,8 @@
   },
   "scripts": {
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
+    "migrate": "tsx src/migrate-versioned.ts",
+    "verify:migration-baseline": "tsx src/verify-migration-baseline.ts",
     "verify:ci": "tsx src/verify-ci.ts",
     "typecheck": "tsc --noEmit"
   },
