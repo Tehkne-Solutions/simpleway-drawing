@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { C1_LESSONS as C1_RAW_LESSONS } from "./c1-lessons.js";
 
 export const localizedTextSchema = z.record(z.string(), z.string().min(1));
 
@@ -28,6 +29,7 @@ export const lessonBlockSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("DEMONSTRATION"), title: localizedTextSchema, steps: z.array(localizedTextSchema).min(1) }),
   z.object({ type: z.literal("REFLECTION"), prompt: localizedTextSchema, options: z.array(localizedTextSchema).min(2) }),
   z.object({ type: z.literal("DRAWING_ZERO"), exerciseKey: z.literal("exercise.swd.c0.drawing_zero") }),
+  z.object({ type: z.literal("PRACTICE"), exerciseKey: z.string().regex(/^exercise\./), title: localizedTextSchema, text: localizedTextSchema }),
   z.object({ type: z.literal("CHECKPOINT"), text: localizedTextSchema }),
 ]);
 
@@ -144,6 +146,17 @@ export const C0_LESSONS: LessonDefinition[] = [
   },
 ];
 
+export const C1_LESSONS: LessonDefinition[] = lessonSchema.array().parse(C1_RAW_LESSONS);
+export const FOUNDATION_LESSONS: LessonDefinition[] = [...C0_LESSONS, ...C1_LESSONS];
+
 export function getC0Lesson(key: string): LessonDefinition | null {
   return C0_LESSONS.find((lesson) => lesson.key === key) ?? null;
+}
+
+export function getC1Lesson(key: string): LessonDefinition | null {
+  return C1_LESSONS.find((lesson) => lesson.key === key) ?? null;
+}
+
+export function getFoundationLesson(key: string): LessonDefinition | null {
+  return FOUNDATION_LESSONS.find((lesson) => lesson.key === key) ?? null;
 }
