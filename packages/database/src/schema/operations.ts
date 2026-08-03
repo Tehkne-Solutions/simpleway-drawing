@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, primaryKey, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { users } from "./core";
 
 export const alphaTesterActivity = pgTable("alpha_tester_activity", {
@@ -23,3 +23,9 @@ export const alphaInvites = pgTable("alpha_invites", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
 });
+
+export const alphaInviteRedemptions = pgTable("alpha_invite_redemptions", {
+  inviteId: uuid("invite_id").notNull().references(() => alphaInvites.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  redeemedAt: timestamp("redeemed_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [primaryKey({ columns: [table.inviteId, table.userId] })]);
