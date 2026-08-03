@@ -107,3 +107,4 @@ jobs:
           pnpm --filter @swd/web e2e:learning
           pnpm --filter @swd/web e2e:practice
           pnpm --filter @swd/web e2e:visual-labs
+          pnpm --filter @swd/web e2e:resume
