@@ -1,0 +1,15 @@
+key: cycle.swd.c3
+version: 1
+stageKey: stage.swd.foundation
+title:
+  pt-BR: Shape Language
+transformation:
+  pt-BR: Eu consigo reduzir objetos a formas simples e organizar relações estruturais antes do detalhe.
+unitKeys:
+  - unit.swd.c3.primitives
+  - unit.swd.c3.decomposition
+  - unit.swd.c3.envelope
+  - unit.swd.c3.silhouette
+  - unit.swd.c3.relationships
+  - unit.swd.c3.overlap
+  - unit.swd.c3.applied_construction
