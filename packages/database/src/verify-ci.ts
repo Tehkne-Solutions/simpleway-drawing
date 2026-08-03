@@ -26,7 +26,6 @@ try {
     select table_name
     from information_schema.tables
     where table_schema = 'public'
-      and table_name in ${sql(requiredTables)}
   `;
 
   const present = new Set(rows.map((row) => row.table_name));
@@ -63,7 +62,7 @@ try {
         'ci.database.verified.v1',
         'artwork',
         ${artwork.id},
-        ${transaction.json({ source: "github-actions" })}
+        ${JSON.stringify({ source: "github-actions" })}::jsonb
       )
     `;
 
