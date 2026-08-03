@@ -46,6 +46,20 @@ export class DrizzleLearningProgressRepository {
     reflection?: Record<string, unknown>;
   }): Promise<{ cycleCompleted: boolean; completedLessons: number }> {
     return this.db.transaction(async (tx) => {
+      const lessonIndex = C0_LESSON_KEYS.findIndex((key) => key === input.lessonKey);
+      if (lessonIndex < 0) throw new Error("LESSON_NOT_IN_C0");
+
+      const existingRows = await tx
+        .select({ lessonKey: lessonProgress.lessonKey })
+        .from(lessonProgress)
+        .where(and(eq(lessonProgress.userId, input.userId), eq(lessonProgress.status, "COMPLETED")));
+      const existingCompleted = new Set(existingRows.map((row) => row.lessonKey));
+
+      if (!existingCompleted.has(input.lessonKey)) {
+        const missingPrerequisite = C0_LESSON_KEYS.slice(0, lessonIndex).find((key) => !existingCompleted.has(key));
+        if (missingPrerequisite) throw new Error("LESSON_PREREQUISITES_REQUIRED");
+      }
+
       if (input.lessonKey === "lesson.swd.c0.drawing_zero") {
         const [baseline] = await tx
           .select({ id: exerciseAttempts.id })
@@ -88,12 +102,8 @@ export class DrizzleLearningProgressRepository {
           },
         });
 
-      const completedRows = await tx
-        .select({ lessonKey: lessonProgress.lessonKey })
-        .from(lessonProgress)
-        .where(and(eq(lessonProgress.userId, input.userId), eq(lessonProgress.status, "COMPLETED")));
-      const c0Completed = new Set(completedRows.map((row) => row.lessonKey));
-      const completedLessons = C0_LESSON_KEYS.filter((key) => c0Completed.has(key)).length;
+      existingCompleted.add(input.lessonKey);
+      const completedLessons = C0_LESSON_KEYS.filter((key) => existingCompleted.has(key)).length;
       const cycleCompleted = completedLessons === C0_LESSON_KEYS.length;
       const newlyCompleted = cycleCompleted && previousCycle?.status !== "COMPLETED";
 
