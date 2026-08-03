@@ -3,6 +3,7 @@ import "./styles.css";
 import "./flow.css";
 import "./c1.css";
 import "./c2.css";
+import "./c3.css";
 
 export const metadata: Metadata = {
   title: "SimpleWay Drawing",
