@@ -95,6 +95,19 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .mastery-strip { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.16); font-size: 13px; color: #c7c7c1; }
 .mastery-strip strong { color: #fff; }
 
+.practice-empty { margin-top: 32px; padding: 26px; border: 1px solid #deded9; border-radius: 22px; background: #fbfbf9; }
+.practice-empty h2 { margin: 0 0 8px; }
+.practice-empty p { color: #666660; margin: 0 0 20px; }
+.practice-queue { margin-top: 32px; display: grid; gap: 16px; }
+.practice-card { padding: 24px; border: 1px solid #deded9; border-radius: 22px; background: #fbfbf9; }
+.practice-card h2 { margin: 14px 0 8px; font-size: 26px; }
+.practice-card > p { margin: 0; color: #666660; line-height: 1.55; }
+.practice-card-top { display: flex; justify-content: space-between; gap: 14px; align-items: center; font-size: 13px; color: #777771; }
+.practice-priority { display: inline-flex; padding: 7px 11px; border-radius: 999px; background: #171717; color: #fff; font-weight: 700; }
+.practice-mastery { margin-top: 24px; display: flex; gap: 12px; align-items: baseline; }
+.practice-mastery strong { font-size: 36px; letter-spacing: -.04em; }
+.practice-mastery span { color: #777771; }
+
 @media (max-width: 700px) {
   .flow-shell { padding: 18px; place-items: start center; }
   .flow-card { border-radius: 22px; padding: 26px 20px; }
@@ -109,4 +122,5 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   .coach-card { grid-template-columns: 1fr; }
   .coach-score { width: 80px; height: 80px; }
   .mastery-strip { grid-column: auto; }
+  .practice-card-top, .practice-mastery { align-items: flex-start; flex-direction: column; }
 }
