@@ -2,6 +2,7 @@ import {
   createDatabase,
   DrizzleDrawingZeroRepository,
   DrizzleFileAssetRepository,
+  DrizzleLearningProgressRepository,
   type Database,
 } from "@swd/database";
 import { ConfirmPrivateUpload, PreparePrivateUpload } from "@swd/domain";
@@ -32,10 +33,7 @@ export function getStorage(): S3FileStorage {
   return storage;
 }
 
-export function getFileServices(): {
-  prepare: PreparePrivateUpload;
-  confirm: ConfirmPrivateUpload;
-} {
+export function getFileServices(): { prepare: PreparePrivateUpload; confirm: ConfirmPrivateUpload } {
   const files = new DrizzleFileAssetRepository(getDatabase());
   const objectStorage = getStorage();
   return {
@@ -46,4 +44,8 @@ export function getFileServices(): {
 
 export function getDrawingZeroRepository(): DrizzleDrawingZeroRepository {
   return new DrizzleDrawingZeroRepository(getDatabase());
+}
+
+export function getLearningProgressRepository(): DrizzleLearningProgressRepository {
+  return new DrizzleLearningProgressRepository(getDatabase());
 }

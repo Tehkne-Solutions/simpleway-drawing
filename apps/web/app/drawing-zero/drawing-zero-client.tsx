@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 const MAX_BYTES = 15 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
+const DRAWING_ZERO_LESSON = "/learn/c0/lesson.swd.c0.drawing_zero";
 
 type State = "idle" | "uploading" | "confirming" | "submitting" | "done" | "error";
 
@@ -61,7 +62,7 @@ export function DrawingZeroClient() {
       if (!drawing.ok) throw new Error("Não foi possível registrar seu Drawing Zero.");
 
       setState("done");
-      router.push("/journey");
+      router.push(DRAWING_ZERO_LESSON);
       router.refresh();
     } catch (cause) {
       setState("error");

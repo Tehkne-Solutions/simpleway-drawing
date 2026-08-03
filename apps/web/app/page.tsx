@@ -1,8 +1,10 @@
+import Link from "next/link";
+
 const pillars = [
-  ["Learn", "Fundamentos organizados em ciclos curtos e ativos."],
-  ["Gym", "Prática deliberada baseada nas habilidades que precisam evoluir."],
-  ["Create", "Transforme fundamentos em estudos, projetos e arte autoral."],
-  ["Journey", "Veja evidências reais da sua evolução artística."],
+  ["Learn", "Fundamentos organizados em ciclos curtos e ativos.", "/learn"],
+  ["Gym", "Prática deliberada baseada nas habilidades que precisam evoluir.", "/learn"],
+  ["Create", "Transforme fundamentos em estudos, projetos e arte autoral.", "/drawing-zero"],
+  ["Journey", "Veja evidências reais da sua evolução artística.", "/journey"],
 ] as const;
 
 export default function HomePage() {
@@ -15,17 +17,17 @@ export default function HomePage() {
           Aprenda, desenhe, pratique, corrija e crie. O sistema transforma cada etapa em uma jornada clara de evolução.
         </p>
         <div className="actions">
-          <button type="button" className="primary">Começar minha jornada</button>
+          <Link href="/learn" className="primary home-cta">Começar minha jornada</Link>
           <span>C0 · I Can Draw</span>
         </div>
       </section>
 
       <section className="grid" aria-label="Áreas do produto">
-        {pillars.map(([title, description]) => (
-          <article className="card" key={title}>
+        {pillars.map(([title, description, href]) => (
+          <Link href={href} className="card home-card-link" key={title}>
             <h2>{title}</h2>
             <p>{description}</p>
-          </article>
+          </Link>
         ))}
       </section>
 

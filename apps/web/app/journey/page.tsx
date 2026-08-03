@@ -46,7 +46,11 @@ export default async function JourneyPage() {
             const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata as Record<string, unknown> : {};
             const description = item.type === "DRAWING_ZERO"
               ? "Este é seu baseline privado. Mais adiante vamos comparar sua evolução com ele."
-              : typeof metadata.description === "string" ? metadata.description : "Marco registrado na sua jornada.";
+              : typeof metadata.transformation === "string"
+                ? metadata.transformation
+                : typeof metadata.description === "string"
+                  ? metadata.description
+                  : "Marco registrado na sua jornada.";
             return (
               <article className="journey-item" key={item.id}>
                 {item.imageUrl ? <img src={item.imageUrl} alt="Artwork privada da jornada" style={{ width: "100%", maxHeight: 520, objectFit: "contain", borderRadius: 16, marginBottom: 18 }} /> : null}
