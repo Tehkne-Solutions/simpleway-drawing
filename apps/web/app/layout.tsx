@@ -9,6 +9,7 @@ import "./alpha.css";
 import "./diagnostics.css";
 import "./feedback.css";
 import "./shell.css";
+import "./accessibility.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {

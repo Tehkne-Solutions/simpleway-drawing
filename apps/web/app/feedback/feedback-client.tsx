@@ -52,6 +52,7 @@ export function FeedbackClient() {
     event.preventDefault();
     const trimmed = message.trim();
     if (trimmed.length < 3) {
+      setStatus("error");
       setError("Conte em poucas palavras o que aconteceu.");
       return;
     }
@@ -81,9 +82,19 @@ export function FeedbackClient() {
     }
   }
 
+  const busy = status === "loading" || status === "saving";
+  const messageInvalid = status === "error" && Boolean(error);
+  const liveStatus = status === "saving"
+    ? "Registrando feedback."
+    : status === "success"
+      ? "Feedback registrado com sucesso."
+      : "";
+
   return (
     <div className="feedback-layout">
-      <form className="feedback-form" onSubmit={submit}>
+      <form className="feedback-form" onSubmit={submit} aria-busy={busy} noValidate>
+        <div className="sr-only" aria-live="polite" aria-atomic="true">{liveStatus}</div>
+
         <div>
           <label htmlFor="feedback-category">O que você está avaliando?</label>
           <select id="feedback-category" value={category} onChange={(event) => setCategory(event.target.value as Category)}>
@@ -97,7 +108,8 @@ export function FeedbackClient() {
             {[1, 2, 3, 4, 5].map((value) => (
               <label key={value} className={rating === value ? "selected" : ""}>
                 <input type="radio" name="rating" value={value} checked={rating === value} onChange={() => setRating(value)} />
-                <span>{value}</span>
+                <span aria-hidden="true">{value}</span>
+                <span className="sr-only">{value} de 5</span>
               </label>
             ))}
           </div>
@@ -108,25 +120,31 @@ export function FeedbackClient() {
           <textarea
             id="feedback-message"
             value={message}
-            onChange={(event) => setMessage(event.target.value)}
+            onChange={(event) => {
+              setMessage(event.target.value);
+              if (error) setError(null);
+              if (status === "error") setStatus("idle");
+            }}
             maxLength={2000}
             rows={7}
             placeholder="Ex.: entendi o exercício, mas não percebi onde deveria tocar para continuar…"
+            aria-describedby="feedback-message-count"
+            aria-invalid={messageInvalid}
           />
-          <small>{message.length}/2000</small>
+          <small id="feedback-message-count" aria-live="off">{message.length}/2000 caracteres</small>
         </div>
 
         {error ? <p className="flow-error" role="alert">{error}</p> : null}
         {status === "success" ? <p className="feedback-success" role="status">Feedback registrado. Obrigado por ajudar a melhorar o Alpha.</p> : null}
-        <button className="primary" type="submit" disabled={status === "saving" || status === "loading"}>
+        <button className="primary" type="submit" disabled={busy}>
           {status === "saving" ? "Registrando…" : "Enviar feedback"}
         </button>
       </form>
 
-      <aside className="feedback-history" aria-label="Feedbacks recentes">
+      <aside className="feedback-history" aria-label="Feedbacks recentes" aria-busy={status === "loading"}>
         <p className="eyebrow">Seus relatos</p>
         <h2>Histórico recente</h2>
-        {status === "loading" ? <p>Carregando…</p> : null}
+        {status === "loading" ? <p role="status">Carregando…</p> : null}
         {recent.length === 0 && status !== "loading" ? <p>Seu primeiro relato aparecerá aqui.</p> : null}
         {recent.map((item) => (
           <article key={item.id}>
