@@ -26,13 +26,25 @@ export interface PendingFileAssetInput {
   byteSize: number;
 }
 
+export interface PendingFileAsset extends PendingFileAssetInput {
+  status: "PENDING";
+}
+
+export interface StoredFileMetadata {
+  byteSize: number;
+  mimeType: string | null;
+}
+
 export interface FileStoragePort {
   createPrivateUpload(input: CreatePrivateUploadInput): Promise<PrivateUploadIntent>;
+  verifyPrivateFile(storageKey: string): Promise<StoredFileMetadata>;
+  createPrivateReadUrl(storageKey: string, ttlSeconds?: number): Promise<string>;
   deletePrivateFile(storageKey: string): Promise<void>;
 }
 
 export interface FileAssetRepository {
   createPending(input: PendingFileAssetInput): Promise<void>;
+  getOwnedPending(fileAssetId: string, ownerUserId: UserId): Promise<PendingFileAsset | null>;
   markReady(fileAssetId: string, ownerUserId: UserId): Promise<void>;
 }
 
@@ -48,6 +60,10 @@ export class PreparePrivateUpload {
   ) {}
 
   async execute(input: Omit<CreatePrivateUploadInput, "fileAssetId">): Promise<PrivateUploadIntent> {
+    if (input.byteSize <= 0 || input.byteSize > 15 * 1024 * 1024) {
+      throw new Error("INVALID_UPLOAD_SIZE");
+    }
+
     const fileAssetId = this.ids.next();
     const intent = await this.storage.createPrivateUpload({ ...input, fileAssetId });
 
@@ -60,5 +76,29 @@ export class PreparePrivateUpload {
     });
 
     return intent;
+  }
+}
+
+export class ConfirmPrivateUpload {
+  constructor(
+    private readonly storage: FileStoragePort,
+    private readonly files: FileAssetRepository,
+  ) {}
+
+  async execute(fileAssetId: string, ownerUserId: UserId): Promise<void> {
+    const pending = await this.files.getOwnedPending(fileAssetId, ownerUserId);
+    if (!pending) {
+      throw new Error("FILE_ASSET_NOT_PENDING");
+    }
+
+    const metadata = await this.storage.verifyPrivateFile(pending.storageKey);
+    if (metadata.byteSize !== pending.byteSize) {
+      throw new Error("UPLOADED_FILE_SIZE_MISMATCH");
+    }
+    if (metadata.mimeType && metadata.mimeType !== pending.mimeType) {
+      throw new Error("UPLOADED_FILE_TYPE_MISMATCH");
+    }
+
+    await this.files.markReady(fileAssetId, ownerUserId);
   }
 }
