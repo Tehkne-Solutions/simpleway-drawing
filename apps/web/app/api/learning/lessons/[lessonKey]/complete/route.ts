@@ -24,7 +24,13 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     const code = error instanceof Error ? error.message : "LESSON_COMPLETE_FAILED";
-    const status = code === "UNAUTHENTICATED" ? 401 : code === "DRAWING_ZERO_REQUIRED" ? 409 : 500;
+    const status = code === "UNAUTHENTICATED"
+      ? 401
+      : code === "DRAWING_ZERO_REQUIRED" || code === "LESSON_PREREQUISITES_REQUIRED"
+        ? 409
+        : code === "LESSON_NOT_IN_C0"
+          ? 400
+          : 500;
     return NextResponse.json({ code }, { status });
   }
 }
