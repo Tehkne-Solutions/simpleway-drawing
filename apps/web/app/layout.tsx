@@ -6,6 +6,7 @@ import "./c2.css";
 import "./c3.css";
 import "./c4.css";
 import "./alpha.css";
+import "./diagnostics.css";
 import "./shell.css";
 import { AppShell } from "./app-shell";
 
