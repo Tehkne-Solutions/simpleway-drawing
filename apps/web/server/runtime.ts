@@ -1,5 +1,6 @@
 import {
   createDatabase,
+  DrizzleArtworkRepository,
   DrizzleDrawingZeroRepository,
   DrizzleFileAssetRepository,
   DrizzleGymRepository,
@@ -53,4 +54,8 @@ export function getLearningProgressRepository(): DrizzleLearningProgressReposito
 
 export function getGymRepository(): DrizzleGymRepository {
   return new DrizzleGymRepository(getDatabase());
+}
+
+export function getArtworkRepository(): DrizzleArtworkRepository {
+  return new DrizzleArtworkRepository(getDatabase());
 }
