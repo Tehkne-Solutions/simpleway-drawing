@@ -1,4 +1,4 @@
-import { count, eq, inArray, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import type { Database } from "../client";
 import { artworks, learnerSkillStates } from "../schema/core";
 import { cycleProgress } from "../schema/learning";
@@ -25,9 +25,8 @@ export class DrizzleClosedAlphaRepository {
   async getDiagnostics(userId: string): Promise<ClosedAlphaDiagnostics> {
     const progress = await this.db.select({ cycleKey: cycleProgress.cycleKey, status: cycleProgress.status })
       .from(cycleProgress)
-      .where(inArray(cycleProgress.cycleKey, [...CYCLES]));
-    const userProgress = progress.filter((row) => row.cycleKey && row.status);
-    const progressByCycle = new Map(userProgress.map((row) => [row.cycleKey, row.status]));
+      .where(and(eq(cycleProgress.userId, userId), inArray(cycleProgress.cycleKey, [...CYCLES])));
+    const progressByCycle = new Map(progress.map((row) => [row.cycleKey, row.status]));
     const cycles = CYCLES.map((key) => ({ key, status: progressByCycle.get(key) ?? "NOT_STARTED" }));
 
     const [[artworkStats], [skillStats], [journeyStats]] = await Promise.all([
