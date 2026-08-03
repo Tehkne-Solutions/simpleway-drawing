@@ -19,3 +19,15 @@ jobs:
       - run: pnpm content:validate
       - run: pnpm test
       - run: pnpm build
+      - name: Start production web
+        run: |
+          pnpm --filter @swd/web exec next start -p 3100 > /tmp/simpleway-drawing-next.log 2>&1 &
+          echo $! > /tmp/simpleway-drawing-next.pid
+      - name: E2E smoke
+        env:
+          E2E_BASE_URL: http://127.0.0.1:3100
+          AUTH_SECRET: ci-smoke-secret-not-for-production
+        run: pnpm --filter @swd/web e2e:smoke
+      - name: Print server log on failure
+        if: failure()
+        run: cat /tmp/simpleway-drawing-next.log || true
