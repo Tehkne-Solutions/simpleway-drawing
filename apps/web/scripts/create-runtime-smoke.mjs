@@ -91,7 +91,8 @@ const outsider = await createSession();
 const outsiderApi = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
 assert.equal(outsiderApi.status, 404);
 const outsiderDetail = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: outsider.cookie }, redirect: "manual" });
-assert.equal(outsiderDetail.status, 404);
+assert.equal(outsiderDetail.status, 200);
+assert.match(await outsiderDetail.text(), /Esta etapa não foi encontrada/);
 
 const secondUpload = await uploadPrivate(owner.cookie, png2);
 const crossOriginVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`, {
