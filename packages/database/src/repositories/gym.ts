@@ -29,6 +29,19 @@ export interface GymAttemptResult {
   };
 }
 
+export interface PracticeRecommendation {
+  skillKey: string;
+  title: string;
+  exerciseKey: string;
+  href: string;
+  priority: "INTRODUCE" | "DUE" | "DEVELOP" | "MAINTAIN";
+  reason: string;
+  masteryScore: number | null;
+  masteryLevel: string | null;
+  evidenceCount: number;
+  nextReviewAt: Date | null;
+}
+
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
@@ -201,5 +214,51 @@ export class DrizzleGymRepository {
       .orderBy(desc(skillEvidence.createdAt))
       .limit(5);
     return { state: state ?? null, recentEvidence };
+  }
+
+  async getPracticePlan(userId: string): Promise<PracticeRecommendation[]> {
+    const states = await this.db
+      .select()
+      .from(learnerSkillStates)
+      .where(eq(learnerSkillStates.userId, userId));
+    const lineState = states.find((state) => state.skillKey === LINE_CONTROL_SKILL) ?? null;
+    const now = new Date();
+
+    if (!lineState) {
+      return [{
+        skillKey: LINE_CONTROL_SKILL,
+        title: "Controle de linha",
+        exerciseKey: INTENTIONAL_LINE_EXERCISE,
+        href: "/gym",
+        priority: "INTRODUCE",
+        reason: "Você ainda não gerou evidência para esta habilidade fundamental.",
+        masteryScore: null,
+        masteryLevel: null,
+        evidenceCount: 0,
+        nextReviewAt: null,
+      }];
+    }
+
+    const score = Number(lineState.masteryScore);
+    const due = !lineState.nextReviewAt || lineState.nextReviewAt <= now;
+    const priority: PracticeRecommendation["priority"] = due ? "DUE" : score < 0.74 ? "DEVELOP" : "MAINTAIN";
+    const reason = due
+      ? "Sua revisão de controle de linha está disponível agora."
+      : score < 0.74
+        ? "Esta habilidade ainda é um gargalo para exercícios mais complexos."
+        : "Uma repetição curta mantém a habilidade estável sem overtraining.";
+
+    return [{
+      skillKey: LINE_CONTROL_SKILL,
+      title: "Controle de linha",
+      exerciseKey: INTENTIONAL_LINE_EXERCISE,
+      href: "/gym",
+      priority,
+      reason,
+      masteryScore: score,
+      masteryLevel: lineState.masteryLevel,
+      evidenceCount: lineState.evidenceCount,
+      nextReviewAt: lineState.nextReviewAt,
+    }];
   }
 }

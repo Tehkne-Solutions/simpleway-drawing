@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./styles.css";
+import "./flow.css";
 
 export const metadata: Metadata = {
   title: "SimpleWay Drawing",
