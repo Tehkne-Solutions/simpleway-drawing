@@ -11,6 +11,7 @@ export const C0_LESSON_KEYS = [
   "lesson.swd.c0.drawing_zero",
   "lesson.swd.c0.intentional_marks",
   "lesson.swd.c0.seeing_before_naming",
+  "lesson.swd.c0.simple_construction",
   "lesson.swd.c0.first_correction",
 ] as const;
 
