@@ -128,16 +128,35 @@ assert.equal(invitedCohort.redeemed, 1);
 assert.equal(invitedCohort.onboarded, 0);
 assert.equal(invitedCohort.activationRate, 0);
 
+const interventions = await fetch(`${baseUrl}/api/ops/interventions`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(interventions.status, 200);
+const interventionPayload = await interventions.json();
+const invitedRisk = interventionPayload.interventions.find((item) => item.userId === redeemPayload.userId);
+assert.ok(invitedRisk, "tester without progress must appear in intervention queue");
+assert.ok(invitedRisk.reasons.includes("NO_PROGRESS"));
+
+const testerDetail = await fetch(`${baseUrl}/api/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(testerDetail.status, 200);
+const testerPayload = await testerDetail.json();
+assert.equal(testerPayload.tester.cohortLabel, "Invited Tester");
+assert.equal(testerPayload.tester.sessionCount, 1);
+assert.equal(testerPayload.tester.evidenceCount, 0);
+
+const testerPage = await fetch(`${baseUrl}/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, redirect: "manual" });
+assert.equal(testerPage.status, 200);
+assert.match(await testerPage.text(), /Visão operacional mínima/);
+
 const controlCenter = await fetch(`${baseUrl}/ops`, { headers: { cookie: opsCookie }, redirect: "manual" });
 assert.equal(controlCenter.status, 200);
 const controlHtml = await controlCenter.text();
 assert.match(controlHtml, /Control Center/);
 assert.match(controlHtml, /Alpha Tester/);
 assert.match(controlHtml, /Cohort analytics/);
-assert.match(controlHtml, /Invited Tester/);
+assert.match(controlHtml, /Intervention queue/);
+assert.match(controlHtml, /NO_PROGRESS/);
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cookie }, cache: "no-store" });
 assert.equal(diagnostics.status, 200);
 assert.ok((await diagnostics.json()).diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center invite_create invite_redeem invite_one_time cohort_analytics private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
