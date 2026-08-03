@@ -41,6 +41,18 @@ export const OBSERVATION_EXERCISES = {
 
 export type ObservationExerciseKey = keyof typeof OBSERVATION_EXERCISES;
 
+export interface ObservationAttemptResult {
+  attemptId: string;
+  evidenceId: string;
+  skillKey: string;
+  correct: boolean;
+  correctIndex: number;
+  explanation: string;
+  masteryScore: number;
+  masteryLevel: string;
+  evidenceCount: number;
+}
+
 function isObservationKey(value: string): value is ObservationExerciseKey {
   return value in OBSERVATION_EXERCISES;
 }
@@ -58,7 +70,7 @@ export class DrizzleObservationRepository {
     }));
   }
 
-  async submitChoice(userId: string, exerciseKey: string, answerIndex: number, responseMs: number) {
+  async submitChoice(userId: string, exerciseKey: string, answerIndex: number, responseMs: number): Promise<ObservationAttemptResult> {
     if (!isObservationKey(exerciseKey)) throw new Error("OBSERVATION_EXERCISE_NOT_SUPPORTED");
     const config = OBSERVATION_EXERCISES[exerciseKey];
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= config.options.length) throw new Error("INVALID_OBSERVATION_ANSWER");
