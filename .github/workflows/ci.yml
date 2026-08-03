@@ -8,6 +8,22 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: simpleway_drawing
+          POSTGRES_USER: simpleway
+          POSTGRES_PASSWORD: simpleway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U simpleway -d simpleway_drawing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://simpleway:simpleway@127.0.0.1:5432/simpleway_drawing
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -18,10 +34,22 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm content:validate
       - run: pnpm test
+      - name: Generate database migration from current schema
+        run: pnpm db:generate
+      - name: Publish generated migration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: drizzle-migration
+          path: packages/database/drizzle
+          if-no-files-found: error
+          retention-days: 7
+      - name: Apply database migration to PostgreSQL service
+        run: pnpm db:migrate
+      - name: Verify database schema and transactional writes
+        run: pnpm --filter @swd/database verify:ci
       - name: Deployment environment contract
         env:
           NODE_ENV: production
-          DATABASE_URL: postgresql://closed_alpha:closed_alpha@db.example.internal:5432/simpleway_drawing
           AUTH_SECRET: ci-deploy-contract-secret-at-least-32-characters
           NEXT_PUBLIC_APP_URL: https://simpleway-drawing.example.com
           STORAGE_BUCKET: simpleway-drawing-ci

@@ -9,6 +9,7 @@
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
+    "verify:ci": "tsx src/verify-ci.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "@swd/config": "workspace:*",
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.31.0",
+    "tsx": "^4.20.5",
     "typescript": "^5.8.0"
   }
 }
