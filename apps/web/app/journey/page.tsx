@@ -22,15 +22,15 @@ export default async function JourneyPage() {
   }
 
   const db = getDatabase();
-  const entries = await db.select().from(journeyEntries).where(eq(journeyEntries.userId, userId)).orderBy(desc(journeyEntries.createdAt));
+  const entries = await db.select().from(journeyEntries).where(eq(journeyEntries.userId, userId)).orderBy(desc(journeyEntries.occurredAt));
   const items = await Promise.all(entries.map(async (entry) => {
-    if (entry.sourceType !== "ARTWORK") return { ...entry, imageUrl: null };
+    if (!entry.artworkId) return { ...entry, imageUrl: null };
     const [row] = await db
       .select({ storageKey: fileAssets.storageKey })
       .from(artworks)
       .innerJoin(artworkVersions, eq(artworkVersions.id, artworks.currentVersionId))
       .innerJoin(fileAssets, eq(fileAssets.id, artworkVersions.fileAssetId))
-      .where(eq(artworks.id, entry.sourceId))
+      .where(eq(artworks.id, entry.artworkId))
       .limit(1);
     return { ...entry, imageUrl: row ? await getStorage().createPrivateReadUrl(row.storageKey) : null };
   }));
@@ -42,14 +42,20 @@ export default async function JourneyPage() {
         <h1 className="flow-title">Sua evolução começa a ficar visível.</h1>
         <p className="lead compact">Cada marco importante registra o que você conseguiu fazer naquele momento.</p>
         <div className="journey-stack">
-          {items.map((item) => (
-            <article className="journey-item" key={item.id}>
-              {item.imageUrl ? <img src={item.imageUrl} alt="Drawing Zero privado" style={{ width: "100%", maxHeight: 520, objectFit: "contain", borderRadius: 16, marginBottom: 18 }} /> : null}
-              <p className="eyebrow">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.createdAt)}</p>
-              <h2>{item.title}</h2>
-              <p>{item.subtitle}</p>
-            </article>
-          ))}
+          {items.map((item) => {
+            const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata as Record<string, unknown> : {};
+            const description = item.type === "DRAWING_ZERO"
+              ? "Este é seu baseline privado. Mais adiante vamos comparar sua evolução com ele."
+              : typeof metadata.description === "string" ? metadata.description : "Marco registrado na sua jornada.";
+            return (
+              <article className="journey-item" key={item.id}>
+                {item.imageUrl ? <img src={item.imageUrl} alt="Artwork privada da jornada" style={{ width: "100%", maxHeight: 520, objectFit: "contain", borderRadius: 16, marginBottom: 18 }} /> : null}
+                <p className="eyebrow">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</p>
+                <h2>{item.title}</h2>
+                <p>{description}</p>
+              </article>
+            );
+          })}
           {items.length === 0 ? <p>Nenhum marco registrado ainda.</p> : null}
         </div>
         <div className="flow-actions"><Link className="secondary link-button" href="/">Voltar ao início</Link></div>
