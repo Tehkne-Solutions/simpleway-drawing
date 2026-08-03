@@ -63,15 +63,25 @@ export class DrizzleCohortAnalyticsRepository {
         )`,
         feedbackCount: sql<number>`(
           select count(*)::int
-          from alpha_invite_redemptions r
-          join system_outbox_events o on o.aggregate_id = r.user_id::text
-          where r.invite_id = ${alphaInvites.id} and o.event_type = 'alpha.feedback.submitted.v1'
+          from system_outbox_events o
+          where o.aggregate_type = 'USER'
+            and o.event_type = 'alpha.feedback.submitted.v1'
+            and exists (
+              select 1
+              from alpha_invite_redemptions r
+              where r.invite_id = ${alphaInvites.id} and r.user_id::text = o.aggregate_id
+            )
         )`,
         averageRating: sql<string | null>`(
           select round(avg((o.payload->>'rating')::numeric), 2)::text
-          from alpha_invite_redemptions r
-          join system_outbox_events o on o.aggregate_id = r.user_id::text
-          where r.invite_id = ${alphaInvites.id} and o.event_type = 'alpha.feedback.submitted.v1'
+          from system_outbox_events o
+          where o.aggregate_type = 'USER'
+            and o.event_type = 'alpha.feedback.submitted.v1'
+            and exists (
+              select 1
+              from alpha_invite_redemptions r
+              where r.invite_id = ${alphaInvites.id} and r.user_id::text = o.aggregate_id
+            )
         )`,
       })
       .from(alphaInvites)
