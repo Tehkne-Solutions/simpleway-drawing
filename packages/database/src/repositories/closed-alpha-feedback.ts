@@ -19,9 +19,10 @@ export interface AlphaFeedbackRecord {
   message: string;
   path: string | null;
   createdAt: Date;
+  userId?: string;
 }
 
-function parsePayload(payload: unknown): Omit<AlphaFeedbackRecord, "id" | "createdAt"> | null {
+function parsePayload(payload: unknown): Omit<AlphaFeedbackRecord, "id" | "createdAt" | "userId"> | null {
   if (!payload || typeof payload !== "object") return null;
   const data = payload as Record<string, unknown>;
   if (typeof data.category !== "string" || typeof data.rating !== "number" || typeof data.message !== "string") return null;
@@ -69,6 +70,23 @@ export class DrizzleClosedAlphaFeedbackRepository {
     return rows.flatMap((row) => {
       const parsed = parsePayload(row.payload);
       return parsed ? [{ id: row.id, createdAt: row.createdAt, ...parsed }] : [];
+    });
+  }
+
+  async listAllRecent(limit = 25): Promise<AlphaFeedbackRecord[]> {
+    const rows = await this.db.select({
+      id: outboxEvents.id,
+      userId: outboxEvents.aggregateId,
+      payload: outboxEvents.payload,
+      createdAt: outboxEvents.createdAt,
+    }).from(outboxEvents)
+      .where(eq(outboxEvents.eventType, "alpha.feedback.submitted.v1"))
+      .orderBy(desc(outboxEvents.createdAt))
+      .limit(Math.max(1, Math.min(limit, 100)));
+
+    return rows.flatMap((row) => {
+      const parsed = parsePayload(row.payload);
+      return parsed ? [{ id: row.id, userId: row.userId, createdAt: row.createdAt, ...parsed }] : [];
     });
   }
 }
