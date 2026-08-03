@@ -5,6 +5,7 @@ import "./c1.css";
 import "./c2.css";
 import "./c3.css";
 import "./c4.css";
+import "./alpha.css";
 
 export const metadata: Metadata = {
   title: "SimpleWay Drawing",
