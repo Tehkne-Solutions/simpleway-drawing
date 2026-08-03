@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "../../../../server/logger";
 import { getFileServices } from "../../../../server/runtime";
 import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 import { requireSessionUserId } from "../../../../server/session";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     const security = securityErrorResponse(error);
     if (security) return NextResponse.json({ code: security.code }, { status: security.status });
     const code = error instanceof Error ? error.message : "UPLOAD_CONFIRM_FAILED";
+    logServerError("files.private_upload.confirm_failed", request, error);
     const status = code === "UNAUTHENTICATED" ? 401 : code.startsWith("FILE_") || code.startsWith("UPLOADED_") ? 400 : 500;
     return NextResponse.json({ code }, { status });
   }
