@@ -34,8 +34,10 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm content:validate
       - run: pnpm test
-      - name: Generate database migration from current schema
+      - name: Generate diagnostic migration from current schema
         run: pnpm db:generate
+      - name: Verify frozen baseline has no schema drift
+        run: pnpm --filter @swd/database verify:migration-baseline
       - name: Publish generated migration artifact
         uses: actions/upload-artifact@v4
         with:
@@ -43,7 +45,9 @@ jobs:
           path: packages/database/drizzle
           if-no-files-found: error
           retention-days: 7
-      - name: Apply database migration to PostgreSQL service
+      - name: Apply versioned migrations to PostgreSQL service
+        run: pnpm db:migrate
+      - name: Verify migration runner is idempotent
         run: pnpm db:migrate
       - name: Verify database schema and transactional writes
         run: pnpm --filter @swd/database verify:ci
