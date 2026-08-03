@@ -1,0 +1,16 @@
+key: cycle.swd.c4
+version: 1
+stageKey: stage.swd.foundation
+title:
+  pt-BR: Form · Thinking in 3D
+transformation:
+  pt-BR: Eu consigo construir volumes coerentes e imaginar formas girando no espaço antes de refinar detalhes.
+unitKeys:
+  - unit.swd.c4.volume_mindset
+  - unit.swd.c4.boxes
+  - unit.swd.c4.cylinders
+  - unit.swd.c4.ellipses_space
+  - unit.swd.c4.cross_contours
+  - unit.swd.c4.rotation
+  - unit.swd.c4.form_combination
+  - unit.swd.c4.self_check

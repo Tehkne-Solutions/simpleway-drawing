@@ -9,3 +9,4 @@ export * from "./repositories/gym";
 export * from "./repositories/artworks";
 export * from "./repositories/observation";
 export * from "./repositories/construction";
+export * from "./repositories/form";

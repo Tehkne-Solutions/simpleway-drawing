@@ -4,6 +4,7 @@ import { parse } from "yaml";
 import { C0_LESSONS, C1_LESSONS, cycleSchema, lessonSchema, skillSchema, type LessonDefinition } from "./index.js";
 import { C2_LESSONS } from "./c2-runtime.js";
 import { C3_LESSONS } from "./c3-runtime.js";
+import { C4_LESSONS } from "./c4-runtime.js";
 
 const root = resolve(process.cwd(), "../../content/drawing");
 const supportedPracticeExercises = new Set([
@@ -19,6 +20,11 @@ const supportedPracticeExercises = new Set([
   "exercise.swd.construction.envelope",
   "exercise.swd.construction.silhouette",
   "exercise.swd.construction.overlap",
+  "exercise.swd.form.box_orientation",
+  "exercise.swd.form.cylinder_axis",
+  "exercise.swd.form.ellipse_plane",
+  "exercise.swd.form.cross_contour",
+  "exercise.swd.form.mental_rotation",
 ]);
 
 async function readYaml(path: string): Promise<unknown> {
@@ -51,6 +57,7 @@ async function main(): Promise<void> {
     readYaml("skills/motor.yaml"),
     readYaml("skills/perception.yaml"),
     readYaml("skills/shape.yaml"),
+    readYaml("skills/form.yaml"),
   ]);
   const skills = skillGroups.flatMap((group) => skillSchema.array().parse(group));
   const cycles = await Promise.all([
@@ -58,6 +65,7 @@ async function main(): Promise<void> {
     readYaml("foundation/c1/cycle.yaml"),
     readYaml("foundation/c2/cycle.yaml"),
     readYaml("foundation/c3/cycle.yaml"),
+    readYaml("foundation/c4/cycle.yaml"),
   ]).then((items) => items.map((item) => cycleSchema.parse(item)));
 
   const skillKeys = new Set<string>();
@@ -69,15 +77,16 @@ async function main(): Promise<void> {
   for (const required of [
     "skill.drawing.motor.line_control",
     "skill.drawing.perception.proportion",
-    "skill.drawing.perception.angle",
     "skill.drawing.shape.decomposition",
-    "skill.drawing.shape.envelope",
+    "skill.drawing.form.box",
+    "skill.drawing.form.cylinder",
+    "skill.drawing.spatial.mental_rotation",
   ]) {
     if (!skillKeys.has(required)) throw new Error(`REQUIRED_SKILL_MISSING:${required}`);
   }
 
   const lessonKeys = new Set<string>();
-  const lessonsByCycle = [C0_LESSONS, C1_LESSONS, C2_LESSONS, C3_LESSONS];
+  const lessonsByCycle = [C0_LESSONS, C1_LESSONS, C2_LESSONS, C3_LESSONS, C4_LESSONS];
   const unitCounts = cycles.map((cycle, index) => validateCycleLessons(cycle, lessonsByCycle[index] ?? [], `C${index}`, lessonKeys));
   const lessonCount = lessonsByCycle.reduce((sum, lessons) => sum + lessons.length, 0);
 

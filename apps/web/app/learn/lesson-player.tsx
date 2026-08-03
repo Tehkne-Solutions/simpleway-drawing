@@ -12,10 +12,11 @@ function text(value: Record<string, string>): string {
 function practiceHref(exerciseKey: string): string {
   if (exerciseKey.startsWith("exercise.swd.observation.")) return `/observation?exercise=${encodeURIComponent(exerciseKey)}`;
   if (exerciseKey.startsWith("exercise.swd.construction.")) return `/construction?exercise=${encodeURIComponent(exerciseKey)}`;
+  if (exerciseKey.startsWith("exercise.swd.form.")) return `/form?exercise=${encodeURIComponent(exerciseKey)}`;
   return `/gym?exercise=${encodeURIComponent(exerciseKey)}`;
 }
 
-export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey }: { lesson: LessonDefinition; cycleSlug: "c0" | "c1" | "c2" | "c3"; nextLessonKey: string | null }) {
+export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey }: { lesson: LessonDefinition; cycleSlug: "c0" | "c1" | "c2" | "c3" | "c4"; nextLessonKey: string | null }) {
   const router = useRouter();
   const [reflection, setReflection] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);

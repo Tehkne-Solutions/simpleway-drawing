@@ -1,0 +1,69 @@
+- key: skill.drawing.form.volume_read
+  version: 1
+  domain: form
+  type: STRUCTURAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Leitura de volume
+
+- key: skill.drawing.form.box
+  version: 1
+  domain: form
+  type: STRUCTURAL
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Caixa em volume
+
+- key: skill.drawing.form.cylinder
+  version: 1
+  domain: form
+  type: STRUCTURAL
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Cilindro
+
+- key: skill.drawing.form.ellipse_space
+  version: 1
+  domain: form
+  type: STRUCTURAL
+  retentionMode: MAINTENANCE
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Elipse no espaço
+
+- key: skill.drawing.form.cross_contour
+  version: 1
+  domain: form
+  type: STRUCTURAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Cross-contour
+
+- key: skill.drawing.spatial.mental_rotation
+  version: 1
+  domain: spatial
+  type: SPATIAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Rotação mental
+
+- key: skill.drawing.form.combination
+  version: 1
+  domain: form
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Combinação de formas
