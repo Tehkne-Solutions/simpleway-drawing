@@ -10,6 +10,7 @@ const navigation = [
   ["Create", "/create"],
   ["Journey", "/journey"],
   ["Alpha", "/alpha"],
+  ["Diagnostics", "/diagnostics"],
 ] as const;
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {

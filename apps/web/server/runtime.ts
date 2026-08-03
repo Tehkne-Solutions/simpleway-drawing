@@ -2,6 +2,7 @@ import {
   createDatabase,
   DrizzleAlphaRepository,
   DrizzleArtworkRepository,
+  DrizzleClosedAlphaRepository,
   DrizzleConstructionRepository,
   DrizzleDrawingZeroRepository,
   DrizzleFileAssetRepository,
@@ -48,34 +49,12 @@ export function getFileServices(): { prepare: PreparePrivateUpload; confirm: Con
   };
 }
 
-export function getDrawingZeroRepository(): DrizzleDrawingZeroRepository {
-  return new DrizzleDrawingZeroRepository(getDatabase());
-}
-
-export function getLearningProgressRepository(): DrizzleLearningProgressRepository {
-  return new DrizzleLearningProgressRepository(getDatabase());
-}
-
-export function getGymRepository(): DrizzleGymRepository {
-  return new DrizzleGymRepository(getDatabase());
-}
-
-export function getObservationRepository(): DrizzleObservationRepository {
-  return new DrizzleObservationRepository(getDatabase());
-}
-
-export function getConstructionRepository(): DrizzleConstructionRepository {
-  return new DrizzleConstructionRepository(getDatabase());
-}
-
-export function getFormRepository(): DrizzleFormRepository {
-  return new DrizzleFormRepository(getDatabase());
-}
-
-export function getArtworkRepository(): DrizzleArtworkRepository {
-  return new DrizzleArtworkRepository(getDatabase());
-}
-
-export function getAlphaRepository(): DrizzleAlphaRepository {
-  return new DrizzleAlphaRepository(getDatabase());
-}
+export function getDrawingZeroRepository(): DrizzleDrawingZeroRepository { return new DrizzleDrawingZeroRepository(getDatabase()); }
+export function getLearningProgressRepository(): DrizzleLearningProgressRepository { return new DrizzleLearningProgressRepository(getDatabase()); }
+export function getGymRepository(): DrizzleGymRepository { return new DrizzleGymRepository(getDatabase()); }
+export function getObservationRepository(): DrizzleObservationRepository { return new DrizzleObservationRepository(getDatabase()); }
+export function getConstructionRepository(): DrizzleConstructionRepository { return new DrizzleConstructionRepository(getDatabase()); }
+export function getFormRepository(): DrizzleFormRepository { return new DrizzleFormRepository(getDatabase()); }
+export function getArtworkRepository(): DrizzleArtworkRepository { return new DrizzleArtworkRepository(getDatabase()); }
+export function getAlphaRepository(): DrizzleAlphaRepository { return new DrizzleAlphaRepository(getDatabase()); }
+export function getClosedAlphaRepository(): DrizzleClosedAlphaRepository { return new DrizzleClosedAlphaRepository(getDatabase()); }
