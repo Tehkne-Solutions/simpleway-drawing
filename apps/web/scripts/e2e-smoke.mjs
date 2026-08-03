@@ -5,6 +5,12 @@ const opsToken = process.env.ALPHA_OPS_TOKEN;
 const consentVersion = "closed-alpha-v1";
 assert.ok(opsToken, "ALPHA_OPS_TOKEN is required for E2E operations smoke");
 
+async function assertHttp(response, expectedStatus, label) {
+  if (response.status !== expectedStatus) {
+    throw new Error(`${label} failed: ${response.status} ${await response.text()}`);
+  }
+}
+
 async function waitForHealth() {
   let lastError;
   for (let attempt = 0; attempt < 40; attempt += 1) {
@@ -75,7 +81,7 @@ const prepareUpload = await fetch(`${baseUrl}/api/files/private-upload`, {
   headers: { cookie, "content-type": "application/json" },
   body: JSON.stringify({ mimeType: "image/png", byteSize: png.byteLength }),
 });
-assert.equal(prepareUpload.status, 201, `prepare upload failed: ${await prepareUpload.text()}`);
+await assertHttp(prepareUpload, 201, "prepare upload");
 const uploadIntent = await prepareUpload.json();
 assert.match(uploadIntent.fileAssetId, /^[0-9a-f-]{36}$/i);
 assert.match(uploadIntent.storageKey, new RegExp(`^private/${guestPayload.userId}/artwork/`));
@@ -89,14 +95,14 @@ const directUpload = await fetch(uploadIntent.uploadUrl, {
   },
   body: png,
 });
-assert.equal(directUpload.status, 200, `presigned app upload failed: ${directUpload.status} ${await directUpload.text()}`);
+await assertHttp(directUpload, 200, "presigned app upload");
 
 const confirmUpload = await fetch(`${baseUrl}/api/files/confirm`, {
   method: "POST",
   headers: { cookie, "content-type": "application/json" },
   body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId }),
 });
-assert.equal(confirmUpload.status, 200, `confirm upload failed: ${await confirmUpload.text()}`);
+await assertHttp(confirmUpload, 200, "confirm upload");
 assert.equal((await confirmUpload.json()).ready, true);
 
 const blockedDrawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
@@ -112,7 +118,7 @@ const drawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
   headers: { cookie, "content-type": "application/json" },
   body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
 });
-assert.equal(drawingZero.status, 201, `Drawing Zero failed: ${await drawingZero.text()}`);
+await assertHttp(drawingZero, 201, "Drawing Zero");
 const drawingZeroPayload = await drawingZero.json();
 assert.match(drawingZeroPayload.artworkId, /^[0-9a-f-]{36}$/i);
 assert.equal(drawingZeroPayload.baselineOnly, true);
