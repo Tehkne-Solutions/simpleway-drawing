@@ -46,23 +46,28 @@ export default async function JourneyPage() {
             const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata as Record<string, unknown> : {};
             const description = item.type === "DRAWING_ZERO"
               ? "Este é seu baseline privado. Mais adiante vamos comparar sua evolução com ele."
-              : typeof metadata.transformation === "string"
-                ? metadata.transformation
-                : typeof metadata.description === "string"
-                  ? metadata.description
-                  : "Marco registrado na sua jornada.";
+              : item.type === "ARTWORK_VERSION"
+                ? `Uma nova versão foi preservada no processo${typeof metadata.versionNumber === "number" ? ` · v${metadata.versionNumber}` : ""}.`
+                : item.type === "ARTWORK_CREATED"
+                  ? "Uma criação entrou no seu corpo de trabalho e permanece privada por padrão."
+                  : typeof metadata.transformation === "string"
+                    ? metadata.transformation
+                    : typeof metadata.description === "string"
+                      ? metadata.description
+                      : "Marco registrado na sua jornada.";
             return (
               <article className="journey-item" key={item.id}>
                 {item.imageUrl ? <img src={item.imageUrl} alt="Artwork privada da jornada" style={{ width: "100%", maxHeight: 520, objectFit: "contain", borderRadius: 16, marginBottom: 18 }} /> : null}
                 <p className="eyebrow">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</p>
                 <h2>{item.title}</h2>
                 <p>{description}</p>
+                {item.artworkId ? <Link href={`/create/${item.artworkId}`} className="journey-art-link">Abrir histórico da criação →</Link> : null}
               </article>
             );
           })}
           {items.length === 0 ? <p>Nenhum marco registrado ainda.</p> : null}
         </div>
-        <div className="flow-actions"><Link className="secondary link-button" href="/">Voltar ao início</Link></div>
+        <div className="flow-actions split-actions"><Link className="secondary link-button" href="/">Voltar ao início</Link><Link className="primary link-button" href="/create">Criar agora</Link></div>
       </section>
     </main>
   );
