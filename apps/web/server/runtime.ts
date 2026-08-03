@@ -5,6 +5,7 @@ import {
   DrizzleFileAssetRepository,
   DrizzleGymRepository,
   DrizzleLearningProgressRepository,
+  DrizzleObservationRepository,
   type Database,
 } from "@swd/database";
 import { ConfirmPrivateUpload, PreparePrivateUpload } from "@swd/domain";
@@ -54,6 +55,10 @@ export function getLearningProgressRepository(): DrizzleLearningProgressReposito
 
 export function getGymRepository(): DrizzleGymRepository {
   return new DrizzleGymRepository(getDatabase());
+}
+
+export function getObservationRepository(): DrizzleObservationRepository {
+  return new DrizzleObservationRepository(getDatabase());
 }
 
 export function getArtworkRepository(): DrizzleArtworkRepository {
