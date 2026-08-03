@@ -8,6 +8,7 @@ export const C0_CYCLE_KEY = "cycle.swd.c0";
 export const C1_CYCLE_KEY = "cycle.swd.c1";
 export const C2_CYCLE_KEY = "cycle.swd.c2";
 export const C3_CYCLE_KEY = "cycle.swd.c3";
+export const C4_CYCLE_KEY = "cycle.swd.c4";
 
 export const C0_LESSON_KEYS = [
   "lesson.swd.c0.what_drawing_is", "lesson.swd.c0.hnk_loop", "lesson.swd.c0.drawing_zero", "lesson.swd.c0.intentional_marks", "lesson.swd.c0.seeing_before_naming", "lesson.swd.c0.simple_construction", "lesson.swd.c0.first_correction",
@@ -21,6 +22,9 @@ export const C2_LESSON_KEYS = [
 export const C3_LESSON_KEYS = [
   "lesson.swd.c3.primitives", "lesson.swd.c3.decomposition", "lesson.swd.c3.envelope", "lesson.swd.c3.silhouette", "lesson.swd.c3.relationships", "lesson.swd.c3.overlap", "lesson.swd.c3.applied_construction",
 ] as const;
+export const C4_LESSON_KEYS = [
+  "lesson.swd.c4.volume_mindset", "lesson.swd.c4.boxes", "lesson.swd.c4.cylinders", "lesson.swd.c4.ellipses_space", "lesson.swd.c4.cross_contours", "lesson.swd.c4.rotation", "lesson.swd.c4.form_combination", "lesson.swd.c4.self_check",
+] as const;
 
 type CycleConfig = { cycleKey: string; lessonKeys: readonly string[]; prerequisiteCycleKey: string | null; title: string; transformation: string };
 const CYCLES: CycleConfig[] = [
@@ -28,6 +32,7 @@ const CYCLES: CycleConfig[] = [
   { cycleKey: C1_CYCLE_KEY, lessonKeys: C1_LESSON_KEYS, prerequisiteCycleKey: C0_CYCLE_KEY, title: "C1 · Control concluído", transformation: "Eu consigo planejar e executar um traço com mais intenção e consistência." },
   { cycleKey: C2_CYCLE_KEY, lessonKeys: C2_LESSON_KEYS, prerequisiteCycleKey: C1_CYCLE_KEY, title: "C2 · Learn to See concluído", transformation: "Eu consigo observar relações visuais antes de desenhar." },
   { cycleKey: C3_CYCLE_KEY, lessonKeys: C3_LESSON_KEYS, prerequisiteCycleKey: C2_CYCLE_KEY, title: "C3 · Shape Language concluído", transformation: "Eu consigo decompor referências em formas simples e relações estruturais antes do detalhe." },
+  { cycleKey: C4_CYCLE_KEY, lessonKeys: C4_LESSON_KEYS, prerequisiteCycleKey: C3_CYCLE_KEY, title: "C4 · Form concluído", transformation: "Eu consigo construir volumes coerentes e imaginar formas girando no espaço." },
 ];
 
 function cycleForLesson(lessonKey: string): CycleConfig | null {
