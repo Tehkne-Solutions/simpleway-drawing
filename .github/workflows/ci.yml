@@ -18,6 +18,17 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm content:validate
       - run: pnpm test
+      - name: Deployment environment contract
+        env:
+          NODE_ENV: production
+          DATABASE_URL: postgresql://closed_alpha:closed_alpha@db.example.internal:5432/simpleway_drawing
+          AUTH_SECRET: ci-deploy-contract-secret-at-least-32-characters
+          NEXT_PUBLIC_APP_URL: https://simpleway-drawing.example.com
+          STORAGE_BUCKET: simpleway-drawing-ci
+          STORAGE_REGION: auto
+          STORAGE_ACCESS_KEY: ci-access-key
+          STORAGE_SECRET_KEY: ci-secret-key
+        run: pnpm deploy:check
       - run: pnpm build
       - name: Production HTTP smoke
         env:
