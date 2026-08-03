@@ -6,6 +6,7 @@ import { journeyEntries } from "../schema/journey";
 
 export const C0_CYCLE_KEY = "cycle.swd.c0";
 export const C1_CYCLE_KEY = "cycle.swd.c1";
+export const C2_CYCLE_KEY = "cycle.swd.c2";
 
 export const C0_LESSON_KEYS = [
   "lesson.swd.c0.what_drawing_is",
@@ -26,6 +27,18 @@ export const C1_LESSON_KEYS = [
   "lesson.swd.c1.pressure_line_weight",
   "lesson.swd.c1.rhythm_confidence",
   "lesson.swd.c1.applied_line",
+] as const;
+
+export const C2_LESSON_KEYS = [
+  "lesson.swd.c2.symbols_vs_observation",
+  "lesson.swd.c2.size_proportion",
+  "lesson.swd.c2.angle_direction",
+  "lesson.swd.c2.position_alignment",
+  "lesson.swd.c2.negative_space",
+  "lesson.swd.c2.landmarks_envelope",
+  "lesson.swd.c2.measurement",
+  "lesson.swd.c2.visual_simplification",
+  "lesson.swd.c2.self_check",
 ] as const;
 
 type CycleConfig = {
@@ -50,6 +63,13 @@ const CYCLES: CycleConfig[] = [
     prerequisiteCycleKey: C0_CYCLE_KEY,
     title: "C1 · Control concluído",
     transformation: "Eu consigo planejar e executar um traço com mais intenção e consistência.",
+  },
+  {
+    cycleKey: C2_CYCLE_KEY,
+    lessonKeys: C2_LESSON_KEYS,
+    prerequisiteCycleKey: C1_CYCLE_KEY,
+    title: "C2 · Learn to See concluído",
+    transformation: "Eu consigo observar relações visuais antes de desenhar.",
   },
 ];
 
