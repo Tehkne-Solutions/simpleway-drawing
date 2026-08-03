@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "../../../../server/logger";
+import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 import { getGymRepository } from "../../../../server/runtime";
 import { requireSessionUserId } from "../../../../server/session";
 
@@ -15,8 +17,9 @@ function validMetric(value: unknown): value is number {
 
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     const userId = await requireSessionUserId();
-    const body = (await request.json()) as Body;
+    const body = await readJsonBody<Body>(request, 4_096);
     if (
       !validMetric(body.accuracy) || !validMetric(body.smoothness) ||
       !validMetric(body.durationMs) || !validMetric(body.pointCount) ||
@@ -32,9 +35,12 @@ export async function POST(request: Request) {
       durationMs: body.durationMs,
       pointCount: Math.round(body.pointCount),
     });
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "cache-control": "no-store" } });
   } catch (error) {
+    const security = securityErrorResponse(error);
+    if (security) return NextResponse.json({ code: security.code }, { status: security.status });
     const code = error instanceof Error ? error.message : "GYM_SUBMIT_FAILED";
-    return NextResponse.json({ code }, { status: code === "UNAUTHENTICATED" ? 401 : 500 });
+    if (code !== "UNAUTHENTICATED") logServerError("gym.intentional_line_failed", request, error);
+    return NextResponse.json({ code }, { status: code === "UNAUTHENTICATED" ? 401 : 500, headers: { "cache-control": "no-store" } });
   }
 }
