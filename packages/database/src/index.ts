@@ -16,3 +16,4 @@ export * from "./repositories/activation";
 export * from "./repositories/closed-alpha";
 export * from "./repositories/closed-alpha-feedback";
 export * from "./repositories/operations";
+export * from "./repositories/invitations";
