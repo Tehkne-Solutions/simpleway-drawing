@@ -2,7 +2,7 @@ import { profiles, users } from "@swd/database";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { logServerError } from "../../../../server/logger";
-import { getDatabase } from "../../../../server/runtime";
+import { getDatabase, getOperationsRepository } from "../../../../server/runtime";
 import { assertSameOrigin, securityErrorResponse } from "../../../../server/request-security";
 import { getSessionUserId, setSessionCookie } from "../../../../server/session";
 
@@ -10,7 +10,10 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const existing = await getSessionUserId();
-    if (existing) return NextResponse.json({ userId: existing });
+    if (existing) {
+      await getOperationsRepository().markSession(existing);
+      return NextResponse.json({ userId: existing });
+    }
 
     const id = randomUUID();
     const db = getDatabase();
@@ -19,6 +22,7 @@ export async function POST(request: Request) {
       await tx.insert(profiles).values({ userId: id, displayName: "Artista em formação" });
     });
 
+    await getOperationsRepository().markSession(id);
     await setSessionCookie(id);
     return NextResponse.json({ userId: id }, { status: 201 });
   } catch (error) {
