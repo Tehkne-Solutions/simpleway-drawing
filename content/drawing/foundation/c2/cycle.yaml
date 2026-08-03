@@ -1,0 +1,17 @@
+key: cycle.swd.c2
+version: 1
+stageKey: stage.swd.awaken
+title:
+  pt-BR: Learn to See
+transformation:
+  pt-BR: Eu consigo observar relações visuais antes de desenhar.
+unitKeys:
+  - unit.swd.c2.symbols_observation
+  - unit.swd.c2.size_proportion
+  - unit.swd.c2.angles_direction
+  - unit.swd.c2.position_alignment
+  - unit.swd.c2.negative_space
+  - unit.swd.c2.landmarks_envelope
+  - unit.swd.c2.measurement
+  - unit.swd.c2.simplification
+  - unit.swd.c2.self_check
