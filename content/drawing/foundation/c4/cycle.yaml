@@ -1,0 +1,13 @@
+key: cycle.swd.c4
+version: 1
+title:
+  pt-BR: Form · Thinking in 3D
+unitKeys:
+  - unit.swd.c4.volume_mindset
+  - unit.swd.c4.boxes
+  - unit.swd.c4.cylinders
+  - unit.swd.c4.ellipses_space
+  - unit.swd.c4.cross_contours
+  - unit.swd.c4.rotation
+  - unit.swd.c4.form_combination
+  - unit.swd.c4.self_check
