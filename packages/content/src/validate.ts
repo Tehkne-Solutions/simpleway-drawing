@@ -18,15 +18,21 @@ async function main(): Promise<void> {
   lessonSchema.array().parse(C0_LESSONS);
 
   const keys = new Set<string>();
+  const coveredUnits = new Set<string>();
   for (const lesson of C0_LESSONS) {
     if (keys.has(lesson.key)) throw new Error(`DUPLICATE_LESSON_KEY:${lesson.key}`);
     keys.add(lesson.key);
     if (!parsedCycle.unitKeys.includes(lesson.unitKey)) {
       throw new Error(`LESSON_UNIT_NOT_IN_CYCLE:${lesson.key}:${lesson.unitKey}`);
     }
+    coveredUnits.add(lesson.unitKey);
   }
 
-  console.info(`Content validation PASS · ${C0_LESSONS.length} C0 lessons`);
+  for (const unitKey of parsedCycle.unitKeys) {
+    if (!coveredUnits.has(unitKey)) throw new Error(`C0_UNIT_WITHOUT_LESSON:${unitKey}`);
+  }
+
+  console.info(`Content validation PASS · ${C0_LESSONS.length} C0 lessons · ${coveredUnits.size} units covered`);
 }
 
 main().catch((error: unknown) => {
