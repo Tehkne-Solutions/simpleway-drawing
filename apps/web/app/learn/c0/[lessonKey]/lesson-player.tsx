@@ -33,6 +33,10 @@ export function LessonPlayer({ lesson, nextLessonKey }: { lesson: LessonDefiniti
           router.push("/drawing-zero");
           return;
         }
+        if (result.code === "LESSON_PREREQUISITES_REQUIRED") {
+          router.push("/learn");
+          return;
+        }
         throw new Error(result.code ?? "Não foi possível salvar seu progresso.");
       }
       router.push(nextLessonKey ? `/learn/c0/${encodeURIComponent(nextLessonKey)}` : "/learn");
