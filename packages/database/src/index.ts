@@ -7,3 +7,4 @@ export * from "./repositories/file-assets";
 export * from "./repositories/learning-progress";
 export * from "./repositories/gym";
 export * from "./repositories/artworks";
+export * from "./repositories/observation";
