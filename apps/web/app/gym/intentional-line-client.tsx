@@ -146,12 +146,16 @@ export function IntentionalLineClient() {
             <span>Line Control</span>
             <strong>{result.masteryLevel}</strong>
             <span>{Math.round(result.masteryScore * 100)}% mastery · {result.evidenceCount} evidência(s)</span>
+            <Link href="/skills" className="coach-profile-link">Ver Skill Profile</Link>
           </div>
         </section>
       ) : null}
 
       <div className="flow-actions split-actions">
-        <Link className="secondary link-button" href="/learn">Voltar ao Learn</Link>
+        <div className="flow-actions-inline">
+          <Link className="secondary link-button" href="/learn">Voltar ao Learn</Link>
+          <Link className="secondary link-button" href="/skills">Skill Profile</Link>
+        </div>
         <button className="primary" type="button" onClick={reset} disabled={status === "saving"}>Nova tentativa</button>
       </div>
     </div>
