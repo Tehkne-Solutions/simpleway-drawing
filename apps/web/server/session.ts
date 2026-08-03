@@ -1,12 +1,18 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
-const COOKIE_NAME = "swd_session";
+const DEV_COOKIE_NAME = "swd_session";
+const PROD_COOKIE_NAME = "__Host-swd_session";
 const MAX_AGE = 60 * 60 * 24 * 30;
+
+function cookieName(): string {
+  return process.env.NODE_ENV === "production" ? PROD_COOKIE_NAME : DEV_COOKIE_NAME;
+}
 
 function secret(): string {
   const value = process.env.AUTH_SECRET;
   if (!value) throw new Error("AUTH_SECRET_REQUIRED");
+  if (process.env.NODE_ENV === "production" && value.length < 32) throw new Error("AUTH_SECRET_TOO_WEAK");
   return value;
 }
 
@@ -34,18 +40,19 @@ export function verifySessionToken(token: string): string | null {
 
 export async function setSessionCookie(userId: string): Promise<void> {
   const store = await cookies();
-  store.set(COOKIE_NAME, createSessionToken(userId), {
+  store.set(cookieName(), createSessionToken(userId), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: MAX_AGE,
+    priority: "high",
   });
 }
 
 export async function getSessionUserId(): Promise<string | null> {
   const store = await cookies();
-  const token = store.get(COOKIE_NAME)?.value;
+  const token = store.get(cookieName())?.value;
   return token ? verifySessionToken(token) : null;
 }
 

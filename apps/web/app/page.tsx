@@ -40,8 +40,6 @@ export default async function HomePage() {
           <Link href={href} className="card home-card-link" key={title}><h2>{title}</h2><p>{description}</p></Link>
         ))}
       </section>
-
-      <footer>Tehkné Solutions</footer>
     </main>
   );
 }

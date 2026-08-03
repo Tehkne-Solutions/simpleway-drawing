@@ -6,6 +6,8 @@ import "./c2.css";
 import "./c3.css";
 import "./c4.css";
 import "./alpha.css";
+import "./shell.css";
+import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
   title: "SimpleWay Drawing",
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><AppShell>{children}</AppShell></body>
     </html>
   );
 }

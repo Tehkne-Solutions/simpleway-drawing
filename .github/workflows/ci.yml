@@ -19,3 +19,12 @@ jobs:
       - run: pnpm content:validate
       - run: pnpm test
       - run: pnpm build
+      - name: Production HTTP smoke
+        env:
+          E2E_BASE_URL: http://127.0.0.1:3100
+          AUTH_SECRET: ci-smoke-secret-at-least-32-characters-long
+        run: |
+          pnpm --filter @swd/web exec next start -p 3100 > /tmp/simpleway-drawing-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'STATUS=$?; if [ $STATUS -ne 0 ]; then cat /tmp/simpleway-drawing-next.log || true; fi; kill $SERVER_PID 2>/dev/null || true; exit $STATUS' EXIT
+          pnpm --filter @swd/web e2e:smoke
