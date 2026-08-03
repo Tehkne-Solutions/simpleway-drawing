@@ -1,4 +1,5 @@
 import { OnboardingClient } from "./onboarding-client";
+import "./onboarding.css";
 
 export default function OnboardingPage() {
   return (
