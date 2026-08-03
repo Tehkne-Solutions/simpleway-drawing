@@ -24,6 +24,11 @@ assert.ok(health.headers.get("x-request-id"));
 const healthPayload = await health.json();
 assert.equal(healthPayload.status, "ok");
 
+const ready = await fetch(`${baseUrl}/api/ready`, { cache: "no-store" });
+assert.equal(ready.status, 200);
+const readyPayload = await ready.json();
+assert.equal(readyPayload.status, "ready");
+
 const blocked = await fetch(`${baseUrl}/api/session/guest`, {
   method: "POST",
   headers: { origin: "https://malicious.example" },
@@ -33,4 +38,24 @@ const blockedPayload = await blocked.json();
 assert.equal(blockedPayload.code, "CROSS_ORIGIN_REQUEST_BLOCKED");
 assert.ok(blocked.headers.get("x-request-id"));
 
-console.log("E2E_SMOKE=PASS health security_headers request_id csrf_guard");
+const guest = await fetch(`${baseUrl}/api/session/guest`, {
+  method: "POST",
+  headers: { origin: baseUrl },
+});
+assert.equal(guest.status, 201);
+const guestPayload = await guest.json();
+assert.match(guestPayload.userId, /^[0-9a-f-]{36}$/i);
+
+const setCookie = guest.headers.get("set-cookie");
+assert.ok(setCookie, "guest session must set a cookie");
+const cookie = setCookie.split(";", 1)[0];
+
+const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, {
+  headers: { cookie },
+  cache: "no-store",
+});
+assert.equal(diagnostics.status, 200);
+const diagnosticsPayload = await diagnostics.json();
+assert.ok(diagnosticsPayload.diagnostics);
+
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session private_diagnostics");
