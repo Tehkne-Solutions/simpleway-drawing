@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       ownerUserId: userId,
       mimeType: body.mimeType as SupportedArtworkMimeType,
       byteSize: body.byteSize,
-      purpose: "ARTWORK_PRIVATE_UPLOAD",
+      purpose: "ARTWORK",
     });
     return NextResponse.json(intent, { status: 201 });
   } catch (error) {
