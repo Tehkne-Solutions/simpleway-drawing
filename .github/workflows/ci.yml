@@ -74,6 +74,7 @@ jobs:
           STORAGE_REGION: us-east-1
           STORAGE_ACCESS_KEY: simpleway
           STORAGE_SECRET_KEY: simpleway-storage-secret
+          STORAGE_KEEP_BUCKET: "1"
         run: pnpm --filter @swd/storage verify:ci
       - name: Deployment environment contract
         env:
@@ -92,6 +93,11 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:3100
           AUTH_SECRET: ci-smoke-secret-at-least-32-characters-long
           ALPHA_OPS_TOKEN: ci-alpha-ops-token-at-least-32-characters-long
+          STORAGE_ENDPOINT: http://127.0.0.1:9000
+          STORAGE_BUCKET: simpleway-drawing-ci
+          STORAGE_REGION: us-east-1
+          STORAGE_ACCESS_KEY: simpleway
+          STORAGE_SECRET_KEY: simpleway-storage-secret
         run: |
           pnpm --filter @swd/web exec next start -p 3100 > /tmp/simpleway-drawing-next.log 2>&1 &
           SERVER_PID=$!
