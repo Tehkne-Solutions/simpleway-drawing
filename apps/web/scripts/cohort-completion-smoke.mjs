@@ -180,7 +180,7 @@ const testerDetailBeforeAnalytics = await fetch(`${baseUrl}/api/ops/testers/${re
 await assertHttp(testerDetailBeforeAnalytics, 200, "cohort tester feedback projection");
 const testerBeforeAnalytics = (await testerDetailBeforeAnalytics.json()).tester;
 assert.equal(testerBeforeAnalytics.cohortLabel, cohortLabel);
-assert.equal(testerBeforeAnalytics.lastStage, "COMPLETE");
+assert.equal(testerBeforeAnalytics.stage, "COMPLETE");
 assert.equal(testerBeforeAnalytics.feedbackCount, 1);
 assert.equal(testerBeforeAnalytics.averageRating, 5);
 
