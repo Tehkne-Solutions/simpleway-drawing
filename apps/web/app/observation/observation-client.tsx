@@ -44,6 +44,7 @@ export function ObservationClient({ exercises }: { exercises: Exercise[] }) {
   const progress = useMemo(() => `${index + 1} / ${exercises.length}`, [index, exercises.length]);
 
   if (!exercise) return <p>Nenhum exercício disponível.</p>;
+  const exerciseKey = exercise.key;
 
   async function submit() {
     if (selected == null || busy) return;
@@ -55,7 +56,7 @@ export function ObservationClient({ exercises }: { exercises: Exercise[] }) {
       const response = await fetch("/api/observation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ exerciseKey: exercise.key, answerIndex: selected, responseMs: performance.now() - startedAt.current }),
+        body: JSON.stringify({ exerciseKey, answerIndex: selected, responseMs: performance.now() - startedAt.current }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.code ?? "Não foi possível registrar a resposta.");
@@ -68,11 +69,8 @@ export function ObservationClient({ exercises }: { exercises: Exercise[] }) {
   }
 
   function next() {
-    if (index + 1 >= exercises.length) {
-      setIndex(0);
-    } else {
-      setIndex((current) => current + 1);
-    }
+    if (index + 1 >= exercises.length) setIndex(0);
+    else setIndex((current) => current + 1);
     setSelected(null);
     setResult(null);
     setError(null);
@@ -86,7 +84,7 @@ export function ObservationClient({ exercises }: { exercises: Exercise[] }) {
         <span>{progress}</span>
       </div>
       <p className="lead compact">{exercise.prompt}</p>
-      <VisualPrompt exerciseKey={exercise.key} />
+      <VisualPrompt exerciseKey={exerciseKey} />
 
       <div className="observation-options">
         {exercise.options.map((option, optionIndex) => {
