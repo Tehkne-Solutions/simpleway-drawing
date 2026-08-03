@@ -36,6 +36,13 @@ jobs:
       - run: pnpm test
       - name: Generate database migration from current schema
         run: pnpm db:generate
+      - name: Publish generated migration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: drizzle-migration
+          path: packages/database/drizzle
+          if-no-files-found: error
+          retention-days: 7
       - name: Apply database migration to PostgreSQL service
         run: pnpm db:migrate
       - name: Verify database schema and transactional writes
