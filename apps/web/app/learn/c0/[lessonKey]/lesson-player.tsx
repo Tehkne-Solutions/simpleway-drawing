@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+function text(value: Record<string, string>): string {
+  return value["pt-BR"] ?? Object.values(value)[0] ?? "";
+}
+
 export function LessonPlayer({ lesson, nextLessonKey }: { lesson: LessonDefinition; nextLessonKey: string | null }) {
   const router = useRouter();
   const [reflection, setReflection] = useState<Record<string, string>>({});
@@ -43,15 +47,15 @@ export function LessonPlayer({ lesson, nextLessonKey }: { lesson: LessonDefiniti
   return (
     <div className="lesson-player">
       {lesson.blocks.map((block, index) => {
-        if (block.type === "HOOK") return <p className="lesson-hook" key={index}>{block.text["pt-BR"]}</p>;
-        if (block.type === "TEXT") return <section className="lesson-block" key={index}>{block.title ? <h2>{block.title["pt-BR"]}</h2> : null}<p>{block.text["pt-BR"]}</p></section>;
-        if (block.type === "DEMONSTRATION") return <section className="lesson-block" key={index}><h2>{block.title["pt-BR"]}</h2><ol className="demo-steps">{block.steps.map((step, stepIndex) => <li key={stepIndex}>{step["pt-BR"]}</li>)}</ol></section>;
-        if (block.type === "CHECKPOINT") return <aside className="lesson-checkpoint" key={index}>{block.text["pt-BR"]}</aside>;
+        if (block.type === "HOOK") return <p className="lesson-hook" key={index}>{text(block.text)}</p>;
+        if (block.type === "TEXT") return <section className="lesson-block" key={index}>{block.title ? <h2>{text(block.title)}</h2> : null}<p>{text(block.text)}</p></section>;
+        if (block.type === "DEMONSTRATION") return <section className="lesson-block" key={index}><h2>{text(block.title)}</h2><ol className="demo-steps">{block.steps.map((step, stepIndex) => <li key={stepIndex}>{text(step)}</li>)}</ol></section>;
+        if (block.type === "CHECKPOINT") return <aside className="lesson-checkpoint" key={index}>{text(block.text)}</aside>;
         if (block.type === "DRAWING_ZERO") return <section className="lesson-block lesson-action" key={index}><h2>Registre seu ponto de partida</h2><p>Seu Drawing Zero fica privado e não recebe nota. Ele existe para que você consiga enxergar sua evolução depois.</p><Link className="primary link-button" href="/drawing-zero">Fazer Drawing Zero</Link></section>;
         if (block.type === "REFLECTION") {
           const id = `reflection-${index}`;
-          return <fieldset className="lesson-reflection" key={index}><legend>{block.prompt["pt-BR"]}</legend>{block.options.map((option) => {
-            const value = option["pt-BR"];
+          return <fieldset className="lesson-reflection" key={index}><legend>{text(block.prompt)}</legend>{block.options.map((option) => {
+            const value = text(option);
             return <label key={value} className={reflection[id] === value ? "selected" : ""}><input type="radio" name={id} value={value} checked={reflection[id] === value} onChange={() => setReflection((current) => ({ ...current, [id]: value }))} /><span>{value}</span></label>;
           })}</fieldset>;
         }
