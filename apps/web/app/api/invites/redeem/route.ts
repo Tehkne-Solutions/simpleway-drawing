@@ -1,9 +1,10 @@
+import { ALPHA_CONSENT_VERSION } from "@swd/database";
 import { NextResponse } from "next/server";
 import { getInvitationRepository, getOperationsRepository } from "../../../../server/runtime";
 import { readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 import { getSessionUserId, setSessionCookie } from "../../../../server/session";
 
-type Input = { code?: string };
+type Input = { code?: string; consentAccepted?: boolean; consentVersion?: string };
 
 export async function POST(request: Request) {
   try {
@@ -12,8 +13,11 @@ export async function POST(request: Request) {
 
     const input = await readJsonBody<Input>(request, 4_096);
     if (!input.code) return NextResponse.json({ code: "INVITE_CODE_REQUIRED" }, { status: 400 });
+    if (input.consentAccepted !== true || input.consentVersion !== ALPHA_CONSENT_VERSION) {
+      return NextResponse.json({ code: "CONSENT_REQUIRED", consentVersion: ALPHA_CONSENT_VERSION }, { status: 400 });
+    }
 
-    const result = await getInvitationRepository().redeem(input.code);
+    const result = await getInvitationRepository().redeem(input.code, input.consentVersion);
     await setSessionCookie(result.userId);
     await getOperationsRepository().markSession(result.userId);
     return NextResponse.json({ userId: result.userId, inviteLabel: result.invite.label, next: "/onboarding" }, { status: 201 });
