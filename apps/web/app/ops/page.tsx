@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getClosedAlphaFeedbackRepository, getOperationsRepository } from "../../server/runtime";
 import { hasOpsSession } from "../../server/ops-session";
+import { InviteManager } from "./InviteManager";
 import { OpsLogoutButton } from "./OpsLogoutButton";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export default async function OpsPage() {
           <div>
             <p className="eyebrow">SimpleWay Drawing · Closed Alpha</p>
             <h1 className="flow-title">Control Center</h1>
-            <p className="lead compact">Visão operacional do funil, atividade e feedback dos testers.</p>
+            <p className="lead compact">Visão operacional do funil, atividade, convites e feedback dos testers.</p>
           </div>
           <OpsLogoutButton />
         </div>
@@ -46,6 +47,8 @@ export default async function OpsPage() {
             </article>
           ))}
         </section>
+
+        <InviteManager />
 
         <section style={{ marginTop: 36 }}>
           <p className="eyebrow">Funil de ativação</p>
