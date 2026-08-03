@@ -46,10 +46,14 @@ export class DrizzleCohortAnalyticsRepository {
           where r.invite_id = ${alphaInvites.id} and a.last_seen_at >= now() - interval '7 days'
         )`,
         evidenceUsers: sql<number>`(
-          select count(distinct e.user_id)::int
+          select count(*)::int
           from alpha_invite_redemptions r
-          join skill_evidence e on e.user_id = r.user_id
           where r.invite_id = ${alphaInvites.id}
+            and exists (
+              select 1
+              from learner_skill_states s
+              where s.user_id = r.user_id and s.evidence_count > 0
+            )
         )`,
         completed: sql<number>`(
           select count(*)::int
