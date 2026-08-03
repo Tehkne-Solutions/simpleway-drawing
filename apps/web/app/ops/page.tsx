@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getClosedAlphaFeedbackRepository, getCohortAnalyticsRepository, getOperationsRepository } from "../../server/runtime";
 import { hasOpsSession } from "../../server/ops-session";
@@ -11,10 +12,11 @@ const stageOrder = ["ONBOARDING", "DRAWING_ZERO", "FIRST_LESSON", "FIRST_PRACTIC
 export default async function OpsPage() {
   if (!(await hasOpsSession())) redirect("/ops/login");
 
-  const [overview, feedback, cohorts] = await Promise.all([
+  const [overview, feedback, cohorts, interventions] = await Promise.all([
     getOperationsRepository().getOverview(),
     getClosedAlphaFeedbackRepository().listAllRecent(20),
     getCohortAnalyticsRepository().list(50),
+    getOperationsRepository().getInterventionQueue(50),
   ]);
 
   const onboardingRate = overview.totalTesters > 0 ? Math.round((overview.onboardedTesters / overview.totalTesters) * 100) : 0;
@@ -28,7 +30,7 @@ export default async function OpsPage() {
           <div>
             <p className="eyebrow">SimpleWay Drawing · Closed Alpha</p>
             <h1 className="flow-title">Control Center</h1>
-            <p className="lead compact">Visão operacional do funil, cohorts, atividade, convites e feedback dos testers.</p>
+            <p className="lead compact">Visão operacional do funil, cohorts, atividade, suporte e feedback dos testers.</p>
           </div>
           <OpsLogoutButton />
         </div>
@@ -39,14 +41,27 @@ export default async function OpsPage() {
             ["Onboarded", `${overview.onboardedTesters} · ${onboardingRate}%`],
             ["Rastreados", overview.trackedTesters],
             ["Ativos 24h", `${overview.active24h} · ${activeRate}%`],
-            ["Feedbacks", feedback.length],
+            ["Precisam atenção", interventions.length],
             ["Nota média", averageRating],
-          ].map(([label, value]) => (
-            <article className="card" key={label} style={{ minHeight: 128 }}>
-              <p className="eyebrow">{label}</p>
-              <strong style={{ fontSize: 32 }}>{value}</strong>
-            </article>
-          ))}
+          ].map(([label, value]) => <article className="card" key={label} style={{ minHeight: 128 }}><p className="eyebrow">{label}</p><strong style={{ fontSize: 32 }}>{value}</strong></article>)}
+        </section>
+
+        <section style={{ marginTop: 36 }}>
+          <p className="eyebrow">Intervention queue</p>
+          <h2 style={{ marginTop: 6 }}>Testers que podem precisar de suporte</h2>
+          <p className="lead compact">Sinais explicáveis baseados em progresso, inatividade e feedback. Nenhum score comportamental oculto.</p>
+          <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+            {interventions.length === 0 ? <p>Nenhum tester exige atenção agora.</p> : interventions.map((item) => (
+              <article className="card" key={item.userId} style={{ minHeight: 0, display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+                <div>
+                  <p className="eyebrow">{item.priority} · {item.cohortLabel ?? "Sem cohort"}</p>
+                  <strong>{item.displayName ?? `Tester ${item.userId.slice(0, 8)}`}</strong>
+                  <p style={{ margin: "6px 0 0" }}>{item.reasons.join(" · ")} · etapa {item.stage ?? "não iniciada"}</p>
+                </div>
+                <Link className="secondary" href={`/ops/testers/${item.userId}`}>Ver tester</Link>
+              </article>
+            ))}
+          </div>
         </section>
 
         <InviteManager />
@@ -57,51 +72,16 @@ export default async function OpsPage() {
           <div style={{ overflowX: "auto", marginTop: 16 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 920 }}>
               <thead><tr><th align="left">Cohort</th><th align="right">Entraram</th><th align="right">Onboarding</th><th align="right">Ativos 7d</th><th align="right">Evidence</th><th align="right">Concluíram</th><th align="right">Feedback</th><th align="right">Nota</th></tr></thead>
-              <tbody>
-                {cohorts.length === 0 ? <tr><td colSpan={8} style={{ padding: "18px 0" }}>Nenhuma cohort criada ainda.</td></tr> : cohorts.map((cohort) => (
-                  <tr key={cohort.inviteId}>
-                    <td style={{ padding: "12px 0", borderTop: "1px solid #e5e5df" }}><strong>{cohort.label}</strong><br /><small>{cohort.status} · capacidade {cohort.maxUses}</small></td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.redeemed}</td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.onboarded} · {cohort.activationRate}%</td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.active7d}</td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.evidenceUsers}</td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.completed} · {cohort.completionRate}%</td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.feedbackCount}</td>
-                    <td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.averageRating ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
+              <tbody>{cohorts.length === 0 ? <tr><td colSpan={8} style={{ padding: "18px 0" }}>Nenhuma cohort criada ainda.</td></tr> : cohorts.map((cohort) => <tr key={cohort.inviteId}><td style={{ padding: "12px 0", borderTop: "1px solid #e5e5df" }}><strong>{cohort.label}</strong><br /><small>{cohort.status} · capacidade {cohort.maxUses}</small></td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.redeemed}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.onboarded} · {cohort.activationRate}%</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.active7d}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.evidenceUsers}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.completed} · {cohort.completionRate}%</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.feedbackCount}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{cohort.averageRating ?? "—"}</td></tr>)}</tbody>
             </table>
           </div>
         </section>
 
-        <section style={{ marginTop: 36 }}>
-          <p className="eyebrow">Funil de ativação</p>
-          <div style={{ display: "grid", gap: 10 }}>
-            {stageOrder.map((stage) => {
-              const count = overview.stages[stage] ?? 0;
-              const width = overview.trackedTesters > 0 ? Math.max(2, Math.round((count / overview.trackedTesters) * 100)) : 2;
-              return <div key={stage}><div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><strong>{stage}</strong><span>{count}</span></div><div className="learning-progress-track"><span style={{ width: `${width}%` }} /></div></div>;
-            })}
-          </div>
-        </section>
+        <section style={{ marginTop: 36 }}><p className="eyebrow">Funil de ativação</p><div style={{ display: "grid", gap: 10 }}>{stageOrder.map((stage) => { const count = overview.stages[stage] ?? 0; const width = overview.trackedTesters > 0 ? Math.max(2, Math.round((count / overview.trackedTesters) * 100)) : 2; return <div key={stage}><div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><strong>{stage}</strong><span>{count}</span></div><div className="learning-progress-track"><span style={{ width: `${width}%` }} /></div></div>; })}</div></section>
 
-        <section style={{ marginTop: 36 }}>
-          <p className="eyebrow">Atividade recente</p>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
-              <thead><tr><th align="left">Tester</th><th align="left">Etapa</th><th align="left">Última rota</th><th align="right">Heartbeats</th><th align="right">Última atividade</th></tr></thead>
-              <tbody>{overview.recent.map((item) => <tr key={item.userId}><td style={{ padding: "12px 0", borderTop: "1px solid #e5e5df" }}>{item.displayName ?? item.userId.slice(0, 8)}</td><td style={{ borderTop: "1px solid #e5e5df" }}>{item.stage ?? "—"}</td><td style={{ borderTop: "1px solid #e5e5df" }}>{item.path ?? "—"}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{item.heartbeatCount}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(item.lastSeenAt)}</td></tr>)}</tbody>
-            </table>
-          </div>
-        </section>
+        <section style={{ marginTop: 36 }}><p className="eyebrow">Atividade recente</p><div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}><thead><tr><th align="left">Tester</th><th align="left">Etapa</th><th align="left">Última rota</th><th align="right">Heartbeats</th><th align="right">Última atividade</th></tr></thead><tbody>{overview.recent.map((item) => <tr key={item.userId}><td style={{ padding: "12px 0", borderTop: "1px solid #e5e5df" }}>{item.displayName ?? item.userId.slice(0, 8)}</td><td style={{ borderTop: "1px solid #e5e5df" }}>{item.stage ?? "—"}</td><td style={{ borderTop: "1px solid #e5e5df" }}>{item.path ?? "—"}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{item.heartbeatCount}</td><td align="right" style={{ borderTop: "1px solid #e5e5df" }}>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(item.lastSeenAt)}</td></tr>)}</tbody></table></div></section>
 
-        <section style={{ marginTop: 36 }}>
-          <p className="eyebrow">Feedback recente</p>
-          <div style={{ display: "grid", gap: 12 }}>
-            {feedback.length === 0 ? <p>Nenhum feedback recebido ainda.</p> : feedback.map((item) => <article className="card" key={item.id} style={{ minHeight: 0 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}><strong>{item.category} · {item.rating}/5</strong><small>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(item.createdAt)}</small></div><p>{item.message}</p><small>{item.path ?? "sem rota"} · tester {item.userId?.slice(0, 8) ?? "—"}</small></article>)}
-          </div>
-        </section>
+        <section style={{ marginTop: 36 }}><p className="eyebrow">Feedback recente</p><div style={{ display: "grid", gap: 12 }}>{feedback.length === 0 ? <p>Nenhum feedback recebido ainda.</p> : feedback.map((item) => <article className="card" key={item.id} style={{ minHeight: 0 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}><strong>{item.category} · {item.rating}/5</strong><small>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(item.createdAt)}</small></div><p>{item.message}</p><small>{item.path ?? "sem rota"} · tester {item.userId?.slice(0, 8) ?? "—"}</small></article>)}</div></section>
       </section>
     </main>
   );
