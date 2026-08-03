@@ -51,6 +51,7 @@ jobs:
         env:
           NODE_ENV: production
           AUTH_SECRET: ci-deploy-contract-secret-at-least-32-characters
+          ALPHA_OPS_TOKEN: ci-alpha-ops-token-at-least-32-characters-long
           NEXT_PUBLIC_APP_URL: https://simpleway-drawing.example.com
           STORAGE_BUCKET: simpleway-drawing-ci
           STORAGE_REGION: auto
@@ -62,6 +63,7 @@ jobs:
         env:
           E2E_BASE_URL: http://127.0.0.1:3100
           AUTH_SECRET: ci-smoke-secret-at-least-32-characters-long
+          ALPHA_OPS_TOKEN: ci-alpha-ops-token-at-least-32-characters-long
         run: |
           pnpm --filter @swd/web exec next start -p 3100 > /tmp/simpleway-drawing-next.log 2>&1 &
           SERVER_PID=$!

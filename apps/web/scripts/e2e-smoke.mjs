@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 
 const baseUrl = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3100";
+const opsToken = process.env.ALPHA_OPS_TOKEN;
+assert.ok(opsToken, "ALPHA_OPS_TOKEN is required for E2E operations smoke");
 
 async function waitForHealth() {
   let lastError;
@@ -49,10 +51,7 @@ const cookie = setCookie.split(";", 1)[0];
 
 const onboarding = await fetch(`${baseUrl}/api/onboarding`, {
   method: "POST",
-  headers: {
-    cookie,
-    "content-type": "application/json",
-  },
+  headers: { cookie, "content-type": "application/json" },
   body: JSON.stringify({
     displayName: "Alpha Tester",
     preferredPath: "MANGA",
@@ -67,16 +66,38 @@ assert.equal(onboardingPayload.profile.displayName, "Alpha Tester");
 assert.equal(onboardingPayload.profile.preferredPath, "MANGA");
 assert.equal(onboardingPayload.next, "/drawing-zero");
 
-const resume = await fetch(`${baseUrl}/api/resume`, {
-  headers: { cookie },
-  cache: "no-store",
-});
+const resume = await fetch(`${baseUrl}/api/resume`, { headers: { cookie }, cache: "no-store" });
 assert.equal(resume.status, 200);
 const resumePayload = await resume.json();
 assert.equal(resumePayload.activation.stage, "DRAWING_ZERO");
 assert.equal(resumePayload.activation.nextAction.href, "/drawing-zero");
 assert.equal(resumePayload.activation.steps[0].complete, true);
 assert.equal(resumePayload.activation.steps[1].complete, false);
+
+const heartbeat = await fetch(`${baseUrl}/api/activity/heartbeat`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ path: "/drawing-zero", metadata: { source: "ci-smoke" } }),
+});
+assert.equal(heartbeat.status, 200);
+const heartbeatPayload = await heartbeat.json();
+assert.equal(heartbeatPayload.stage, "DRAWING_ZERO");
+
+const unauthorizedOps = await fetch(`${baseUrl}/api/ops/alpha`, { cache: "no-store" });
+assert.equal(unauthorizedOps.status, 401);
+
+const ops = await fetch(`${baseUrl}/api/ops/alpha`, {
+  headers: { authorization: `Bearer ${opsToken}` },
+  cache: "no-store",
+});
+assert.equal(ops.status, 200);
+const opsPayload = await ops.json();
+assert.ok(opsPayload.overview.totalTesters >= 1);
+assert.ok(opsPayload.overview.onboardedTesters >= 1);
+assert.ok(opsPayload.overview.trackedTesters >= 1);
+assert.ok(opsPayload.overview.active24h >= 1);
+assert.ok(opsPayload.overview.stages.DRAWING_ZERO >= 1);
+assert.equal(opsPayload.overview.recent[0].displayName, "Alpha Tester");
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, {
   headers: { cookie },
@@ -86,4 +107,4 @@ assert.equal(diagnostics.status, 200);
 const diagnosticsPayload = await diagnostics.json();
 assert.ok(diagnosticsPayload.diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops private_diagnostics");

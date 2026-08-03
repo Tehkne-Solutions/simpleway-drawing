@@ -1,6 +1,7 @@
 const required = [
   "DATABASE_URL",
   "AUTH_SECRET",
+  "ALPHA_OPS_TOKEN",
   "STORAGE_BUCKET",
   "STORAGE_ACCESS_KEY",
   "STORAGE_SECRET_KEY",
@@ -15,6 +16,11 @@ if (missing.length) {
 
 if ((process.env.AUTH_SECRET?.length ?? 0) < 32) {
   console.error("DEPLOY_ENV_INVALID AUTH_SECRET must contain at least 32 characters");
+  process.exit(1);
+}
+
+if ((process.env.ALPHA_OPS_TOKEN?.length ?? 0) < 32) {
+  console.error("DEPLOY_ENV_INVALID ALPHA_OPS_TOKEN must contain at least 32 characters");
   process.exit(1);
 }
 
