@@ -75,6 +75,26 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .lesson-reflection label { display: flex; gap: 10px; align-items: center; padding: 13px 14px; border: 1px solid #deded9; border-radius: 14px; cursor: pointer; }
 .lesson-reflection label.selected { border-color: #171717; background: #f3f3ef; }
 
+.gym-card { width: min(1040px, 100%); }
+.gym-session { display: grid; gap: 24px; }
+.gym-instruction h1 { margin-top: 0; }
+.line-gym-board { width: 100%; aspect-ratio: 600 / 280; border: 1px solid #d9d9d2; border-radius: 24px; background: #f8f8f5; touch-action: none; cursor: crosshair; }
+.gym-guide { stroke: #d8d8d0; stroke-width: 2; stroke-dasharray: 8 10; }
+.gym-start { fill: #171717; }
+.gym-target-outer { fill: none; stroke: #171717; stroke-width: 2; }
+.gym-target-inner { fill: #171717; }
+.gym-stroke { fill: none; stroke: #171717; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.gym-status { margin: 0; color: #666660; }
+.coach-card { display: grid; grid-template-columns: 110px 1fr; gap: 22px; padding: 24px; border-radius: 24px; background: #171717; color: #fff; }
+.coach-score { width: 96px; height: 96px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); display: grid; place-items: center; align-content: center; }
+.coach-score strong { font-size: 30px; line-height: 1; }
+.coach-score span { font-size: 11px; color: #c8c8c2; margin-top: 4px; }
+.coach-card h2 { margin: 0 0 8px; font-size: 24px; }
+.coach-card p { color: #d7d7d1; line-height: 1.55; }
+.coach-action { margin-bottom: 0; }
+.mastery-strip { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.16); font-size: 13px; color: #c7c7c1; }
+.mastery-strip strong { color: #fff; }
+
 @media (max-width: 700px) {
   .flow-shell { padding: 18px; place-items: start center; }
   .flow-card { border-radius: 22px; padding: 26px 20px; }
@@ -86,4 +106,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   .upload-meta { display: grid; }
   .learning-progress { align-items: flex-start; flex-direction: column; }
   .learning-progress-track { width: 100%; flex: none; }
+  .coach-card { grid-template-columns: 1fr; }
+  .coach-score { width: 80px; height: 80px; }
+  .mastery-strip { grid-column: auto; }
 }
