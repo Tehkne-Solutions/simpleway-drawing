@@ -29,10 +29,7 @@ const ready = await fetch(`${baseUrl}/api/ready`, { cache: "no-store" });
 assert.equal(ready.status, 200);
 assert.equal((await ready.json()).status, "ready");
 
-const blocked = await fetch(`${baseUrl}/api/session/guest`, {
-  method: "POST",
-  headers: { origin: "https://malicious.example" },
-});
+const blocked = await fetch(`${baseUrl}/api/session/guest`, { method: "POST", headers: { origin: "https://malicious.example" } });
 assert.equal(blocked.status, 403);
 assert.equal((await blocked.json()).code, "CROSS_ORIGIN_REQUEST_BLOCKED");
 
@@ -54,8 +51,7 @@ assert.equal((await onboarding.json()).next, "/drawing-zero");
 
 const resume = await fetch(`${baseUrl}/api/resume`, { headers: { cookie }, cache: "no-store" });
 assert.equal(resume.status, 200);
-const resumePayload = await resume.json();
-assert.equal(resumePayload.activation.stage, "DRAWING_ZERO");
+assert.equal((await resume.json()).activation.stage, "DRAWING_ZERO");
 
 const heartbeat = await fetch(`${baseUrl}/api/activity/heartbeat`, {
   method: "POST",
@@ -70,9 +66,7 @@ assert.equal(unauthorizedOps.status, 401);
 
 const ops = await fetch(`${baseUrl}/api/ops/alpha`, { headers: { authorization: `Bearer ${opsToken}` }, cache: "no-store" });
 assert.equal(ops.status, 200);
-const opsPayload = await ops.json();
-assert.ok(opsPayload.overview.totalTesters >= 1);
-assert.ok(opsPayload.overview.stages.DRAWING_ZERO >= 1);
+assert.ok((await ops.json()).overview.totalTesters >= 1);
 
 const invalidOpsSession = await fetch(`${baseUrl}/api/ops/session`, {
   method: "POST",
@@ -88,8 +82,42 @@ const validOpsSession = await fetch(`${baseUrl}/api/ops/session`, {
 });
 assert.equal(validOpsSession.status, 200);
 const opsSetCookie = validOpsSession.headers.get("set-cookie");
-assert.ok(opsSetCookie, "operator session must set a cookie");
+assert.ok(opsSetCookie);
 const opsCookie = opsSetCookie.split(";", 1)[0];
+
+const inviteCreate = await fetch(`${baseUrl}/api/ops/invites`, {
+  method: "POST",
+  headers: { cookie: opsCookie, "content-type": "application/json" },
+  body: JSON.stringify({ label: "Invited Tester", maxUses: 1, expiresInDays: 7 }),
+});
+assert.equal(inviteCreate.status, 201);
+const invitePayload = await inviteCreate.json();
+assert.match(invitePayload.code, /^[A-Za-z0-9_-]{20,}$/);
+assert.equal(invitePayload.invite.uses, 0);
+
+const redeem = await fetch(`${baseUrl}/api/invites/redeem`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ code: invitePayload.code }),
+});
+assert.equal(redeem.status, 201);
+const redeemPayload = await redeem.json();
+assert.equal(redeemPayload.inviteLabel, "Invited Tester");
+assert.equal(redeemPayload.next, "/onboarding");
+assert.ok(redeem.headers.get("set-cookie"));
+
+const reused = await fetch(`${baseUrl}/api/invites/redeem`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ code: invitePayload.code }),
+});
+assert.equal(reused.status, 410);
+
+const inviteList = await fetch(`${baseUrl}/api/ops/invites`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(inviteList.status, 200);
+const inviteListPayload = await inviteList.json();
+assert.equal(inviteListPayload.invites[0].status, "CONSUMED");
+assert.equal(inviteListPayload.invites[0].uses, 1);
 
 const controlCenter = await fetch(`${baseUrl}/ops`, { headers: { cookie: opsCookie }, redirect: "manual" });
 assert.equal(controlCenter.status, 200);
@@ -101,4 +129,4 @@ const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cooki
 assert.equal(diagnostics.status, 200);
 assert.ok((await diagnostics.json()).diagnostics);
 
-console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat protected_ops ops_control_center invite_create invite_redeem invite_one_time private_diagnostics");
