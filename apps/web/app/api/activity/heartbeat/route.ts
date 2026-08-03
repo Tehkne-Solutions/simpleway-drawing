@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getActivationRepository, getOperationsRepository } from "../../../../server/runtime";
-import { readJsonBody, securityErrorResponse } from "../../../../server/request-security";
+import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 import { getSessionUserId } from "../../../../server/session";
 
 type HeartbeatInput = {
@@ -17,6 +17,7 @@ function sanitizePath(value: unknown): string | null {
 
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     const userId = await getSessionUserId();
     if (!userId) return NextResponse.json({ code: "UNAUTHENTICATED" }, { status: 401 });
 
