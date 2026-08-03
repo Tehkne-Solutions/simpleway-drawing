@@ -1,0 +1,49 @@
+- key: skill.drawing.shape.decomposition
+  version: 1
+  domain: shape
+  type: STRUCTURAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Decomposição em formas
+
+- key: skill.drawing.shape.envelope
+  version: 1
+  domain: shape
+  type: STRUCTURAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Envelope
+
+- key: skill.drawing.shape.silhouette
+  version: 1
+  domain: shape
+  type: STRUCTURAL
+  retentionMode: STANDARD
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Silhueta
+
+- key: skill.drawing.shape.relationships
+  version: 1
+  domain: shape
+  type: STRUCTURAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Relações entre formas
+
+- key: skill.drawing.shape.overlap
+  version: 1
+  domain: shape
+  type: STRUCTURAL
+  retentionMode: TRANSFER
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Sobreposição
