@@ -104,3 +104,4 @@ jobs:
           trap 'STATUS=$?; if [ $STATUS -ne 0 ]; then cat /tmp/simpleway-drawing-next.log || true; fi; kill $SERVER_PID 2>/dev/null || true; docker rm -f swd-minio 2>/dev/null || true; exit $STATUS' EXIT
           pnpm --filter @swd/web e2e:smoke
           pnpm --filter @swd/web e2e:create
+          pnpm --filter @swd/web e2e:learning
