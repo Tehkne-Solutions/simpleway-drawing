@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getActivationRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
+import "./resume.css";
 
 export const dynamic = "force-dynamic";
 
