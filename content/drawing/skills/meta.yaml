@@ -27,3 +27,13 @@
   transferable: true
   title:
     pt-BR: Repetição após feedback
+
+- key: skill.drawing.meta.creation_practice
+  version: 1
+  domain: meta
+  type: META
+  retentionMode: PROJECT_BASED
+  foundational: true
+  transferable: true
+  title:
+    pt-BR: Prática de criação
