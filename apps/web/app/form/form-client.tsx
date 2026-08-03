@@ -17,7 +17,8 @@ export function FormClient({ exercises }: { exercises: Exercise[] }) {
   if (!exercise) return <p>Nenhum exercício de forma disponível.</p>;
 
   async function submit() {
-    if (selected == null || busy) return;
+    const activeExercise = exercises[index];
+    if (!activeExercise || selected == null || busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -26,7 +27,7 @@ export function FormClient({ exercises }: { exercises: Exercise[] }) {
       const response = await fetch("/api/form", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ exerciseKey: exercise.key, answerIndex: selected }),
+        body: JSON.stringify({ exerciseKey: activeExercise.key, answerIndex: selected }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.code ?? "Não foi possível registrar o treino.");
