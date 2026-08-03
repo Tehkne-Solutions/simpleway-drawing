@@ -5,3 +5,4 @@ export * from "./schema/learning";
 export * from "./repositories/drawing-zero";
 export * from "./repositories/file-assets";
 export * from "./repositories/learning-progress";
+export * from "./repositories/gym";
