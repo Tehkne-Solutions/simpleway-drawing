@@ -10,6 +10,7 @@ import {
   DrizzleFileAssetRepository,
   DrizzleFormRepository,
   DrizzleGymRepository,
+  DrizzleInvitationRepository,
   DrizzleLearningProgressRepository,
   DrizzleObservationRepository,
   DrizzleOperationsRepository,
@@ -64,3 +65,4 @@ export function getActivationRepository(): DrizzleActivationRepository { return 
 export function getClosedAlphaRepository(): DrizzleClosedAlphaRepository { return new DrizzleClosedAlphaRepository(getDatabase()); }
 export function getClosedAlphaFeedbackRepository(): DrizzleClosedAlphaFeedbackRepository { return new DrizzleClosedAlphaFeedbackRepository(getDatabase()); }
 export function getOperationsRepository(): DrizzleOperationsRepository { return new DrizzleOperationsRepository(getDatabase()); }
+export function getInvitationRepository(): DrizzleInvitationRepository { return new DrizzleInvitationRepository(getDatabase()); }
