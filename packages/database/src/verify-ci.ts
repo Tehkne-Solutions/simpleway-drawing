@@ -19,6 +19,7 @@ const requiredTables = [
   "skill_evidence",
   "learner_skill_states",
   "system_outbox_events",
+  "alpha_tester_activity",
 ] as const;
 
 try {
@@ -42,9 +43,12 @@ try {
       returning id
     `;
 
-    if (!user) {
-      throw new Error("Failed to create CI verification user");
-    }
+    if (!user) throw new Error("Failed to create CI verification user");
+
+    await transaction`
+      insert into alpha_tester_activity (user_id, last_stage, last_path, heartbeat_count)
+      values (${user.id}, 'ONBOARDING', '/onboarding', 1)
+    `;
 
     const [artwork] = await transaction<{ id: string }[]>`
       insert into artworks (owner_user_id, type, status, visibility)
@@ -52,9 +56,7 @@ try {
       returning id
     `;
 
-    if (!artwork) {
-      throw new Error("Failed to create CI verification artwork");
-    }
+    if (!artwork) throw new Error("Failed to create CI verification artwork");
 
     await transaction`
       insert into system_outbox_events (event_type, aggregate_type, aggregate_id, payload)
@@ -68,9 +70,7 @@ try {
 
     throw new Error("ROLLBACK_CI_VERIFICATION");
   }).catch((error: unknown) => {
-    if (!(error instanceof Error) || error.message !== "ROLLBACK_CI_VERIFICATION") {
-      throw error;
-    }
+    if (!(error instanceof Error) || error.message !== "ROLLBACK_CI_VERIFICATION") throw error;
   });
 
   console.log(`DATABASE_VERIFY=PASS tables=${requiredTables.length} transaction=PASS`);
