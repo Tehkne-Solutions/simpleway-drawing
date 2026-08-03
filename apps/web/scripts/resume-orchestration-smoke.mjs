@@ -92,7 +92,7 @@ await assertStage(learner.cookie, "ONBOARDING", "/onboarding");
 const onboarding = await fetch(`${baseUrl}/api/onboarding`, {
   method: "POST",
   headers: { cookie: learner.cookie, "content-type": "application/json" },
-  body: JSON.stringify({ displayName: "Resume Tester", preferredPath: "EXPLORE", experienceLevel: "NEW", primaryGoal: "HOBBY", preferredTool: "BOTH" }),
+  body: JSON.stringify({ displayName: "Resume Tester", preferredPath: "EXPLORE", experienceLevel: "NEW", primaryGoal: "CAREER", preferredTool: "BOTH" }),
 });
 await assertHttp(onboarding, 200, "resume onboarding");
 await assertStage(learner.cookie, "DRAWING_ZERO", "/drawing-zero");
