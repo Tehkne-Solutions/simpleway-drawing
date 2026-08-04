@@ -9,12 +9,15 @@ const requiredFiles = [
   ".github/workflows/release-candidate.yml",
   "docs/releases/RC1.md",
   "apps/web/server/cohort-readiness.ts",
+  "apps/web/server/launch-incidents.ts",
   "apps/web/scripts/production-launch-gate.mjs",
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
   "apps/web/scripts/first-cohort-launch-smoke.mjs",
   "apps/web/app/api/ops/interventions/route.ts",
+  "apps/web/app/api/ops/incidents/route.ts",
   "apps/web/app/ops/InterventionActions.tsx",
+  "apps/web/app/ops/incidents/page.tsx",
   "packages/database/src/repositories/operations.ts",
   "packages/database/migrations/0000_foundation_alpha.sql",
 ];
@@ -29,6 +32,8 @@ const vercel = JSON.parse(await readFile(resolve(repoRoot, "vercel.json"), "utf8
 const ci = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const releaseWorkflow = await readFile(resolve(repoRoot, ".github/workflows/release-candidate.yml"), "utf8");
 const interventionsRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ops/interventions/route.ts"), "utf8");
+const incidentsRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ops/incidents/route.ts"), "utf8");
+const launchIncidents = await readFile(resolve(repoRoot, "apps/web/server/launch-incidents.ts"), "utf8");
 const operationsRepository = await readFile(resolve(repoRoot, "packages/database/src/repositories/operations.ts"), "utf8");
 
 const failures = [];
@@ -67,6 +72,12 @@ expect(interventionsRoute.includes("readJsonBody"), "Intervention mutation must 
 expect(operationsRepository.includes("ops.intervention.lifecycle.v1"), "Intervention lifecycle event contract missing");
 expect(operationsRepository.includes("ACKNOWLEDGED") && operationsRepository.includes("RESOLVED"), "Intervention lifecycle states missing");
 
+expect(incidentsRoute.includes("evaluateLaunchIncidents"), "Launch incident API projection missing");
+expect(incidentsRoute.includes("hasOpsSession"), "Launch incident API must remain Ops-protected");
+expect(launchIncidents.includes('LaunchDecision = "GO" | "WATCH" | "STOP"'), "Launch incident decision contract changed");
+expect(launchIncidents.includes('LaunchIncidentSeverity = "P0" | "P1" | "P2"'), "Launch incident severity contract changed");
+expect(launchIncidents.includes('category === "BUG" && item.rating === 1'), "P0 bug stop-the-line rule missing");
+
 expect(releaseWorkflow.includes("workflow_dispatch"), "Production Launch Gate must remain manually dispatchable");
 expect(releaseWorkflow.includes("apps/web/scripts/production-launch-gate.mjs"), "Production Launch Gate workflow must execute the production gate");
 expect(releaseWorkflow.includes("node-version: 22"), "Production Launch Gate must remain pinned to Node 22");
@@ -79,4 +90,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only intervention_lifecycle=frozen rc=RC1 production_launch_gate=frozen`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only intervention_lifecycle=frozen incident_triage=frozen rc=RC1 production_launch_gate=frozen`);
