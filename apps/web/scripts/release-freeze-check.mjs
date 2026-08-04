@@ -13,6 +13,9 @@ const requiredFiles = [
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
   "apps/web/scripts/first-cohort-launch-smoke.mjs",
+  "apps/web/app/api/ops/interventions/route.ts",
+  "apps/web/app/ops/InterventionActions.tsx",
+  "packages/database/src/repositories/operations.ts",
   "packages/database/migrations/0000_foundation_alpha.sql",
 ];
 
@@ -25,6 +28,8 @@ const storagePackage = JSON.parse(await readFile(resolve(repoRoot, "packages/sto
 const vercel = JSON.parse(await readFile(resolve(repoRoot, "vercel.json"), "utf8"));
 const ci = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const releaseWorkflow = await readFile(resolve(repoRoot, ".github/workflows/release-candidate.yml"), "utf8");
+const interventionsRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ops/interventions/route.ts"), "utf8");
+const operationsRepository = await readFile(resolve(repoRoot, "packages/database/src/repositories/operations.ts"), "utf8");
 
 const failures = [];
 const expect = (condition, message) => { if (!condition) failures.push(message); };
@@ -57,6 +62,11 @@ for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "p
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
 }
 
+expect(interventionsRoute.includes("recordInterventionLifecycle"), "Intervention mutation contract missing");
+expect(interventionsRoute.includes("readJsonBody"), "Intervention mutation must use secured JSON body parsing");
+expect(operationsRepository.includes("ops.intervention.lifecycle.v1"), "Intervention lifecycle event contract missing");
+expect(operationsRepository.includes("ACKNOWLEDGED") && operationsRepository.includes("RESOLVED"), "Intervention lifecycle states missing");
+
 expect(releaseWorkflow.includes("workflow_dispatch"), "Production Launch Gate must remain manually dispatchable");
 expect(releaseWorkflow.includes("apps/web/scripts/production-launch-gate.mjs"), "Production Launch Gate workflow must execute the production gate");
 expect(releaseWorkflow.includes("node-version: 22"), "Production Launch Gate must remain pinned to Node 22");
@@ -69,4 +79,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only rc=RC1 production_launch_gate=frozen`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only intervention_lifecycle=frozen rc=RC1 production_launch_gate=frozen`);
