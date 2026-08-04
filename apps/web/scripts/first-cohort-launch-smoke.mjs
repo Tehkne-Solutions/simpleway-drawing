@@ -39,6 +39,13 @@ for (const [index, item] of batchPayload.batch.entries()) {
   assert.match(item.invite.label, new RegExp(`First Cohort E2E · ${index + 1}`));
 }
 
+const prelaunchCohorts = await fetch(`${baseUrl}/api/ops/cohorts`, { headers: { cookie: opsCookie }, cache: "no-store" });
+await assertHttp(prelaunchCohorts, 200, "prelaunch readiness");
+const prelaunch = (await prelaunchCohorts.json()).cohorts.find((item) => item.label === "First Cohort E2E");
+assert.equal(prelaunch.readiness.state, "READY");
+assert.equal(prelaunch.readiness.phase, "PRELAUNCH");
+assert.equal(prelaunch.readiness.remainingCapacity, 3);
+
 const list = await fetch(`${baseUrl}/api/ops/invites`, { headers: { cookie: opsCookie }, cache: "no-store" });
 await assertHttp(list, 200, "invite list");
 const listed = (await list.json()).invites.filter((invite) => invite.label.startsWith("First Cohort E2E ·"));
@@ -80,5 +87,10 @@ assert.equal(cohort.inviteCount, 3);
 assert.equal(cohort.maxUses, 3);
 assert.equal(cohort.redeemed, 2);
 assert.equal(cohort.status, "MIXED");
+assert.equal(cohort.readiness.state, "WATCH");
+assert.equal(cohort.readiness.phase, "ACTIVATION");
+assert.equal(cohort.readiness.remainingCapacity, 1);
+assert.ok(cohort.readiness.reasons.length > 0);
+assert.ok(cohort.readiness.nextAction.length > 20);
 
-console.log("FIRST_COHORT_LAUNCH_E2E=PASS ops_guard batch_create unique_codes one_time_identity independent_redemption invite_status_projection cohort_batch_aggregation");
+console.log("FIRST_COHORT_LAUNCH_E2E=PASS ops_guard batch_create unique_codes prelaunch_readiness one_time_identity independent_redemption invite_status_projection cohort_batch_aggregation launch_readiness_projection");

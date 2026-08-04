@@ -8,6 +8,7 @@ const requiredFiles = [
   ".github/workflows/ci.yml",
   ".github/workflows/release-candidate.yml",
   "docs/releases/RC1.md",
+  "apps/web/server/cohort-readiness.ts",
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
   "apps/web/scripts/first-cohort-launch-smoke.mjs",
@@ -34,16 +35,7 @@ expect(webPackage.scripts?.["e2e:first-cohort"] === "node scripts/first-cohort-l
 expect(vercel.installCommand === "npm install -g pnpm@10.15.0 && pnpm install --no-frozen-lockfile", "Vercel install command drifted");
 expect(vercel.buildCommand === "pnpm build", "Vercel build command drifted");
 
-for (const marker of [
-  "pnpm typecheck",
-  "pnpm content:validate",
-  "pnpm test",
-  "pnpm db:migrate",
-  "pnpm deploy:check",
-  "pnpm build",
-  "e2e:cohort",
-  "e2e:first-cohort",
-]) {
+for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "pnpm db:migrate", "pnpm deploy:check", "pnpm build", "e2e:cohort", "e2e:first-cohort"]) {
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
 }
 
