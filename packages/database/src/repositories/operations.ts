@@ -1,6 +1,6 @@
 import { desc, eq, gte, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { profiles, users } from "../schema/core";
+import { outboxEvents, profiles, users } from "../schema/core";
 import { alphaTesterActivity } from "../schema/operations";
 
 export type TesterHeartbeat = {
@@ -11,6 +11,19 @@ export type TesterHeartbeat = {
 };
 
 export type InterventionReason = "NO_PROGRESS" | "IDLE" | "LOW_FEEDBACK" | "STALLED_STAGE";
+export type InterventionLifecycleStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED";
+
+export type InterventionLifecycleInput = {
+  userId: string;
+  status: InterventionLifecycleStatus;
+  note?: string | null;
+};
+
+export type InterventionLifecycleEvent = {
+  status: InterventionLifecycleStatus;
+  note: string | null;
+  createdAt: Date;
+};
 
 export type TesterIntervention = {
   userId: string;
@@ -23,6 +36,9 @@ export type TesterIntervention = {
   latestRating: number | null;
   reasons: InterventionReason[];
   priority: "HIGH" | "MEDIUM" | "LOW";
+  lifecycleStatus: InterventionLifecycleStatus;
+  lifecycleNote: string | null;
+  lifecycleAt: Date | null;
 };
 
 export type TesterOperationsSnapshot = {
@@ -101,6 +117,44 @@ export class DrizzleOperationsRepository {
       });
   }
 
+  async recordInterventionLifecycle(input: InterventionLifecycleInput): Promise<InterventionLifecycleEvent> {
+    const [existing] = await this.db.select({ id: users.id }).from(users).where(eq(users.id, input.userId)).limit(1);
+    if (!existing) throw new Error("TESTER_NOT_FOUND");
+
+    const note = input.note?.trim().slice(0, 500) || null;
+    const [event] = await this.db
+      .insert(outboxEvents)
+      .values({
+        eventType: "ops.intervention.lifecycle.v1",
+        aggregateType: "alpha_tester",
+        aggregateId: input.userId,
+        payload: { status: input.status, note },
+      })
+      .returning({ createdAt: outboxEvents.createdAt });
+
+    if (!event) throw new Error("INTERVENTION_EVENT_CREATE_FAILED");
+    return { status: input.status, note, createdAt: event.createdAt };
+  }
+
+  async getInterventionHistory(userId: string, limit = 20): Promise<InterventionLifecycleEvent[]> {
+    const rows = await this.db
+      .select({ payload: outboxEvents.payload, createdAt: outboxEvents.createdAt })
+      .from(outboxEvents)
+      .where(sql`${outboxEvents.eventType} = 'ops.intervention.lifecycle.v1' and ${outboxEvents.aggregateId} = ${userId}`)
+      .orderBy(desc(outboxEvents.createdAt))
+      .limit(Math.max(1, Math.min(limit, 100)));
+
+    return rows.flatMap((row) => {
+      const payload = row.payload as { status?: string; note?: string | null };
+      if (!payload.status || !["OPEN", "ACKNOWLEDGED", "RESOLVED"].includes(payload.status)) return [];
+      return [{
+        status: payload.status as InterventionLifecycleStatus,
+        note: typeof payload.note === "string" ? payload.note : null,
+        createdAt: row.createdAt,
+      }];
+    });
+  }
+
   async getInterventionQueue(limit = 50): Promise<TesterIntervention[]> {
     const rows = await this.db
       .select({
@@ -122,6 +176,24 @@ export class DrizzleOperationsRepository {
             and o.aggregate_id = ${alphaTesterActivity.userId}::text
           order by o.created_at desc limit 1
         )`,
+        lifecycleStatus: sql<string | null>`(
+          select o.payload->>'status' from system_outbox_events o
+          where o.event_type = 'ops.intervention.lifecycle.v1'
+            and o.aggregate_id = ${alphaTesterActivity.userId}::text
+          order by o.created_at desc limit 1
+        )`,
+        lifecycleNote: sql<string | null>`(
+          select o.payload->>'note' from system_outbox_events o
+          where o.event_type = 'ops.intervention.lifecycle.v1'
+            and o.aggregate_id = ${alphaTesterActivity.userId}::text
+          order by o.created_at desc limit 1
+        )`,
+        lifecycleAt: sql<Date | null>`(
+          select o.created_at from system_outbox_events o
+          where o.event_type = 'ops.intervention.lifecycle.v1'
+            and o.aggregate_id = ${alphaTesterActivity.userId}::text
+          order by o.created_at desc limit 1
+        )`,
       })
       .from(alphaTesterActivity)
       .leftJoin(profiles, eq(profiles.userId, alphaTesterActivity.userId))
@@ -139,6 +211,14 @@ export class DrizzleOperationsRepository {
       if (rating !== null && rating <= 2) reasons.push("LOW_FEEDBACK");
       if (row.heartbeatCount >= 8 && row.stage && row.stage !== "ALPHA_GATE") reasons.push("STALLED_STAGE");
       if (reasons.length === 0) return [];
+
+      const recordedStatus = ["OPEN", "ACKNOWLEDGED", "RESOLVED"].includes(row.lifecycleStatus ?? "")
+        ? row.lifecycleStatus as InterventionLifecycleStatus
+        : "OPEN";
+      const lifecycleAt = row.lifecycleAt ? new Date(row.lifecycleAt) : null;
+      if (recordedStatus === "RESOLVED" && lifecycleAt && lifecycleAt.getTime() >= row.lastSeenAt.getTime()) return [];
+      const lifecycleStatus: InterventionLifecycleStatus = recordedStatus === "RESOLVED" ? "OPEN" : recordedStatus;
+
       const high = reasons.includes("LOW_FEEDBACK") || (reasons.includes("IDLE") && reasons.includes("STALLED_STAGE"));
       return [{
         userId: row.userId,
@@ -151,6 +231,9 @@ export class DrizzleOperationsRepository {
         latestRating: rating,
         reasons,
         priority: high ? "HIGH" as const : reasons.length >= 2 ? "MEDIUM" as const : "LOW" as const,
+        lifecycleStatus,
+        lifecycleNote: lifecycleStatus === "OPEN" && recordedStatus === "RESOLVED" ? null : row.lifecycleNote,
+        lifecycleAt: lifecycleStatus === "OPEN" && recordedStatus === "RESOLVED" ? null : lifecycleAt,
       }];
     }).sort((a, b) => ({ HIGH: 3, MEDIUM: 2, LOW: 1 }[b.priority] - { HIGH: 3, MEDIUM: 2, LOW: 1 }[a.priority]));
   }
