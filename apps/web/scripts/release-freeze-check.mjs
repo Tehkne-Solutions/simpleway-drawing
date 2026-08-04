@@ -51,6 +51,7 @@ expect(vercel.framework === "nextjs", "Vercel framework must remain nextjs");
 expect(vercel.installCommand === "npm install --workspaces --include-workspace-root --no-audit --no-fund", "Vercel install command drifted");
 expect(vercel.buildCommand === "npm run build", "Vercel build command drifted");
 expect(vercel.outputDirectory === "apps/web/.next", "Vercel Next.js output directory drifted");
+expect(vercel.ignoreCommand === "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]", "Vercel quota guard must reserve automatic builds for main");
 
 for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "pnpm db:migrate", "pnpm deploy:check", "pnpm build", "e2e:cohort", "e2e:first-cohort"]) {
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
@@ -68,4 +69,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next rc=RC1 production_launch_gate=frozen`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only rc=RC1 production_launch_gate=frozen`);
