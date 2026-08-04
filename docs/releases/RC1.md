@@ -13,7 +13,7 @@ O RC1 cobre o Foundation Alpha completo e seus fluxos operacionais: onboarding, 
 - Node.js 22.x.
 - pnpm 10.15.0.
 - PostgreSQL 16 compatível com migrations versionadas.
-- Object storage S3-compatible.
+- Object storage S3-compatible privado e acessível por credenciais de produção.
 - `AUTH_SECRET` e `ALPHA_OPS_TOKEN` com pelo menos 32 caracteres.
 - HTTPS em produção.
 - Cookies de sessão seguros em produção.
@@ -31,7 +31,7 @@ Após o deploy, executar manualmente o workflow **Production Launch Gate** infor
 O gate executa `apps/web/scripts/production-launch-gate.mjs` e valida, contra o ambiente real:
 
 1. health e política `no-store`;
-2. readiness com conexão real ao banco;
+2. readiness com conexão real ao PostgreSQL e `HeadBucket` não destrutivo no storage privado;
 3. headers de segurança e request ID;
 4. identidade SimpleWay Drawing e assinatura Tehkné Solutions;
 5. aviso de privacidade público;
@@ -53,6 +53,7 @@ A primeira turma só recebe GO quando:
 - CI do commit RC1 estiver verde;
 - deploy estiver `Ready`;
 - migrations estiverem aplicadas no banco real;
+- `/api/ready` reportar `database=ok` e `storage=ok`;
 - storage S3-compatible real estiver configurado;
 - Production Launch Gate retornar **GO**;
 - teste manual responsivo em desktop e mobile não apresentar bloqueadores P0/P1;
