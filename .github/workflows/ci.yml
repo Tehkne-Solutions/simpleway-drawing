@@ -34,6 +34,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm content:validate
       - run: pnpm test
+      - name: Verify RC1 release freeze contract
+        run: pnpm release:check
       - name: Generate diagnostic migration from current schema
         run: pnpm db:generate
       - name: Verify frozen baseline has no schema drift
