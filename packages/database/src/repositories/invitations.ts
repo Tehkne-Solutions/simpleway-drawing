@@ -8,6 +8,12 @@ function hashCode(code: string): string {
   return createHash("sha256").update(code).digest("hex");
 }
 
+function normalizeLabel(label: string): string {
+  const normalized = label.trim();
+  if (normalized.length < 2 || normalized.length > 120) throw new Error("INVITE_LABEL_INVALID");
+  return normalized;
+}
+
 export const ALPHA_CONSENT_VERSION = "closed-alpha-v1";
 
 export type AlphaInvite = {
@@ -25,13 +31,40 @@ export class DrizzleInvitationRepository {
   constructor(private readonly db: Database) {}
 
   async create(input: { label: string; maxUses?: number; expiresAt?: Date | null }): Promise<{ invite: AlphaInvite; code: string }> {
-    const label = input.label.trim();
-    if (label.length < 2 || label.length > 120) throw new Error("INVITE_LABEL_INVALID");
+    const label = normalizeLabel(input.label);
     const maxUses = Math.max(1, Math.min(input.maxUses ?? 1, 100));
     const code = randomBytes(24).toString("base64url");
     const [row] = await this.db.insert(alphaInvites).values({ codeHash: hashCode(code), label, maxUses, expiresAt: input.expiresAt ?? null }).returning();
     if (!row) throw new Error("INVITE_CREATE_FAILED");
     return { invite: row, code };
+  }
+
+  async createBatch(input: { label: string; quantity: number; expiresAt?: Date | null }): Promise<Array<{ invite: AlphaInvite; code: string }>> {
+    const baseLabel = normalizeLabel(input.label);
+    const quantity = Math.max(2, Math.min(Math.trunc(input.quantity), 50));
+    const width = String(quantity).length;
+    const generated = Array.from({ length: quantity }, (_, index) => {
+      const id = randomUUID();
+      const code = randomBytes(24).toString("base64url");
+      const suffix = String(index + 1).padStart(width, "0");
+      const label = `${baseLabel} · ${suffix}`;
+      if (label.length > 120) throw new Error("INVITE_LABEL_INVALID");
+      return { id, code, label, codeHash: hashCode(code) };
+    });
+
+    const rows = await this.db.insert(alphaInvites).values(generated.map((item) => ({
+      id: item.id,
+      codeHash: item.codeHash,
+      label: item.label,
+      maxUses: 1,
+      expiresAt: input.expiresAt ?? null,
+    }))).returning();
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    return generated.map((item) => {
+      const row = byId.get(item.id);
+      if (!row) throw new Error("INVITE_BATCH_CREATE_FAILED");
+      return { invite: row, code: item.code };
+    });
   }
 
   async list(limit = 50): Promise<AlphaInvite[]> {
