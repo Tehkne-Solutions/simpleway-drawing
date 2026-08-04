@@ -23,6 +23,7 @@
     "db:generate": "pnpm --filter @swd/database generate",
     "db:migrate": "pnpm --filter @swd/database migrate",
     "deploy:check": "pnpm --filter @swd/web deploy:check",
+    "deploy:doctor": "pnpm --filter @swd/web deploy:doctor",
     "deploy:smoke": "pnpm --filter @swd/web deploy:smoke",
     "release:check": "node apps/web/scripts/release-freeze-check.mjs",
     "ci": "pnpm lint && pnpm typecheck && pnpm content:validate && pnpm test && pnpm build"
