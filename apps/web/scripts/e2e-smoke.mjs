@@ -34,7 +34,10 @@ assert.equal((await health.json()).status, "ok");
 
 const ready = await fetch(`${baseUrl}/api/ready`, { cache: "no-store" });
 assert.equal(ready.status, 200);
-assert.equal((await ready.json()).status, "ready");
+const readyPayload = await ready.json();
+assert.equal(readyPayload.status, "ready");
+assert.equal(readyPayload.database, "ok");
+assert.equal(readyPayload.storage, "ok");
 
 const privacy = await fetch(`${baseUrl}/privacy`, { cache: "no-store" });
 assert.equal(privacy.status, 200);
@@ -262,4 +265,4 @@ const diagnosticsPayload = await diagnostics.json();
 assert.ok(diagnosticsPayload.diagnostics);
 assert.equal(diagnosticsPayload.diagnostics.baselineCount, 1);
 
-console.log("E2E_SMOKE=PASS health readiness privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat app_upload_prepare presigned_put app_upload_confirm drawing_zero_csrf drawing_zero_submit drawing_zero_idempotency journey_baseline protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
+console.log("E2E_SMOKE=PASS health readiness(database+storage) privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat app_upload_prepare presigned_put app_upload_confirm drawing_zero_csrf drawing_zero_submit drawing_zero_idempotency journey_baseline protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");

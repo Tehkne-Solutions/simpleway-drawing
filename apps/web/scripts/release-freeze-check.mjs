@@ -14,10 +14,12 @@ const requiredFiles = [
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
   "apps/web/scripts/first-cohort-launch-smoke.mjs",
+  "apps/web/app/api/ready/route.ts",
   "apps/web/app/api/ops/interventions/route.ts",
   "apps/web/app/api/ops/incidents/route.ts",
   "apps/web/app/ops/InterventionActions.tsx",
   "apps/web/app/ops/incidents/page.tsx",
+  "packages/storage/src/index.ts",
   "packages/database/src/repositories/operations.ts",
   "packages/database/migrations/0000_foundation_alpha.sql",
 ];
@@ -31,6 +33,9 @@ const storagePackage = JSON.parse(await readFile(resolve(repoRoot, "packages/sto
 const vercel = JSON.parse(await readFile(resolve(repoRoot, "vercel.json"), "utf8"));
 const ci = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const releaseWorkflow = await readFile(resolve(repoRoot, ".github/workflows/release-candidate.yml"), "utf8");
+const productionGate = await readFile(resolve(repoRoot, "apps/web/scripts/production-launch-gate.mjs"), "utf8");
+const readyRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ready/route.ts"), "utf8");
+const storageSource = await readFile(resolve(repoRoot, "packages/storage/src/index.ts"), "utf8");
 const interventionsRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ops/interventions/route.ts"), "utf8");
 const incidentsRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ops/incidents/route.ts"), "utf8");
 const launchIncidents = await readFile(resolve(repoRoot, "apps/web/server/launch-incidents.ts"), "utf8");
@@ -66,6 +71,13 @@ expect(vercel.ignoreCommand === "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]", "V
 for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "pnpm db:migrate", "pnpm deploy:check", "pnpm build", "e2e:cohort", "e2e:first-cohort"]) {
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
 }
+expect(ci.includes('STORAGE_KEEP_BUCKET: "1"'), "CI must preserve the MinIO bucket for application readiness smoke");
+
+expect(storageSource.includes("HeadBucketCommand"), "Storage readiness must use a non-destructive bucket probe");
+expect(storageSource.includes("checkReadiness"), "Storage readiness adapter contract missing");
+expect(readyRoute.includes("getStorage().checkReadiness()"), "Ready endpoint must verify private storage");
+expect(readyRoute.includes('storage: storageStatus'), "Ready endpoint must expose storage status");
+expect(productionGate.includes('body.storage === "ok"'), "Production Launch Gate must require storage readiness");
 
 expect(interventionsRoute.includes("recordInterventionLifecycle"), "Intervention mutation contract missing");
 expect(interventionsRoute.includes("readJsonBody"), "Intervention mutation must use secured JSON body parsing");
@@ -90,4 +102,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only intervention_lifecycle=frozen incident_triage=frozen rc=RC1 production_launch_gate=frozen`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only storage_readiness=head-bucket intervention_lifecycle=frozen incident_triage=frozen rc=RC1 production_launch_gate=frozen`);

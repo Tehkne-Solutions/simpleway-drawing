@@ -1,14 +1,28 @@
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { getDatabase } from "../../../server/runtime";
+import { getDatabase, getStorage } from "../../../server/runtime";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    await getDatabase().execute(sql`select 1`);
-    return NextResponse.json({ status: "ready", database: "ok" }, { headers: { "cache-control": "no-store" } });
-  } catch {
-    return NextResponse.json({ status: "not_ready", database: "unavailable" }, { status: 503, headers: { "cache-control": "no-store" } });
-  }
+  const [database, storage] = await Promise.allSettled([
+    getDatabase().execute(sql`select 1`),
+    getStorage().checkReadiness(),
+  ]);
+
+  const databaseStatus = database.status === "fulfilled" ? "ok" : "unavailable";
+  const storageStatus = storage.status === "fulfilled" ? "ok" : "unavailable";
+  const ready = databaseStatus === "ok" && storageStatus === "ok";
+
+  return NextResponse.json(
+    {
+      status: ready ? "ready" : "not_ready",
+      database: databaseStatus,
+      storage: storageStatus,
+    },
+    {
+      status: ready ? 200 : 503,
+      headers: { "cache-control": "no-store" },
+    },
+  );
 }
