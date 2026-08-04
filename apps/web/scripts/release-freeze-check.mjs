@@ -20,6 +20,8 @@ for (const relativePath of requiredFiles) await access(resolve(repoRoot, relativ
 
 const rootPackage = JSON.parse(await readFile(resolve(repoRoot, "package.json"), "utf8"));
 const webPackage = JSON.parse(await readFile(resolve(repoRoot, "apps/web/package.json"), "utf8"));
+const databasePackage = JSON.parse(await readFile(resolve(repoRoot, "packages/database/package.json"), "utf8"));
+const storagePackage = JSON.parse(await readFile(resolve(repoRoot, "packages/storage/package.json"), "utf8"));
 const vercel = JSON.parse(await readFile(resolve(repoRoot, "vercel.json"), "utf8"));
 const ci = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const releaseWorkflow = await readFile(resolve(repoRoot, ".github/workflows/release-candidate.yml"), "utf8");
@@ -29,10 +31,26 @@ const expect = (condition, message) => { if (!condition) failures.push(message);
 
 expect(rootPackage.packageManager === "pnpm@10.15.0", "packageManager must remain pinned to pnpm@10.15.0");
 expect(rootPackage.engines?.node === "22.x", "Node must remain pinned to 22.x");
+expect(Array.isArray(rootPackage.workspaces) && rootPackage.workspaces.includes("apps/*") && rootPackage.workspaces.includes("packages/*"), "npm workspace fallback must remain configured");
 expect(webPackage.scripts?.["deploy:smoke"] === "node scripts/remote-smoke.mjs", "deploy:smoke contract changed");
 expect(webPackage.scripts?.["e2e:first-cohort"] === "node scripts/first-cohort-launch-smoke.mjs", "first cohort E2E contract changed");
-expect(vercel.installCommand === "npm install -g pnpm@10.15.0 && pnpm install --no-frozen-lockfile", "Vercel install command drifted");
-expect(vercel.buildCommand === "pnpm build", "Vercel build command drifted");
+
+for (const [name, version] of Object.entries({
+  "@swd/content": webPackage.dependencies?.["@swd/content"],
+  "@swd/database": webPackage.dependencies?.["@swd/database"],
+  "@swd/domain": webPackage.dependencies?.["@swd/domain"],
+  "@swd/storage": webPackage.dependencies?.["@swd/storage"],
+  "@swd/database→domain": databasePackage.dependencies?.["@swd/domain"],
+  "@swd/database→config": databasePackage.devDependencies?.["@swd/config"],
+  "@swd/storage→domain": storagePackage.dependencies?.["@swd/domain"],
+})) {
+  expect(version === "0.0.0", `${name} must use npm-compatible local version 0.0.0`);
+}
+
+expect(vercel.framework === "nextjs", "Vercel framework must remain nextjs");
+expect(vercel.installCommand === "npm install --workspaces --include-workspace-root --no-audit --no-fund", "Vercel install command drifted");
+expect(vercel.buildCommand === "npm run build", "Vercel build command drifted");
+expect(vercel.outputDirectory === "apps/web/.next", "Vercel Next.js output directory drifted");
 
 for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "pnpm db:migrate", "pnpm deploy:check", "pnpm build", "e2e:cohort", "e2e:first-cohort"]) {
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
@@ -50,4 +68,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 rc=RC1 production_launch_gate=frozen`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next rc=RC1 production_launch_gate=frozen`);
