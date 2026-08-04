@@ -106,32 +106,163 @@ const confirmUpload = await fetch(`${baseUrl}/api/files/confirm`, {
   body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId }),
 });
 await assertHttp(confirmUpload, 200, "confirm upload");
-const confirmed = await confirmUpload.json();
-assert.equal(confirmed.status, "READY");
+assert.equal((await confirmUpload.json()).ready, true);
+
+const blockedDrawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json", origin: "https://malicious.example" },
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
+});
+assert.equal(blockedDrawingZero.status, 403);
+assert.equal((await blockedDrawingZero.json()).code, "CROSS_ORIGIN_REQUEST_BLOCKED");
 
 const drawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
   method: "POST",
   headers: { cookie, "content-type": "application/json" },
-  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId }),
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
 });
-assert.equal(drawingZero.status, 200);
+await assertHttp(drawingZero, 201, "Drawing Zero");
+const drawingZeroPayload = await drawingZero.json();
+assert.match(drawingZeroPayload.artworkId, /^[0-9a-f-]{36}$/i);
+assert.equal(drawingZeroPayload.baselineOnly, true);
+assert.equal(drawingZeroPayload.visibility, "PRIVATE");
+
+const idempotentDrawingZero = await fetch(`${baseUrl}/api/drawing-zero`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: uploadIntent.fileAssetId, source: "UPLOAD" }),
+});
+assert.equal(idempotentDrawingZero.status, 201);
+assert.equal((await idempotentDrawingZero.json()).artworkId, drawingZeroPayload.artworkId);
+
+const resumeAfterDrawingZero = await fetch(`${baseUrl}/api/resume`, { headers: { cookie }, cache: "no-store" });
+assert.equal(resumeAfterDrawingZero.status, 200);
+assert.equal((await resumeAfterDrawingZero.json()).activation.stage, "FIRST_LESSON");
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
 assert.equal(journey.status, 200);
-assert.match(await journey.text(), /Drawing Zero/);
+const journeyHtml = await journey.text();
+assert.match(journeyHtml, /Minha jornada começou/);
+assert.match(journeyHtml, /baseline privado/i);
 
-const opsLogin = await fetch(`${baseUrl}/api/ops/session`, {
+const unauthorizedOps = await fetch(`${baseUrl}/api/ops/alpha`, { cache: "no-store" });
+assert.equal(unauthorizedOps.status, 401);
+
+const ops = await fetch(`${baseUrl}/api/ops/alpha`, { headers: { authorization: `Bearer ${opsToken}` }, cache: "no-store" });
+assert.equal(ops.status, 200);
+assert.ok((await ops.json()).overview.totalTesters >= 1);
+
+const invalidOpsSession = await fetch(`${baseUrl}/api/ops/session`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ token: "invalid-token-that-is-long-enough-to-test" }),
+});
+assert.equal(invalidOpsSession.status, 401);
+
+const validOpsSession = await fetch(`${baseUrl}/api/ops/session`, {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ token: opsToken }),
 });
-assert.equal(opsLogin.status, 200);
-const opsSetCookie = opsLogin.headers.get("set-cookie");
+assert.equal(validOpsSession.status, 200);
+const opsSetCookie = validOpsSession.headers.get("set-cookie");
 assert.ok(opsSetCookie);
 const opsCookie = opsSetCookie.split(";", 1)[0];
 
-const ops = await fetch(`${baseUrl}/ops`, { headers: { cookie: opsCookie }, cache: "no-store" });
-assert.equal(ops.status, 200);
-assert.match(await ops.text(), /Control Center/);
+const inviteCreate = await fetch(`${baseUrl}/api/ops/invites`, {
+  method: "POST",
+  headers: { cookie: opsCookie, "content-type": "application/json" },
+  body: JSON.stringify({ label: "Invited Tester", maxUses: 1, expiresInDays: 7 }),
+});
+assert.equal(inviteCreate.status, 201);
+const invitePayload = await inviteCreate.json();
+assert.match(invitePayload.code, /^[A-Za-z0-9_-]{20,}$/);
+assert.equal(invitePayload.invite.uses, 0);
 
-console.log("E2E_SMOKE=PASS health readiness(database+storage) privacy csrf session onboarding upload drawing_zero journey ops");
+const noConsent = await fetch(`${baseUrl}/api/invites/redeem`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ code: invitePayload.code }),
+});
+assert.equal(noConsent.status, 400);
+const noConsentPayload = await noConsent.json();
+assert.equal(noConsentPayload.code, "CONSENT_REQUIRED");
+assert.equal(noConsentPayload.consentVersion, consentVersion);
+
+const inviteBeforeConsent = await fetch(`${baseUrl}/api/ops/invites`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal((await inviteBeforeConsent.json()).invites[0].uses, 0);
+
+const redeem = await fetch(`${baseUrl}/api/invites/redeem`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ code: invitePayload.code, consentAccepted: true, consentVersion }),
+});
+assert.equal(redeem.status, 201);
+const redeemPayload = await redeem.json();
+assert.equal(redeemPayload.inviteLabel, "Invited Tester");
+assert.equal(redeemPayload.next, "/onboarding");
+const invitedSetCookie = redeem.headers.get("set-cookie");
+assert.ok(invitedSetCookie);
+const invitedCookie = invitedSetCookie.split(";", 1)[0];
+
+const participantExport = await fetch(`${baseUrl}/api/privacy/export`, { headers: { cookie: invitedCookie }, cache: "no-store" });
+assert.equal(participantExport.status, 200);
+assert.match(participantExport.headers.get("content-disposition") ?? "", /attachment/);
+const exportPayload = await participantExport.json();
+assert.equal(exportPayload.exportVersion, "closed-alpha-data-export-v1");
+assert.equal(exportPayload.userId, redeemPayload.userId);
+assert.equal(exportPayload.operationalSummary.cohortLabel, "Invited Tester");
+
+const reused = await fetch(`${baseUrl}/api/invites/redeem`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ code: invitePayload.code, consentAccepted: true, consentVersion }),
+});
+assert.equal(reused.status, 410);
+
+const inviteList = await fetch(`${baseUrl}/api/ops/invites`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(inviteList.status, 200);
+const inviteListPayload = await inviteList.json();
+assert.equal(inviteListPayload.invites[0].status, "CONSUMED");
+assert.equal(inviteListPayload.invites[0].uses, 1);
+
+const cohorts = await fetch(`${baseUrl}/api/ops/cohorts`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(cohorts.status, 200);
+const cohortPayload = await cohorts.json();
+const invitedCohort = cohortPayload.cohorts.find((item) => item.label === "Invited Tester");
+assert.ok(invitedCohort);
+assert.equal(invitedCohort.redeemed, 1);
+assert.equal(invitedCohort.onboarded, 0);
+
+const interventions = await fetch(`${baseUrl}/api/ops/interventions`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(interventions.status, 200);
+const interventionPayload = await interventions.json();
+const invitedRisk = interventionPayload.interventions.find((item) => item.userId === redeemPayload.userId);
+assert.ok(invitedRisk);
+assert.ok(invitedRisk.reasons.includes("NO_PROGRESS"));
+
+const testerDetail = await fetch(`${baseUrl}/api/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, cache: "no-store" });
+assert.equal(testerDetail.status, 200);
+const testerPayload = await testerDetail.json();
+assert.equal(testerPayload.tester.cohortLabel, "Invited Tester");
+assert.equal(testerPayload.tester.sessionCount, 1);
+
+const testerPage = await fetch(`${baseUrl}/ops/testers/${redeemPayload.userId}`, { headers: { cookie: opsCookie }, redirect: "manual" });
+assert.equal(testerPage.status, 200);
+assert.match(await testerPage.text(), /Visão operacional mínima/);
+
+const controlCenter = await fetch(`${baseUrl}/ops`, { headers: { cookie: opsCookie }, redirect: "manual" });
+assert.equal(controlCenter.status, 200);
+const controlHtml = await controlCenter.text();
+assert.match(controlHtml, /Control Center/);
+assert.match(controlHtml, /Cohort analytics/);
+assert.match(controlHtml, /Intervention queue/);
+assert.match(controlHtml, /NO_PROGRESS/);
+
+const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cookie }, cache: "no-store" });
+assert.equal(diagnostics.status, 200);
+const diagnosticsPayload = await diagnostics.json();
+assert.ok(diagnosticsPayload.diagnostics);
+assert.equal(diagnosticsPayload.diagnostics.baselineCount, 1);
+
+console.log("E2E_SMOKE=PASS health readiness(database+storage) privacy_notice participant_export security_headers request_id csrf_guard database_session personalized_onboarding resume_projection tester_heartbeat app_upload_prepare presigned_put app_upload_confirm drawing_zero_csrf drawing_zero_submit drawing_zero_idempotency journey_baseline protected_ops ops_control_center consent_gate consent_atomicity invite_create invite_redeem invite_one_time cohort_analytics intervention_queue tester_detail private_diagnostics");
