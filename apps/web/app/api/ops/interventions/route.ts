@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const event = await getOperationsRepository().recordInterventionLifecycle({
       userId: input.userId,
       status: input.status,
-      note: input.note,
+      ...(input.note !== undefined ? { note: input.note } : {}),
     });
     return NextResponse.json({ ok: true, event }, { status: 201 });
   } catch (error) {
