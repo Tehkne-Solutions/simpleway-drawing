@@ -57,7 +57,7 @@ const reuseOne = await fetch(`${baseUrl}/api/invites/redeem`, {
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ code: codes[0], consentAccepted: true, consentVersion: "closed-alpha-v1" }),
 });
-assert.equal(reuseOne.status, 400);
+assert.equal(reuseOne.status, 410);
 
 const redeemTwo = await fetch(`${baseUrl}/api/invites/redeem`, {
   method: "POST",
