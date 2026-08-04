@@ -21,7 +21,7 @@ async function request(path, init = {}) {
     ...init,
     headers: {
       ...(init.headers ?? {}),
-      "user-agent": "simpleway-drawing-release-gate/2",
+      "user-agent": "simpleway-drawing-release-gate/3",
     },
   });
 }
@@ -49,6 +49,7 @@ assertNoStore(ready, "readiness");
 const readyPayload = await ready.json();
 assert(readyPayload.status === "ready", "readiness status is not ready");
 assert(readyPayload.database === "ok", "database readiness is not ok");
+assert(readyPayload.storage === "ok", "private storage readiness is not ok");
 
 const home = await request("/");
 assert(home.ok, `home failed: ${home.status}`);
@@ -114,4 +115,4 @@ const blockedFeedback = await request("/api/feedback", {
 assert(blockedFeedback.status === 403, `cross-origin mutation was not blocked: ${blockedFeedback.status}`);
 assert((await blockedFeedback.json()).code === "CROSS_ORIGIN_REQUEST_BLOCKED", "unexpected cross-origin rejection code");
 
-console.log(`REMOTE_RELEASE_GATE=PASS url=${baseUrl} health ready database headers home signature privacy ops_guard secure_cookie resume diagnostics privacy_export csrf`);
+console.log(`REMOTE_RELEASE_GATE=PASS url=${baseUrl} health ready database storage headers home signature privacy ops_guard secure_cookie resume diagnostics privacy_export csrf`);
