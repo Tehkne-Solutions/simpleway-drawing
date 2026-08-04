@@ -45,7 +45,8 @@ for (const marker of [
 }
 
 expect(releaseWorkflow.includes("workflow_dispatch"), "Release Candidate workflow must remain manually dispatchable");
-expect(releaseWorkflow.includes("deploy:smoke"), "Release Candidate workflow must execute the remote smoke gate");
+expect(releaseWorkflow.includes("apps/web/scripts/remote-smoke.mjs"), "Release Candidate workflow must execute the remote smoke gate");
+expect(releaseWorkflow.includes("node-version: 22"), "Release Candidate workflow must remain pinned to Node 22");
 
 if (failures.length) {
   console.error(`RELEASE_FREEZE=FAIL count=${failures.length}`);
