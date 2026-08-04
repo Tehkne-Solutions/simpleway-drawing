@@ -3,7 +3,7 @@ import { getInvitationRepository } from "../../../../server/runtime";
 import { hasOpsSession } from "../../../../server/ops-session";
 import { readJsonBody, securityErrorResponse } from "../../../../server/request-security";
 
-type CreateInput = { label?: string; maxUses?: number; expiresInDays?: number };
+type CreateInput = { label?: string; maxUses?: number; expiresInDays?: number; quantity?: number };
 type DeleteInput = { id?: string };
 
 export async function GET() {
@@ -16,10 +16,19 @@ export async function POST(request: Request) {
     if (!(await hasOpsSession())) return NextResponse.json({ code: "OPS_UNAUTHENTICATED" }, { status: 401 });
     const input = await readJsonBody<CreateInput>(request, 8_192);
     const expiresInDays = Math.max(1, Math.min(Number(input.expiresInDays ?? 7), 90));
-    const result = await getInvitationRepository().create({
+    const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
+    const quantity = Math.max(1, Math.min(Math.trunc(Number(input.quantity ?? 1)), 50));
+    const invitations = getInvitationRepository();
+
+    if (quantity > 1) {
+      const batch = await invitations.createBatch({ label: input.label ?? "", quantity, expiresAt });
+      return NextResponse.json({ batch, quantity: batch.length }, { status: 201 });
+    }
+
+    const result = await invitations.create({
       label: input.label ?? "",
       maxUses: Number(input.maxUses ?? 1),
-      expiresAt: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
+      expiresAt,
     });
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
