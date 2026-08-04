@@ -6,7 +6,7 @@ Assinatura institucional: **Tehkné Solutions**
 
 ## Escopo congelado
 
-O RC1 cobre o Foundation Alpha completo e seus fluxos operacionais: onboarding, Drawing Zero, C0–C4, Gym, Observation/Construction/Form Labs, Evidence/Mastery/Coach, Create, Journey, Resume, Alpha Gate, Graduation, convites, consentimento, feedback, cohorts, Control Center, privacidade e diagnostics.
+O RC1 cobre o Foundation Alpha completo e seus fluxos operacionais: onboarding, Drawing Zero, C0–C4, Gym, Observation/Construction/Form Labs, Evidence/Mastery/Coach, Create, Journey, Resume, Alpha Gate, Graduation, convites, consentimento, feedback, cohorts, Control Center, privacidade, diagnostics e Launch Readiness.
 
 ## Contratos obrigatórios
 
@@ -20,40 +20,55 @@ O RC1 cobre o Foundation Alpha completo e seus fluxos operacionais: onboarding, 
 - Toda arte educacional nasce privada.
 - Mastery deriva de Evidence; conclusão de conteúdo não concede mastery automaticamente.
 
-## Gate local/CI
+## Gate CI
 
-Antes de promover um commit candidato:
+Antes de promover um commit candidato: typecheck, content validation, unit tests, freeze contract, migration drift, migrations idempotentes, PostgreSQL real, S3/MinIO lifecycle, deployment contract, production build e todos os smokes E2E devem passar.
 
-1. typecheck PASS;
-2. content validation PASS;
-3. unit tests PASS;
-4. migration baseline sem drift;
-5. migration versionada aplicada e idempotente;
-6. PostgreSQL verification PASS;
-7. S3/MinIO lifecycle PASS;
-8. deployment environment contract PASS;
-9. production build PASS sem warnings de compatibilidade CSS do produto;
-10. todos os smokes E2E PASS, incluindo cohort completion.
+## Production Launch Gate
 
-## Gate remoto após deploy
+Após o deploy, executar manualmente o workflow **Production Launch Gate** informando a URL HTTPS publicada.
 
-Executar o workflow **Release Candidate Verification** contra a URL HTTPS publicada. O resultado obrigatório é `REMOTE_RELEASE_GATE=PASS`.
+O gate executa `apps/web/scripts/production-launch-gate.mjs` e valida, contra o ambiente real:
 
-O gate remoto valida health, readiness/database, headers, identidade do produto, privacidade, proteção Ops, cookie de produção, Resume, Diagnostics, export do participante e CSRF.
+1. health e política `no-store`;
+2. readiness com conexão real ao banco;
+3. headers de segurança e request ID;
+4. identidade SimpleWay Drawing e assinatura Tehkné Solutions;
+5. aviso de privacidade público;
+6. bloqueio anônimo das rotas Ops;
+7. cookie `__Host-` Secure/HttpOnly/SameSite/Path;
+8. criação de sessão e resolução inicial do Learning Runtime;
+9. diagnostics;
+10. export de dados do participante;
+11. bloqueio CSRF/cross-origin.
 
-## Critério GO para Closed Alpha
+Resultado obrigatório: `PRODUCTION_LAUNCH_GATE=GO`.
 
-O Closed Alpha só recebe GO quando:
+Qualquer falha produz `PRODUCTION_LAUNCH_GATE=NO_GO` e impede o envio de convites até correção e nova execução.
+
+## Critério GO para primeira cohort
+
+A primeira turma só recebe GO quando:
 
 - CI do commit RC1 estiver verde;
 - deploy estiver `Ready`;
-- migration estiver aplicada no banco real;
-- storage real estiver configurado;
-- Release Candidate Verification estiver verde;
+- migrations estiverem aplicadas no banco real;
+- storage S3-compatible real estiver configurado;
+- Production Launch Gate retornar **GO**;
 - teste manual responsivo em desktop e mobile não apresentar bloqueadores P0/P1;
 - convite one-time real puder ser criado e resgatado;
-- Drawing Zero puder ser enviado e reencontrado no Journey.
+- Drawing Zero puder ser enviado e reencontrado no Journey;
+- Control Center estiver acessível à operação;
+- Launch Readiness da cohort estiver visível e sem motivo de `HOLD` não explicado.
+
+## Decisão operacional
+
+**GO** autoriza criação/distribuição do primeiro lote de convites.
+
+**NO-GO** congela a distribuição de convites. Corrige-se apenas o contrato que falhou, executa-se CI novamente quando houver mudança de código e repete-se o Production Launch Gate.
 
 ## Política de freeze
 
 Depois do GO do RC1, somente correções P0/P1 entram antes da primeira cohort. Mudanças de currículo, novas features e expansão C5+ ficam para a próxima linha de desenvolvimento.
+
+**Tehkné Solutions**

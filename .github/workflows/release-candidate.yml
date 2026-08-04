@@ -1,10 +1,10 @@
-name: Release Candidate Verification
+name: Production Launch Gate
 
 on:
   workflow_dispatch:
     inputs:
       deploy_url:
-        description: "HTTPS URL of the deployed release candidate"
+        description: "HTTPS URL of the deployed SimpleWay Drawing release candidate"
         required: true
         type: string
 
@@ -12,17 +12,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: simpleway-drawing-release-candidate
+  group: simpleway-drawing-production-launch
   cancel-in-progress: false
 
 jobs:
-  verify-release-candidate:
+  production-launch-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       DEPLOY_BASE_URL: ${{ inputs.deploy_url }}
     steps:
-      - name: Checkout release gate
+      - name: Checkout production gate
         uses: actions/checkout@v4
 
       - name: Use Node 22
@@ -30,16 +30,27 @@ jobs:
         with:
           node-version: 22
 
-      - name: Verify deployed release candidate
-        run: node apps/web/scripts/remote-smoke.mjs
+      - name: Verify production launch readiness
+        run: node apps/web/scripts/production-launch-gate.mjs
 
-      - name: Publish verification summary
+      - name: Publish GO summary
         if: success()
         run: |
-          echo "## SimpleWay Drawing · Release Candidate" >> "$GITHUB_STEP_SUMMARY"
+          echo "## SimpleWay Drawing · Production Launch Gate" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Result: **PASS**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Gate: health, readiness/database, security headers, product identity, privacy, Ops guard, secure session cookie, Resume, diagnostics, privacy export, CSRF" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Decision: **GO**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Gate: health, database readiness, security headers, public identity, privacy, Ops guard, secure session, learning runtime, diagnostics, privacy export and CSRF" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish NO-GO summary
+        if: failure()
+        run: |
+          echo "## SimpleWay Drawing · Production Launch Gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Decision: **NO-GO**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Action: correct the failing production contract before inviting testers." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"

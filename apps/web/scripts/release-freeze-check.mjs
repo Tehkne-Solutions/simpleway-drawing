@@ -9,15 +9,14 @@ const requiredFiles = [
   ".github/workflows/release-candidate.yml",
   "docs/releases/RC1.md",
   "apps/web/server/cohort-readiness.ts",
+  "apps/web/scripts/production-launch-gate.mjs",
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
   "apps/web/scripts/first-cohort-launch-smoke.mjs",
   "packages/database/migrations/0000_foundation_alpha.sql",
 ];
 
-for (const relativePath of requiredFiles) {
-  await access(resolve(repoRoot, relativePath));
-}
+for (const relativePath of requiredFiles) await access(resolve(repoRoot, relativePath));
 
 const rootPackage = JSON.parse(await readFile(resolve(repoRoot, "package.json"), "utf8"));
 const webPackage = JSON.parse(await readFile(resolve(repoRoot, "apps/web/package.json"), "utf8"));
@@ -39,9 +38,11 @@ for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "p
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
 }
 
-expect(releaseWorkflow.includes("workflow_dispatch"), "Release Candidate workflow must remain manually dispatchable");
-expect(releaseWorkflow.includes("apps/web/scripts/remote-smoke.mjs"), "Release Candidate workflow must execute the remote smoke gate");
-expect(releaseWorkflow.includes("node-version: 22"), "Release Candidate workflow must remain pinned to Node 22");
+expect(releaseWorkflow.includes("workflow_dispatch"), "Production Launch Gate must remain manually dispatchable");
+expect(releaseWorkflow.includes("apps/web/scripts/production-launch-gate.mjs"), "Production Launch Gate workflow must execute the production gate");
+expect(releaseWorkflow.includes("node-version: 22"), "Production Launch Gate must remain pinned to Node 22");
+expect(releaseWorkflow.includes("Decision: **GO**"), "Production Launch Gate must publish an explicit GO decision");
+expect(releaseWorkflow.includes("Decision: **NO-GO**"), "Production Launch Gate must publish an explicit NO-GO decision");
 
 if (failures.length) {
   console.error(`RELEASE_FREEZE=FAIL count=${failures.length}`);
@@ -49,4 +50,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 rc=RC1`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 rc=RC1 production_launch_gate=frozen`);
