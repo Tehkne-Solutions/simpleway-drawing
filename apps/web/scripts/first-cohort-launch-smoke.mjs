@@ -72,4 +72,13 @@ const finalBatch = (await finalList.json()).invites.filter((invite) => invite.la
 assert.equal(finalBatch.filter((invite) => invite.status === "CONSUMED").length, 2);
 assert.equal(finalBatch.filter((invite) => invite.status === "ACTIVE").length, 1);
 
-console.log("FIRST_COHORT_LAUNCH_E2E=PASS ops_guard batch_create unique_codes one_time_identity independent_redemption invite_status_projection");
+const cohorts = await fetch(`${baseUrl}/api/ops/cohorts`, { headers: { cookie: opsCookie }, cache: "no-store" });
+await assertHttp(cohorts, 200, "cohort batch analytics");
+const cohort = (await cohorts.json()).cohorts.find((item) => item.label === "First Cohort E2E");
+assert.ok(cohort);
+assert.equal(cohort.inviteCount, 3);
+assert.equal(cohort.maxUses, 3);
+assert.equal(cohort.redeemed, 2);
+assert.equal(cohort.status, "MIXED");
+
+console.log("FIRST_COHORT_LAUNCH_E2E=PASS ops_guard batch_create unique_codes one_time_identity independent_redemption invite_status_projection cohort_batch_aggregation");
