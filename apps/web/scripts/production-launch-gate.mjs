@@ -44,12 +44,14 @@ await check("health", async () => {
   return "service ok, security headers present";
 });
 
-await check("database-readiness", async () => {
+await check("infrastructure-readiness", async () => {
   const response = await request("/api/ready");
   expect(response.ok, `HTTP ${response.status}`);
   const body = await response.json();
-  expect(body.status === "ready" && body.database === "ok", "database is not ready");
-  return "database ready";
+  expect(body.status === "ready", "application is not ready");
+  expect(body.database === "ok", "database is not ready");
+  expect(body.storage === "ok", "private object storage is not ready");
+  return "database and private storage ready";
 });
 
 await check("public-product", async () => {
