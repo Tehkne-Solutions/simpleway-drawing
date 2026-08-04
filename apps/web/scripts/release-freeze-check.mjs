@@ -10,6 +10,7 @@ const requiredFiles = [
   "docs/releases/RC1.md",
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
+  "apps/web/scripts/first-cohort-launch-smoke.mjs",
   "packages/database/migrations/0000_foundation_alpha.sql",
 ];
 
@@ -29,6 +30,7 @@ const expect = (condition, message) => { if (!condition) failures.push(message);
 expect(rootPackage.packageManager === "pnpm@10.15.0", "packageManager must remain pinned to pnpm@10.15.0");
 expect(rootPackage.engines?.node === "22.x", "Node must remain pinned to 22.x");
 expect(webPackage.scripts?.["deploy:smoke"] === "node scripts/remote-smoke.mjs", "deploy:smoke contract changed");
+expect(webPackage.scripts?.["e2e:first-cohort"] === "node scripts/first-cohort-launch-smoke.mjs", "first cohort E2E contract changed");
 expect(vercel.installCommand === "npm install -g pnpm@10.15.0 && pnpm install --no-frozen-lockfile", "Vercel install command drifted");
 expect(vercel.buildCommand === "pnpm build", "Vercel build command drifted");
 
@@ -40,6 +42,7 @@ for (const marker of [
   "pnpm deploy:check",
   "pnpm build",
   "e2e:cohort",
+  "e2e:first-cohort",
 ]) {
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
 }
