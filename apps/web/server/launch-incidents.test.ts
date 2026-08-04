@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { AlphaFeedbackRecord, TesterIntervention } from "@swd/database";
 import { evaluateLaunchIncidents } from "./launch-incidents";
 
-const feedback = (overrides: Partial<any> = {}) => ({
+const feedback = (overrides: Partial<AlphaFeedbackRecord> = {}): AlphaFeedbackRecord => ({
   id: "feedback-1",
   category: "OTHER",
   rating: 5,
@@ -13,7 +14,7 @@ const feedback = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-const intervention = (overrides: Partial<any> = {}) => ({
+const intervention = (overrides: Partial<TesterIntervention> = {}): TesterIntervention => ({
   userId: "user-1",
   displayName: "Tester",
   stage: "FOUNDATION",
@@ -24,6 +25,9 @@ const intervention = (overrides: Partial<any> = {}) => ({
   latestRating: null,
   reasons: ["STALLED_STAGE"],
   priority: "LOW",
+  lifecycleStatus: "OPEN",
+  lifecycleNote: null,
+  lifecycleAt: null,
   ...overrides,
 });
 
