@@ -1,0 +1,78 @@
+name: Prebuilt Production Fallback
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY_RC1 to confirm a production deployment from main"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simpleway-drawing-prebuilt-production
+  cancel-in-progress: false
+
+jobs:
+  prebuilt-production:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DEPLOY_RC1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_ORG_ID: team_GAFmMllTKaWx5iGEa8sTZJ0T
+      VERCEL_PROJECT_ID: prj_EIWJ22DTPqH3Of0Jg8WMQ4mGrpqC
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Require Vercel token
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          test -n "$VERCEL_TOKEN" || { echo "VERCEL_TOKEN secret is required"; exit 1; }
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull production environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build prebuilt production output on GitHub runner
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Verify prebuilt artifact
+        run: |
+          test -d .vercel/output || { echo ".vercel/output was not generated"; exit 1; }
+          test -f .vercel/output/config.json || { echo ".vercel/output/config.json missing"; exit 1; }
+
+      - name: Deploy prebuilt artifact to Production
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token="$VERCEL_TOKEN")
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "PREBUILT_PRODUCTION_URL=$DEPLOY_URL"
+
+      - name: Publish deployment summary
+        run: |
+          echo "## SimpleWay Drawing · Prebuilt Production Fallback" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Source: \`main\` / \`${GITHUB_SHA}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build location: GitHub Actions runner" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Deployment mode: Vercel prebuilt production" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Next action: run Production Launch Gate; this workflow alone does not authorize cohort invitations." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"
