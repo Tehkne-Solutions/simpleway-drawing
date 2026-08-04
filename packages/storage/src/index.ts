@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { CreatePrivateUploadInput, FileStoragePort, PrivateUploadIntent, StoredFileMetadata } from "@swd/domain";
 
@@ -27,6 +27,10 @@ export class S3FileStorage implements FileStoragePort {
         secretAccessKey: config.secretAccessKey,
       },
     });
+  }
+
+  async checkReadiness(): Promise<void> {
+    await this.client.send(new HeadBucketCommand({ Bucket: this.config.bucket }));
   }
 
   async createPrivateUpload(input: CreatePrivateUploadInput): Promise<PrivateUploadIntent> {
