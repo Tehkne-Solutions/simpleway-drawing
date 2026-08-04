@@ -5,6 +5,7 @@ import { alphaInviteRedemptions, alphaInvites } from "../schema/operations";
 
 export type AlphaCohortAnalytics = {
   inviteId: string;
+  inviteCount: number;
   label: string;
   status: string;
   createdAt: Date;
@@ -20,10 +21,17 @@ export type AlphaCohortAnalytics = {
   completionRate: number;
 };
 
+type IndividualAnalytics = Omit<AlphaCohortAnalytics, "inviteCount">;
+
+function cohortLabel(label: string): string {
+  return label.replace(/ · \d+$/, "");
+}
+
 export class DrizzleCohortAnalyticsRepository {
   constructor(private readonly db: Database) {}
 
   async list(limit = 50): Promise<AlphaCohortAnalytics[]> {
+    const fetchLimit = Math.max(1, Math.min(limit * 2, 100));
     const [rows, feedbackRows] = await Promise.all([
       this.db
         .select({
@@ -66,7 +74,7 @@ export class DrizzleCohortAnalyticsRepository {
         })
         .from(alphaInvites)
         .orderBy(desc(alphaInvites.createdAt))
-        .limit(Math.max(1, Math.min(limit, 100))),
+        .limit(fetchLimit),
       this.db
         .select({
           inviteId: alphaInviteRedemptions.inviteId,
@@ -90,7 +98,7 @@ export class DrizzleCohortAnalyticsRepository {
       averageRating: row.averageRating === null ? null : Number(row.averageRating),
     }]));
 
-    return rows.map((row) => {
+    const individual: IndividualAnalytics[] = rows.map((row) => {
       const redeemed = Number(row.redeemed ?? 0);
       const onboarded = Number(row.onboarded ?? 0);
       const completed = Number(row.completed ?? 0);
@@ -108,6 +116,41 @@ export class DrizzleCohortAnalyticsRepository {
         completed,
         feedbackCount: feedback.feedbackCount,
         averageRating: feedback.averageRating,
+        activationRate: redeemed > 0 ? Math.round((onboarded / redeemed) * 100) : 0,
+        completionRate: redeemed > 0 ? Math.round((completed / redeemed) * 100) : 0,
+      };
+    });
+
+    const groups = new Map<string, IndividualAnalytics[]>();
+    for (const item of individual) {
+      const key = cohortLabel(item.label);
+      groups.set(key, [...(groups.get(key) ?? []), item]);
+    }
+
+    return Array.from(groups.entries()).slice(0, Math.max(1, Math.min(limit, 100))).map(([label, items]) => {
+      const first = items[0];
+      if (!first) throw new Error("COHORT_ANALYTICS_EMPTY_GROUP");
+      const sum = (select: (item: IndividualAnalytics) => number) => items.reduce((total, item) => total + select(item), 0);
+      const redeemed = sum((item) => item.redeemed);
+      const onboarded = sum((item) => item.onboarded);
+      const completed = sum((item) => item.completed);
+      const feedbackCount = sum((item) => item.feedbackCount);
+      const weightedRatingTotal = items.reduce((total, item) => total + (item.averageRating ?? 0) * item.feedbackCount, 0);
+      const statuses = new Set(items.map((item) => item.status));
+      return {
+        inviteId: first.inviteId,
+        inviteCount: items.length,
+        label,
+        status: statuses.size === 1 ? first.status : "MIXED",
+        createdAt: items.reduce((latest, item) => item.createdAt > latest ? item.createdAt : latest, first.createdAt),
+        maxUses: sum((item) => item.maxUses),
+        redeemed,
+        onboarded,
+        active7d: sum((item) => item.active7d),
+        evidenceUsers: sum((item) => item.evidenceUsers),
+        completed,
+        feedbackCount,
+        averageRating: feedbackCount > 0 ? Math.round((weightedRatingTotal / feedbackCount) * 100) / 100 : null,
         activationRate: redeemed > 0 ? Math.round((onboarded / redeemed) * 100) : 0,
         completionRate: redeemed > 0 ? Math.round((completed / redeemed) * 100) : 0,
       };
