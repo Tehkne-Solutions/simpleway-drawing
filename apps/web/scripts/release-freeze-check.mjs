@@ -11,6 +11,7 @@ const requiredFiles = [
   "apps/web/server/cohort-readiness.ts",
   "apps/web/server/launch-incidents.ts",
   "apps/web/scripts/production-launch-gate.mjs",
+  "apps/web/scripts/production-environment-doctor.mjs",
   "apps/web/scripts/remote-smoke.mjs",
   "apps/web/scripts/cohort-completion-smoke.mjs",
   "apps/web/scripts/first-cohort-launch-smoke.mjs",
@@ -34,6 +35,7 @@ const vercel = JSON.parse(await readFile(resolve(repoRoot, "vercel.json"), "utf8
 const ci = await readFile(resolve(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const releaseWorkflow = await readFile(resolve(repoRoot, ".github/workflows/release-candidate.yml"), "utf8");
 const productionGate = await readFile(resolve(repoRoot, "apps/web/scripts/production-launch-gate.mjs"), "utf8");
+const environmentDoctor = await readFile(resolve(repoRoot, "apps/web/scripts/production-environment-doctor.mjs"), "utf8");
 const readyRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ready/route.ts"), "utf8");
 const storageSource = await readFile(resolve(repoRoot, "packages/storage/src/index.ts"), "utf8");
 const interventionsRoute = await readFile(resolve(repoRoot, "apps/web/app/api/ops/interventions/route.ts"), "utf8");
@@ -47,6 +49,8 @@ const expect = (condition, message) => { if (!condition) failures.push(message);
 expect(rootPackage.packageManager === "pnpm@10.15.0", "packageManager must remain pinned to pnpm@10.15.0");
 expect(rootPackage.engines?.node === "22.x", "Node must remain pinned to 22.x");
 expect(Array.isArray(rootPackage.workspaces) && rootPackage.workspaces.includes("apps/*") && rootPackage.workspaces.includes("packages/*"), "npm workspace fallback must remain configured");
+expect(rootPackage.scripts?.["deploy:doctor"] === "pnpm --filter @swd/web deploy:doctor", "root deploy:doctor contract changed");
+expect(webPackage.scripts?.["deploy:doctor"] === "node scripts/production-environment-doctor.mjs", "web deploy:doctor contract changed");
 expect(webPackage.scripts?.["deploy:smoke"] === "node scripts/remote-smoke.mjs", "deploy:smoke contract changed");
 expect(webPackage.scripts?.["e2e:first-cohort"] === "node scripts/first-cohort-launch-smoke.mjs", "first cohort E2E contract changed");
 
@@ -72,6 +76,12 @@ for (const marker of ["pnpm typecheck", "pnpm content:validate", "pnpm test", "p
   expect(ci.includes(marker), `CI contract missing: ${marker}`);
 }
 expect(ci.includes('STORAGE_KEEP_BUCKET: "1"'), "CI must preserve the MinIO bucket for application readiness smoke");
+
+expect(environmentDoctor.includes("PRODUCTION_ENV_DOCTOR="), "Production environment doctor result marker missing");
+expect(environmentDoctor.includes("secret:separation"), "Production environment doctor must verify secret separation");
+expect(environmentDoctor.includes("database:host"), "Production environment doctor must reject local database hosts");
+expect(environmentDoctor.includes("storage:endpoint-host"), "Production environment doctor must reject local storage hosts");
+expect(environmentDoctor.includes("app:host"), "Production environment doctor must require a public application host");
 
 expect(storageSource.includes("HeadBucketCommand"), "Storage readiness must use a non-destructive bucket probe");
 expect(storageSource.includes("checkReadiness"), "Storage readiness adapter contract missing");
@@ -102,4 +112,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only storage_readiness=head-bucket intervention_lifecycle=frozen incident_triage=frozen rc=RC1 production_launch_gate=frozen`);
+console.log(`RELEASE_FREEZE=PASS required_files=${requiredFiles.length} node=22.x pnpm=10.15.0 vercel_installer=npm-workspaces framework=nextjs output=apps/web/.next quota_guard=main-only environment_doctor=frozen storage_readiness=head-bucket intervention_lifecycle=frozen incident_triage=frozen rc=RC1 production_launch_gate=frozen`);
