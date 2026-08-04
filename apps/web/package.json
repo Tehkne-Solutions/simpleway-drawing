@@ -17,6 +17,7 @@
     "e2e:cohort": "node scripts/cohort-completion-smoke.mjs",
     "e2e:first-cohort": "node scripts/first-cohort-launch-smoke.mjs",
     "deploy:check": "node scripts/verify-production-env.mjs",
+    "deploy:doctor": "node scripts/production-environment-doctor.mjs",
     "deploy:smoke": "node scripts/remote-smoke.mjs"
   },
   "dependencies": {
