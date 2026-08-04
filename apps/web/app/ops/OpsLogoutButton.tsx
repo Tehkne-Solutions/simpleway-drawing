@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export function OpsLogoutButton() {
@@ -9,5 +10,5 @@ export function OpsLogoutButton() {
     router.replace("/ops/login");
     router.refresh();
   }
-  return <button className="secondary" type="button" onClick={logout}>Sair</button>;
+  return <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><Link className="secondary" href="/ops/incidents">Incidentes</Link><button className="secondary" type="button" onClick={logout}>Sair</button></div>;
 }
