@@ -20,10 +20,10 @@
     "deploy:smoke": "node scripts/remote-smoke.mjs"
   },
   "dependencies": {
-    "@swd/content": "workspace:*",
-    "@swd/database": "workspace:*",
-    "@swd/domain": "workspace:*",
-    "@swd/storage": "workspace:*",
+    "@swd/content": "0.0.0",
+    "@swd/database": "0.0.0",
+    "@swd/domain": "0.0.0",
+    "@swd/storage": "0.0.0",
     "drizzle-orm": "^0.44.0",
     "next": "^15.4.0",
     "react": "^19.1.0",
