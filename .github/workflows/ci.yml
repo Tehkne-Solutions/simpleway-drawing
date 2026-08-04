@@ -111,3 +111,4 @@ jobs:
           pnpm --filter @swd/web e2e:visual-labs
           pnpm --filter @swd/web e2e:resume
           pnpm --filter @swd/web e2e:cohort
+          pnpm --filter @swd/web e2e:first-cohort
