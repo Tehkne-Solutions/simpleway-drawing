@@ -1,0 +1,102 @@
+:root {
+  --swd-nero: #11100e;
+  --swd-nero-soft: #1b1a17;
+  --swd-carta: #f8f4ea;
+  --swd-pergamena: #f1e5cc;
+  --swd-ink: #211d17;
+  --swd-muted: #70695f;
+  --swd-line: #d9cdb8;
+  --swd-giallo: #f2b705;
+  --swd-ocra: #c88a18;
+  --swd-terracotta: #a44e2d;
+  --swd-rosso: #983d32;
+  --swd-oltremare: #315b83;
+  --swd-veronese: #39745a;
+  --swd-violetto: #74567d;
+  --swd-success: #39745a;
+  --swd-radius-sm: 8px;
+  --swd-radius-md: 12px;
+  --swd-radius-lg: 18px;
+  --swd-shadow-paper: 0 12px 34px rgba(46, 35, 20, .08);
+  --swd-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --swd-font-editorial: Georgia, "Times New Roman", serif;
+}
+
+html { background: var(--swd-carta); }
+body {
+  background-color: var(--swd-carta);
+  color: var(--swd-ink);
+  font-family: var(--swd-font-ui);
+  background-image:
+    linear-gradient(rgba(120, 91, 45, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 91, 45, .018) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+h1, .flow-title, .lesson-hook, .section-heading h2 {
+  font-family: var(--swd-font-editorial);
+  font-weight: 600;
+}
+
+::selection { background: var(--swd-giallo); color: var(--swd-nero); }
+
+.primary {
+  background: var(--swd-giallo);
+  color: var(--swd-nero);
+  border-radius: var(--swd-radius-sm);
+  box-shadow: inset 0 -2px 0 rgba(113, 72, 0, .18);
+}
+.primary:hover { background: #ffc51a; }
+.secondary { border-color: var(--swd-line); border-radius: var(--swd-radius-sm); background: rgba(255,255,255,.42); }
+
+.card, .flow-card, .lesson-block, .practice-card, .journey-item, .artwork-tile,
+.create-form, .version-card, .lesson-reflection {
+  background: rgba(255, 252, 244, .92);
+  border-color: var(--swd-line);
+  box-shadow: var(--swd-shadow-paper);
+}
+
+.card, .flow-card { border-radius: var(--swd-radius-lg); }
+.lesson-block, .practice-card, .journey-item, .artwork-tile { border-radius: var(--swd-radius-md); }
+
+.eyebrow { color: var(--swd-ocra); }
+.lead, .compact { color: var(--swd-muted); }
+
+.home-card-link { position: relative; overflow: hidden; }
+.home-card-link::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--swd-giallo); }
+.home-card-link:nth-child(2)::before { background: var(--swd-terracotta); }
+.home-card-link:nth-child(3)::before { background: var(--swd-oltremare); }
+.home-card-link:nth-child(4)::before { background: var(--swd-veronese); }
+.home-card-link:hover { border-color: var(--swd-ocra); transform: translateY(-2px); }
+
+.lesson-row { border-radius: var(--swd-radius-sm); background: rgba(255,252,244,.75); border-color: var(--swd-line); }
+.lesson-row.is-complete { background: rgba(57,116,90,.08); }
+.lesson-index { background: var(--swd-pergamena); }
+.is-complete .lesson-index { background: var(--swd-veronese); color: #fff; }
+
+.lesson-hook { background: var(--swd-nero); color: var(--swd-carta); border-radius: var(--swd-radius-md); }
+.lesson-checkpoint { background: rgba(242,183,5,.10); border-left-color: var(--swd-giallo); }
+
+.gym-drill-nav a.is-active { background: var(--swd-terracotta); color: #fff; border-color: var(--swd-terracotta); }
+.line-gym-board { background-color: #fbf7ed; border-color: var(--swd-line); }
+.gym-guide { stroke: #cfc3ad; }
+.gym-start, .gym-target-inner { fill: var(--swd-giallo); }
+.gym-target-outer { stroke: var(--swd-ocra); }
+.gym-stroke { stroke: var(--swd-ink); }
+.coach-card { background: var(--swd-nero); color: var(--swd-carta); border-radius: var(--swd-radius-md); }
+.coach-score { border-color: var(--swd-giallo); }
+
+.artwork-tile:nth-child(4n+1) { border-top: 3px solid var(--swd-giallo); }
+.artwork-tile:nth-child(4n+2) { border-top: 3px solid var(--swd-terracotta); }
+.artwork-tile:nth-child(4n+3) { border-top: 3px solid var(--swd-oltremare); }
+.artwork-tile:nth-child(4n) { border-top: 3px solid var(--swd-veronese); }
+
+.journey-before-after { border-color: var(--swd-line); background: rgba(255,252,244,.92); }
+.alpha-status.status-ready { background: rgba(57,116,90,.12); color: var(--swd-veronese); }
+
+footer { border-color: var(--swd-line); color: var(--swd-muted); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .primary, .secondary, .lesson-row, .artwork-tile { transition: transform .16s ease, background-color .16s ease, border-color .16s ease; }
+  .primary:hover, .artwork-tile:hover { transform: translateY(-1px); }
+}
