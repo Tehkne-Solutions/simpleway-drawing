@@ -14,8 +14,6 @@ const navigation = [
   ["⌇", "Diagnostics", "/diagnostics"],
 ] as const;
 
-const topNavigation = navigation.slice(0, 9);
-
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="app-shell app-shell-v1">
@@ -30,16 +28,16 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
             <Link key={href} href={href}><span aria-hidden="true">{glyph}</span><b>{label}</b></Link>
           ))}
         </nav>
-        <blockquote className="atelier-quote">“A arte nunca se conclui; apenas se compreende um pouco mais.”<cite>— Leonardo da Vinci</cite></blockquote>
         <div className="atelier-signature"><strong>Tehkné Solutions</strong><span>Método. Arte. Propósito.</span></div>
       </aside>
 
       <div className="atelier-stage">
         <header className="app-header atelier-topbar">
-          <nav className="app-nav atelier-topnav" aria-label="Navegação principal">
-            {topNavigation.map(([, label, href]) => <Link key={href} href={href}>{label}</Link>)}
-          </nav>
-          <Link className="atelier-hnk" href="/resume">HNK <span aria-hidden="true">⌄</span></Link>
+          <Link className="atelier-context" href="/">SimpleWay Drawing</Link>
+          <div className="atelier-topbar-actions">
+            <Link href="/resume">Continuar jornada</Link>
+            <Link className="atelier-hnk" href="/resume">HNK <span aria-hidden="true">⌄</span></Link>
+          </div>
         </header>
         <div id="main-content" tabIndex={-1}>{children}</div>
         <footer className="app-footer"><span>SimpleWay Drawing</span><span>Tehkné Solutions</span></footer>
