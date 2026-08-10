@@ -6,6 +6,7 @@ import { C4_LESSONS } from "@swd/content/c4";
 import Link from "next/link";
 import { getLearningProgressRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
+import "./learn-v1.css";
 
 export const dynamic = "force-dynamic";
 
