@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: simpleway_drawing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - swd_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d simpleway_drawing"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: simpleway
+      MINIO_ROOT_PASSWORD: simpleway-local-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - swd_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 simpleway simpleway-local-secret &&
+      mc mb --ignore-existing local/simpleway-drawing-local &&
+      mc anonymous set none local/simpleway-drawing-local;
+      exit 0;
+      "
+
+volumes:
+  swd_postgres_data:
+  swd_minio_data:
