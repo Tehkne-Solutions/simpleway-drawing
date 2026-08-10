@@ -13,6 +13,7 @@ import "./accessibility.css";
 import "./visual-v1.css";
 import "./learn/lesson-v1.css";
 import "./labs-v1.css";
+import "./visual-v1-create-journey.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
