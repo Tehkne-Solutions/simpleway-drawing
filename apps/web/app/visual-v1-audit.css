@@ -1,0 +1,35 @@
+/* Visual Product Pass V1 · final consistency audit */
+:where(a, button, input, select, textarea):focus-visible { outline: 3px solid rgba(242,183,5,.55); outline-offset: 3px; }
+
+.flow-shell { align-items: start; padding-top: 34px; }
+.flow-card { width: min(1120px, 100%); }
+.flow-card > .eyebrow:first-child { margin-bottom: 12px; }
+
+img { max-width: 100%; }
+
+@media (max-width: 1080px) {
+  .atelier-topnav { overflow-x: auto; scrollbar-width: thin; }
+  .atelier-topnav a { white-space: nowrap; }
+}
+
+@media (max-width: 760px) {
+  .flow-shell { padding: 22px 14px 30px; }
+  .flow-card { padding: 24px 18px; }
+  .flow-title { font-size: clamp(36px, 12vw, 54px); }
+  .section-heading { align-items: flex-start; flex-direction: column; }
+  .flow-actions.split-actions { align-items: stretch; }
+  .flow-actions.split-actions > .primary,
+  .flow-actions.split-actions > .secondary,
+  .flow-actions.split-actions > .link-button,
+  .flow-actions.split-actions > button { width: 100%; }
+}
+
+@media (max-width: 520px) {
+  .atelier-topbar { padding-inline: 10px; }
+  .atelier-hnk { padding: 8px 10px; }
+  .flow-card { border-left: 0; border-right: 0; border-radius: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
