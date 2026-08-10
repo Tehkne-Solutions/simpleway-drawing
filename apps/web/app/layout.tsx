@@ -15,6 +15,7 @@ import "./learn/lesson-v1.css";
 import "./labs-v1.css";
 import "./visual-v1-create-journey.css";
 import "./visual-v1-progress.css";
+import "./visual-v1-audit.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
