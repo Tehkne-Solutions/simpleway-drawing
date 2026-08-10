@@ -1,0 +1,51 @@
+/* V1.1 Recovery Pass — reset visual excess before deeper redesign */
+:root {
+  --swd-display-xl: clamp(2.4rem, 5vw, 4.5rem);
+  --swd-display-lg: clamp(2rem, 3.6vw, 3.4rem);
+  --swd-title-md: clamp(1.6rem, 2.4vw, 2.4rem);
+  --swd-body-lg: 1.05rem;
+}
+
+body { font-size: 16px; line-height: 1.55; }
+
+h1, .flow-title { font-size: var(--swd-display-lg) !important; line-height: 1.02; letter-spacing: -.035em; max-width: 16ch; }
+h2, .section-heading h2 { font-size: var(--swd-title-md) !important; line-height: 1.12; letter-spacing: -.025em; }
+h3 { font-size: clamp(1.15rem, 1.5vw, 1.45rem) !important; line-height: 1.2; }
+.lead { font-size: var(--swd-body-lg) !important; line-height: 1.65; max-width: 68ch; }
+
+.flow-shell { padding-top: 24px !important; }
+.flow-card { padding: clamp(22px, 3vw, 34px) !important; }
+
+.card, .flow-card, .lesson-block, .practice-card, .journey-item, .artwork-tile,
+.create-form, .version-card, .lesson-reflection { box-shadow: 0 7px 20px rgba(46,35,20,.055) !important; }
+
+.atelier-rail { width: 220px !important; }
+.atelier-stage { margin-left: 220px !important; }
+.atelier-brand small, .atelier-quote { font-size: 12px !important; }
+.atelier-nav a { min-height: 40px; padding: 8px 10px !important; }
+.atelier-nav a b { font-size: 13px !important; }
+
+.home-hero, .hero, .flow-card:first-child { min-height: auto !important; }
+.home-hero h1, .hero h1 { font-size: var(--swd-display-xl) !important; max-width: 12ch; }
+
+/* Remove decorative dominance from prototype sketches until real art assets replace them. */
+:where(.home-study, .atelier-study, .geometry-study, .renaissance-study, .drawing-zero-reference) svg {
+  opacity: .48;
+  filter: saturate(.7);
+}
+
+.primary, .secondary, .link-button, button { min-height: 42px; }
+
+@media (max-width: 900px) {
+  .atelier-rail { width: 190px !important; }
+  .atelier-stage { margin-left: 190px !important; }
+  h1, .flow-title { font-size: clamp(2rem, 7vw, 3rem) !important; }
+}
+
+@media (max-width: 760px) {
+  .atelier-stage { margin-left: 0 !important; }
+  .flow-card { padding: 20px 16px !important; }
+  h1, .flow-title, .home-hero h1, .hero h1 { font-size: clamp(2rem, 9vw, 2.75rem) !important; }
+  h2, .section-heading h2 { font-size: clamp(1.45rem, 6vw, 2rem) !important; }
+  .lead { font-size: 1rem !important; }
+}
