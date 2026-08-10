@@ -1,0 +1,180 @@
+/* V1.1 Layout System — one spatial rhythm across the product */
+:root {
+  --swd-page-max: 1440px;
+  --swd-page-pad: clamp(18px, 2vw, 30px);
+  --swd-space-1: 8px;
+  --swd-space-2: 12px;
+  --swd-space-3: 16px;
+  --swd-space-4: 20px;
+  --swd-space-5: 24px;
+  --swd-space-6: 32px;
+  --swd-space-7: 40px;
+  --swd-section-gap: 24px;
+}
+
+/* Pages use the available stage instead of floating as narrow islands. */
+.shell,
+.flow-shell {
+  width: 100%;
+  max-width: var(--swd-page-max) !important;
+  min-height: auto !important;
+  margin: 0 auto !important;
+  padding: 24px var(--swd-page-pad) 28px !important;
+}
+
+.shell {
+  gap: var(--swd-section-gap) !important;
+}
+
+.flow-shell {
+  display: block !important;
+  place-items: initial !important;
+}
+
+.flow-card,
+.gym-card,
+.learn-foundation-card,
+.create-card,
+.artwork-detail-card,
+.observation-card,
+.construction-card,
+.form-card {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(22px, 2.3vw, 34px) !important;
+}
+
+/* Typography: visible hierarchy without billboard headings. */
+h1,
+.flow-title,
+.home-v1-copy h1 {
+  font-size: clamp(2.1rem, 3.2vw, 3.65rem) !important;
+  line-height: 1.02 !important;
+  max-width: 15ch !important;
+  margin-bottom: 14px !important;
+}
+
+h2,
+.section-heading h2,
+.cycle-panel-head h2,
+.lesson-player .lesson-block h2 {
+  font-size: clamp(1.35rem, 1.7vw, 1.9rem) !important;
+  line-height: 1.15 !important;
+}
+
+.lead,
+.compact {
+  font-size: clamp(.98rem, 1.15vw, 1.08rem) !important;
+  line-height: 1.58 !important;
+  margin-top: 12px !important;
+}
+
+.eyebrow { margin-bottom: 8px !important; }
+
+/* One vertical rhythm. */
+.choice-section,
+.instructions,
+.learning-progress,
+.lesson-player,
+.practice-empty,
+.practice-queue,
+.create-form,
+.create-library,
+.version-history,
+.version-form,
+.journey-before-after,
+.foundation-cycles {
+  margin-top: var(--swd-space-5) !important;
+}
+
+.flow-actions,
+.learn-foundation-card .flow-actions,
+.gym-session > .flow-actions,
+.observation-session > .flow-actions,
+.construction-session > .flow-actions,
+.form-session > .flow-actions,
+.lesson-player > .flow-actions {
+  margin-top: var(--swd-space-5) !important;
+  padding-top: var(--swd-space-4) !important;
+}
+
+/* Home: content hierarchy is hero -> modules -> resume/next -> metrics. */
+.home-v1 { padding-top: 20px !important; }
+.home-v1-hero { min-height: 0 !important; gap: 28px !important; }
+.home-v1-copy { align-self: center; padding: 8px 0 !important; }
+.home-v1-study { min-height: 350px !important; max-height: 460px; }
+.home-module-grid { gap: 12px !important; }
+.home-module-card { min-height: 150px !important; padding: 18px !important; }
+.home-work-grid { gap: 14px !important; }
+.home-resume-v1,
+.home-next-card { margin: 0 !important; }
+.home-stats { margin-top: 0 !important; }
+
+/* Learn: overview first; detailed lessons second. Avoid excessively tall cycle stacks. */
+.learn-foundation-card > .lead { max-width: 850px !important; }
+.foundation-cycles { gap: 12px !important; }
+.cycle-panel { padding: 18px !important; }
+.cycle-panel-head { align-items: center !important; }
+.cycle-description { margin: 8px 0 0 !important; }
+.cycle-panel .lesson-list { margin-top: 12px !important; }
+.cycle-panel .lesson-row { padding: 10px 4px !important; }
+
+/* Lesson: context -> explanation -> practice -> checkpoint -> reflection -> next. */
+.lesson-player { gap: 12px !important; }
+.lesson-player .lesson-hook { padding: 20px 22px !important; font-size: clamp(1.15rem, 1.6vw, 1.45rem) !important; }
+.lesson-player .lesson-block { padding: 18px 20px !important; }
+.lesson-player .lesson-checkpoint { padding-block: 16px !important; }
+.lesson-player .lesson-reflection { padding: 18px 20px !important; }
+
+/* Gym/Labs: controls first, workspace second, feedback third. */
+.gym-drill-nav { margin: 0 0 18px !important; }
+.gym-drill-nav a { padding: 10px 12px !important; }
+.gym-session,
+.observation-session,
+.construction-session,
+.form-session { gap: 14px !important; }
+.gym-instruction { margin-bottom: 0 !important; }
+.line-gym-board { min-height: 360px; max-height: 520px; }
+.coach-card { padding: 18px 20px !important; gap: 16px !important; }
+.observation-visual,
+.construction-visual,
+.form-visual { min-height: 300px !important; }
+.observation-options,
+.construction-options { margin-top: 12px !important; }
+
+/* Create/Journey: remove artificial vertical air. */
+.create-library { padding-top: 22px !important; }
+.artwork-tile { min-height: 160px !important; }
+.artwork-tile h3 { margin-top: 24px !important; }
+.journey-stack { gap: 14px !important; }
+.journey-item { padding: 20px !important; }
+.journey-before-after { padding: 24px !important; }
+
+/* Footer should not look like a separate empty section. */
+.app-footer { margin-top: 18px !important; padding: 16px var(--swd-page-pad) !important; }
+
+@media (min-width: 1280px) {
+  .atelier-stage { min-width: 0; }
+  .home-v1-hero { grid-template-columns: minmax(420px, .82fr) minmax(520px, 1.18fr) !important; }
+  .foundation-cycles { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; align-items: start; }
+  .foundation-cycles .cycle-panel:first-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+  .shell, .flow-shell { padding-top: 18px !important; }
+  .home-v1-hero { grid-template-columns: 1fr !important; }
+  .home-v1-study { min-height: 280px !important; }
+  .foundation-cycles { grid-template-columns: 1fr !important; }
+  .line-gym-board { min-height: 280px; }
+}
+
+@media (max-width: 760px) {
+  :root { --swd-page-pad: 14px; --swd-section-gap: 16px; }
+  h1, .flow-title, .home-v1-copy h1 { font-size: clamp(2rem, 9vw, 2.7rem) !important; }
+  .flow-card, .gym-card, .learn-foundation-card, .create-card, .artwork-detail-card,
+  .observation-card, .construction-card, .form-card { padding: 18px 16px !important; }
+  .home-v1-study { min-height: 240px !important; }
+  .line-gym-board { min-height: 230px; }
+  .app-footer { padding-inline: 14px !important; }
+}
