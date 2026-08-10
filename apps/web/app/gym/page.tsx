@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MotorDrillClient, type MotorExerciseKey } from "./motor-drill-client";
+import "./gym-v1.css";
 
 export const dynamic = "force-dynamic";
 
