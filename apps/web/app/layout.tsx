@@ -10,6 +10,7 @@ import "./diagnostics.css";
 import "./feedback.css";
 import "./shell.css";
 import "./accessibility.css";
+import "./visual-v1.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
