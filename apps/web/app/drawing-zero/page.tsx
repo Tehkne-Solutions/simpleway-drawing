@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DrawingZeroClient } from "./drawing-zero-client";
+import "./drawing-zero-v1.css";
 
 export default function DrawingZeroPage() {
   return (
