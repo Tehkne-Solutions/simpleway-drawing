@@ -1,8 +1,10 @@
 import { artworkVersions, artworks, fileAssets, journeyEntries } from "@swd/database";
 import { and, desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
+import { CROMA_CANON } from "../../game/croma-canon";
 import { getAlphaRepository, getDatabase, getStorage } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
+import "./journey-v13.css";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +25,7 @@ async function artworkPreview(userId: string, mode: "BASELINE" | "REVISIT") {
 export default async function JourneyPage() {
   const userId = await getSessionUserId();
   if (!userId) {
-    return <main className="flow-shell"><section className="flow-card"><p className="eyebrow">Journey</p><h1 className="flow-title">Sua jornada começa no primeiro desenho.</h1><p className="lead compact">Faça o Drawing Zero para registrar seu ponto de partida.</p><div className="flow-actions"><Link className="primary link-button" href="/drawing-zero">Começar Drawing Zero</Link></div></section></main>;
+    return <main className="flow-shell"><section className="flow-card"><p className="eyebrow">{CROMA_CANON.atlas}</p><h1 className="flow-title">Seu mapa começa com uma primeira evidência.</h1><p className="lead compact">O Drawing Zero registra seu ponto de partida. Depois disso, o Atlas mostra habilidades, marcos e mudanças reais de processo.</p><div className="flow-actions"><Link className="primary link-button" href="/drawing-zero">Começar Drawing Zero</Link><Link className="secondary link-button" href="/codex">Conhecer Croma</Link></div></section></main>;
   }
 
   const db = getDatabase();
@@ -46,9 +48,33 @@ export default async function JourneyPage() {
   return (
     <main className="flow-shell">
       <section className="flow-card">
-        <p className="eyebrow">Your Art Journey</p>
-        <h1 className="flow-title">Sua evolução começa a ficar visível.</h1>
-        <p className="lead compact">Cada marco importante registra o que você conseguiu fazer naquele momento.</p>
+        <p className="eyebrow">{CROMA_CANON.atlas}</p>
+        <h1 className="flow-title">Seu mapa de evolução artística.</h1>
+        <p className="lead compact">O Atlas não premia presença. Ele mostra Evidence real: o que você praticou, onde já há domínio e qual é a próxima ação que pode mudar sua habilidade.</p>
+
+        <section className="atlas-map-v13" aria-labelledby="atlas-map-title">
+          <div className="atlas-map-head">
+            <div><span className="atlas-croma-v13">Croma observa o mapa</span><h2 id="atlas-map-title">Ateliers de domínio</h2><p>Cada região ganha força quando o sistema recebe evidências reais de prática. Entre onde há menos evidência para tornar a evolução visível.</p></div>
+            <Link className="secondary link-button" href="/codex">Abrir Codex</Link>
+          </div>
+          <div className="atlas-path-v13">
+            {alpha.domains.map((domain, index) => {
+              const hasEvidence = domain.evidenceCount > 0;
+              return (
+                <Link href={domain.href} key={domain.skillKey} className={`atlas-node-v13 ${hasEvidence ? "has-evidence" : "no-evidence"}`}>
+                  <span>REGIÃO {String(index + 1).padStart(2, "0")}</span>
+                  <strong>{domain.domain}</strong>
+                  <b>{domain.masteryScore == null ? "Sem medição" : `${Math.round(domain.masteryScore * 100)}% domínio`}</b>
+                  <small>{domain.evidenceCount} evidência(s) · {domain.masteryLevel ?? "a explorar"}</small>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="atlas-next-v13">
+            <div><span className="atlas-croma-v13">Próxima missão recomendada</span><strong>{alpha.nextAction.title}</strong><p>{alpha.nextAction.description}</p></div>
+            <Link className="primary link-button" href={alpha.nextAction.href}>Ir para missão</Link>
+          </div>
+        </section>
 
         {graduation ? (
           <section className="journey-before-after">
@@ -100,7 +126,7 @@ export default async function JourneyPage() {
           })}
           {items.length === 0 ? <p>Nenhum marco registrado ainda.</p> : null}
         </div>
-        <div className="flow-actions split-actions"><Link className="secondary link-button" href="/">Voltar ao início</Link><Link className="primary link-button" href="/create">Criar agora</Link></div>
+        <div className="flow-actions split-actions"><Link className="secondary link-button" href="/">Voltar ao início</Link><Link className="primary link-button" href="/create">Entrar no Atelier Livre</Link></div>
       </section>
     </main>
   );
