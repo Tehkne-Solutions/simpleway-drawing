@@ -18,9 +18,10 @@ export default function MangaPracticePage() {
       <CromaCoach
         eyebrow="Missão de Croma · Manga 01"
         title="Primeiro enxergue o volume; depois desenhe olhos, cabelo e expressão."
-        text="As guias são assistência visual. A missão não avalia se seu desenho é bonito: ela confirma se você passou pelo processo de construção antes do detalhe."
-        action={{ href: "/codex", label: "Abrir Codex" }}
-        tone="sanguine"
+        message="As guias são assistência visual. A missão não avalia se seu desenho é bonito: ela confirma se você passou pelo processo de construção antes do detalhe."
+        actionLabel="Abrir Codex"
+        actionHref="/codex"
+        tone="terracotta"
       />
 
       <div className="manga-video-gate"><strong>Objetivo desta oficina</strong><p>Produza três estudos da mesma cabeça — frente, 3/4 e perfil — sem apagar as tentativas anteriores. Depois compare como eixo, linha dos olhos e mandíbula mudam em cada vista.</p></div>
