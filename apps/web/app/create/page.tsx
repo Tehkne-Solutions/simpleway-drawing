@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CROMA_CANON } from "../../game/croma-canon";
+import { CromaCoach } from "../components/croma-coach";
 import { getArtworkRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 import { ArtworkForm } from "./artwork-form";
@@ -23,11 +23,20 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
         <div>
           <p className="eyebrow">Atelier Livre</p>
           <h1 className="flow-title">Crie dentro do app. Registre o mundo de fora quando quiser.</h1>
-          <p className="lead compact">O SimpleWay Drawing passa a tratar criação como prática jogável. Canvases especializados entram como ferramentas principais; upload pelo celular ou PC permanece como recurso complementar.</p>
+          <p className="lead compact">O SimpleWay Drawing trata criação como prática jogável. Canvases especializados são ferramentas principais; upload pelo celular ou PC continua como recurso complementar.</p>
         </div>
 
         {mode === "revisit" ? <aside className="lesson-checkpoint">Use a mesma referência e condições gerais do Drawing Zero. Não procure “embelezar”: queremos observar mudança de processo.</aside> : null}
         {mode === "capstone" ? <aside className="lesson-checkpoint">Capstone: escolha um objeto real, mapeie shapes, construa forms e crie uma variação autoral.</aside> : null}
+
+        <CromaCoach
+          eyebrow="Croma · Atelier Livre"
+          title="Comece pela ferramenta que reduz o problema."
+          message="No Atelier você não recebe uma folha vazia sem contexto. Escolha um canvas, ative guias quando precisar e preserve tentativas para comparar processo."
+          actionLabel="Jogar Canvas Isométrico"
+          actionHref="/create/isometric"
+          tone="veronese"
+        />
 
         <section className="studio-launchpad" aria-labelledby="studio-title">
           <div className="studio-launchpad-head">
@@ -43,12 +52,6 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
             <article className="studio-mode-card is-upcoming realistic" aria-disabled="true"><small>Próxima oficina</small><strong>Realistic Canvas</strong><p>Envelope, medição, block-in, eixos, planos, luz e comparação visual.</p></article>
           </div>
         </section>
-
-        <div className="croma-challenge">
-          <div className="croma-seal" aria-hidden="true">C</div>
-          <div><h3>{CROMA_CANON.shortName} recomenda começar pela estrutura.</h3><p>Missão inicial: construa um cubo no Canvas Isométrico e depois tente uma variação sem apagar o primeiro estudo.</p></div>
-          <Link className="primary link-button" href="/create/isometric">Aceitar missão</Link>
-        </div>
 
         <section className="create-external-register">
           <div className="section-heading"><div><p className="eyebrow">Registro externo</p><h2>Traga estudos feitos fora do app.</h2></div></div>
