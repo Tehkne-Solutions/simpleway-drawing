@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const navigation = [
   ["⌂", "Início", "/"],
@@ -20,48 +21,81 @@ const secondary = [
   ["↗", "Continuar", "/resume"],
 ] as const;
 
+const STORAGE_KEY = "swd.sidebar.collapsed";
+
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved !== null) setCollapsed(saved === "true");
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const toggleCollapsed = () => {
+    setCollapsed((current) => {
+      const next = !current;
+      try { window.localStorage.setItem(STORAGE_KEY, String(next)); } catch {}
+      return next;
+    });
+  };
+
+  const navLinks = (items: readonly (readonly [string, string, string])[]) => items.map(([glyph, label, href]) => (
+    <Link
+      key={href}
+      href={href}
+      className={active(href) ? "is-active" : undefined}
+      aria-current={active(href) ? "page" : undefined}
+      title={collapsed ? label : undefined}
+    >
+      <span className="nav-glyph" aria-hidden="true">{glyph}</span>
+      <b className="nav-label">{label}</b>
+    </Link>
+  ));
+
   return (
-    <div className="app-shell app-shell-v1 app-shell-v11">
+    <div className={`app-shell app-shell-v12 ${collapsed ? "is-collapsed" : "is-expanded"} ${mobileOpen ? "is-mobile-open" : ""}`}>
       <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
-      <aside className="atelier-rail" aria-label="Navegação do atelier">
-        <Link href="/" className="atelier-brand" aria-label="SimpleWay Drawing · Início">
-          <span className="atelier-mark" aria-hidden="true">S</span>
-          <span><strong>SimpleWay</strong><b>Drawing</b><small>Atelier de habilidades</small></span>
-        </Link>
-        <nav className="atelier-nav">
-          {navigation.map(([glyph, label, href]) => (
-            <Link key={href} href={href} className={active(href) ? "is-active" : undefined} aria-current={active(href) ? "page" : undefined}>
-              <span aria-hidden="true">{glyph}</span><b>{label}</b>
-            </Link>
-          ))}
-        </nav>
-        <nav className="atelier-nav atelier-nav-secondary" aria-label="Progresso">
-          {secondary.map(([glyph, label, href]) => (
-            <Link key={href} href={href} className={active(href) ? "is-active" : undefined}>
-              <span aria-hidden="true">{glyph}</span><b>{label}</b>
-            </Link>
-          ))}
-        </nav>
-        <Link className="atelier-profile" href="/resume">
-          <span className="atelier-profile-mark">H</span>
-          <span><strong>HNK</strong><small>Minha jornada</small></span>
-          <b aria-hidden="true">›</b>
-        </Link>
-        <div className="atelier-signature"><strong>Tehkné Solutions</strong><span>Método. Arte. Propósito.</span></div>
+
+      <header className="global-header">
+        <div className="global-header-left">
+          <button className="shell-menu-button desktop-menu" type="button" onClick={toggleCollapsed} aria-label={collapsed ? "Expandir menu" : "Recolher menu"} aria-expanded={!collapsed}>
+            <span aria-hidden="true">☰</span>
+          </button>
+          <button className="shell-menu-button mobile-menu" type="button" onClick={() => setMobileOpen((value) => !value)} aria-label="Abrir menu" aria-expanded={mobileOpen}>
+            <span aria-hidden="true">☰</span>
+          </button>
+          <Link href="/" className="global-brand" aria-label="SimpleWay Drawing · Início">
+            <span className="global-brand-mark" aria-hidden="true">S</span>
+            <span><strong>SimpleWay</strong> <b>Drawing</b></span>
+          </Link>
+        </div>
+        <div className="global-header-actions">
+          <Link className="journey-streak" href="/resume"><span aria-hidden="true">♨</span><span><strong>Sequência</strong><small>Minha jornada</small></span></Link>
+          <Link className="header-notification" href="/feedback" aria-label="Feedback e notificações"><span aria-hidden="true">♢</span></Link>
+          <Link className="header-profile" href="/resume"><span className="header-profile-mark">H</span><span><strong>HNK</strong><small>Perfil</small></span><b aria-hidden="true">⌄</b></Link>
+        </div>
+      </header>
+
+      <aside className="collapsible-sidebar" aria-label="Navegação principal">
+        <nav className="sidebar-nav">{navLinks(navigation)}</nav>
+        <nav className="sidebar-nav sidebar-nav-secondary" aria-label="Progresso">{navLinks(secondary)}</nav>
+        <div className="sidebar-bottom">
+          <Link href="/diagnostics" title={collapsed ? "Configurações" : undefined}><span className="nav-glyph" aria-hidden="true">⚙</span><b className="nav-label">Configurações</b></Link>
+        </div>
       </aside>
 
-      <div className="atelier-stage">
-        <header className="app-header atelier-topbar">
-          <Link className="atelier-context" href="/">SimpleWay Drawing</Link>
-          <div className="atelier-topbar-actions">
-            <Link href="/resume">Continuar jornada</Link>
-            <Link className="atelier-hnk" href="/resume">HNK <span aria-hidden="true">⌄</span></Link>
-          </div>
-        </header>
+      {mobileOpen ? <button className="sidebar-scrim" type="button" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} /> : null}
+
+      <div className="app-stage-v12">
         <div id="main-content" tabIndex={-1}>{children}</div>
         <footer className="app-footer"><span>SimpleWay Drawing</span><span>Tehkné Solutions</span></footer>
       </div>

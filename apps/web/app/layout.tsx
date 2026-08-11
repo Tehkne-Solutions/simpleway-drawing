@@ -21,6 +21,7 @@ import "./visual-v1-1-layout-system.css";
 import "./visual-v1-1-composition.css";
 import "./visual-v1-1-home-density.css";
 import "./visual-v1-1-wide.css";
+import "./shell-v1-2.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
