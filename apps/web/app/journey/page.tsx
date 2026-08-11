@@ -2,6 +2,7 @@ import { artworkVersions, artworks, fileAssets, journeyEntries } from "@swd/data
 import { and, desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 import { CROMA_CANON } from "../../game/croma-canon";
+import { derivePlayerRank } from "../../game/progression";
 import { getAlphaRepository, getDatabase, getStorage } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 import "./journey-v13.css";
@@ -35,6 +36,7 @@ export default async function JourneyPage() {
     artworkPreview(userId, "REVISIT"),
     getAlphaRepository().getSnapshot(userId),
   ]);
+  const rank = derivePlayerRank(alpha.domains);
   const graduation = entries.find((entry) => entry.type === "ALPHA_GATE") ?? null;
   const items = await Promise.all(entries.map(async (entry) => {
     if (!entry.artworkId) return { ...entry, imageUrl: null };
@@ -50,7 +52,13 @@ export default async function JourneyPage() {
       <section className="flow-card">
         <p className="eyebrow">{CROMA_CANON.atlas}</p>
         <h1 className="flow-title">Seu mapa de evolução artística.</h1>
-        <p className="lead compact">O Atlas não premia presença. Ele mostra Evidence real: o que você praticou, onde já há domínio e qual é a próxima ação que pode mudar sua habilidade.</p>
+        <p className="lead compact">O Atlas não premia presença. Ele mostra evidência real: o que você praticou, onde já há domínio e qual é a próxima ação que pode mudar sua habilidade.</p>
+
+        <section className="atlas-rank-v13" aria-label={`Rank atual: ${rank.title}`}>
+          <div className="atlas-rank-mark" aria-hidden="true">{rank.coveredDomains || "C"}</div>
+          <div><span className="atlas-croma-v13">Título da Sociedade Croma</span><strong>{rank.title}</strong><p>{rank.description}</p></div>
+          <div className="atlas-rank-stats"><b>{rank.totalEvidence}</b>evidências reais · {rank.coveredDomains}/{alpha.domains.length} Ateliers medidos{rank.averageMastery == null ? "" : ` · ${Math.round(rank.averageMastery * 100)}% domínio médio`}</div>
+        </section>
 
         <section className="atlas-map-v13" aria-labelledby="atlas-map-title">
           <div className="atlas-map-head">
