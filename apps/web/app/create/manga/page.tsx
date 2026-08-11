@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CromaCoach } from "../../../components/croma-coach";
+import { CromaCoach } from "../../components/croma-coach";
 import { MangaCanvas } from "./manga-canvas";
 import "./manga-v13.css";
 
