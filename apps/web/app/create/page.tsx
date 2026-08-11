@@ -47,7 +47,7 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
             <Link className="studio-mode-card is-playable" href="/create/isometric">
               <small>Jogável agora</small><strong>Canvas Isométrico</strong><p>Grade 30°, snap, segmentos estruturais, traço livre e missão de construção espacial.</p>
             </Link>
-            <article className="studio-mode-card is-upcoming manga" aria-disabled="true"><small>Próxima oficina</small><strong>Manga Canvas</strong><p>Guias de cabeça, rosto, corpo, painéis, linha de ação e construção de personagem.</p></article>
+            <Link className="studio-mode-card is-playable manga" href="/create/manga"><small>Jogável agora</small><strong>Manga Canvas</strong><p>Crânio, eixo, olhos, mandíbula, terços e vistas frente, 3/4 e perfil para construção de personagem.</p></Link>
             <article className="studio-mode-card is-upcoming comic" aria-disabled="true"><small>Próxima oficina</small><strong>Comic Canvas</strong><p>Painéis, storytelling, composição, perspectiva e ritmo visual de página.</p></article>
             <article className="studio-mode-card is-upcoming realistic" aria-disabled="true"><small>Próxima oficina</small><strong>Realistic Canvas</strong><p>Envelope, medição, block-in, eixos, planos, luz e comparação visual.</p></article>
           </div>
