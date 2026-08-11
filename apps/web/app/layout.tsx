@@ -18,6 +18,7 @@ import "./visual-v1-progress.css";
 import "./visual-v1-audit.css";
 import "./visual-v1-1-recovery.css";
 import "./visual-v1-1-layout-system.css";
+import "./visual-v1-1-composition.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
