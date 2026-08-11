@@ -1,14 +1,23 @@
-import { getFormRepository } from "../../server/runtime";
+import { FORM_EXERCISES } from "@swd/database";
 import { FormClient } from "./form-client";
 
 export const dynamic = "force-dynamic";
 
 export default function FormPage() {
-  const exercises = getFormRepository().listExercises();
+  const localUiOnly = process.env.SWD_LOCAL_UI_ONLY === "1";
+  const exercises = Object.entries(FORM_EXERCISES).map(([key, exercise]) => ({
+    key,
+    title: exercise.title,
+    prompt: exercise.prompt,
+    options: [...exercise.options],
+    skillKey: exercise.skillKey,
+    ...(localUiOnly ? { localCorrectIndex: exercise.correctIndex, localExplanation: exercise.explanation } : {}),
+  }));
+
   return (
     <main className="flow-shell">
       <section className="flow-card form-card">
-        <FormClient exercises={exercises} />
+        <FormClient exercises={exercises} localUiOnly={localUiOnly} />
       </section>
     </main>
   );
