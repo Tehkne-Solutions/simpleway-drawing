@@ -1,0 +1,96 @@
+/* V1.1 Home Density Polish — keep hierarchy, remove vertical drag */
+
+/* Sidebar: fit standard laptop height without exposing a visual scrollbar. */
+.atelier-rail {
+  scrollbar-width: none;
+}
+.atelier-rail::-webkit-scrollbar { display: none; }
+.atelier-brand { margin-bottom: 2px !important; }
+.atelier-nav { gap: 1px !important; }
+.atelier-nav a { min-height: 32px !important; padding: 5px 7px !important; }
+.atelier-nav-secondary { margin-top: 3px !important; padding-top: 6px !important; }
+.atelier-profile { margin-top: 3px !important; padding: 7px !important; }
+.atelier-profile-mark { width: 30px !important; height: 30px !important; }
+.atelier-signature { display: none !important; }
+
+/* Hero: reduce landing-page feel. */
+.home-v11-hero {
+  min-height: 292px !important;
+  grid-template-columns: minmax(390px, .95fr) minmax(360px, 1.05fr) !important;
+}
+.home-v11-copy { padding: 26px 34px !important; }
+.home-v11-copy h1 {
+  font-size: clamp(2.4rem, 3.25vw, 3.55rem) !important;
+  line-height: .98 !important;
+  margin: 7px 0 13px !important;
+}
+.home-v11-copy .lead {
+  font-size: .96rem !important;
+  line-height: 1.5 !important;
+  max-width: 48ch !important;
+}
+.home-v11-copy .actions { margin-top: 16px !important; gap: 10px !important; }
+.home-v11-art { min-height: 292px !important; padding: 18px !important; gap: 7px !important; }
+.art-plate { padding: 10px 13px !important; }
+.art-plate span { font-size: 9px !important; }
+.art-plate strong { font-size: 17px !important; }
+.art-plate small { font-size: 10px !important; }
+
+/* Modules: product launchers, not article cards. */
+.home-v11-modules { gap: 8px !important; }
+.home-v11-module {
+  min-height: 102px !important;
+  padding: 13px 14px !important;
+  grid-template-columns: 30px 1fr auto !important;
+  column-gap: 9px !important;
+}
+.home-v11-module .module-glyph { width: 28px !important; height: 28px !important; font-size: 14px !important; }
+.home-v11-module strong { font-size: 12px !important; }
+.home-v11-module p { margin-top: 4px !important; font-size: 11px !important; line-height: 1.35 !important; max-width: 34ch; }
+.home-v11-module > b { font-size: 14px !important; }
+
+/* Dashboard: keep resume dominant, make planning secondary. */
+.home-v11-dashboard {
+  grid-template-columns: minmax(0, 1.8fr) minmax(240px, .62fr) !important;
+  gap: 8px !important;
+}
+.home-v11-resume {
+  grid-template-columns: 138px 1fr !important;
+  gap: 14px !important;
+  padding: 13px !important;
+}
+.resume-visual { min-height: 126px !important; }
+.resume-content h2 { margin: 2px 0 3px !important; font-size: 1.32rem !important; }
+.resume-content > p { font-size: 12px !important; }
+.resume-content .actions { margin-top: 10px !important; gap: 8px !important; }
+.home-v11-next { padding: 13px !important; }
+.home-v11-next ol { margin: 7px 0 10px !important; }
+.home-v11-next li { padding: 6px 0 !important; }
+.home-v11-next li strong { font-size: 12px !important; }
+.home-v11-next li small { font-size: 10px !important; }
+
+/* Metrics become a quiet status rail instead of a full section. */
+.home-v11-metrics > div { padding: 9px 13px !important; }
+.home-v11-metrics strong { font-size: 17px !important; }
+.home-v11-metrics span { font-size: 10px !important; }
+
+.shell.home-v11 { gap: 10px !important; padding-top: 12px !important; }
+.app-footer { margin-top: 4px !important; padding-block: 7px !important; }
+
+@media (min-width: 1500px) {
+  .home-v11-modules { grid-template-columns: repeat(6, minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 1100px) {
+  .home-v11-hero { grid-template-columns: 1fr !important; }
+  .home-v11-art { min-height: auto !important; grid-template-columns: repeat(3, 1fr); }
+  .home-v11-dashboard { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 760px) {
+  .atelier-signature { display: grid !important; }
+  .home-v11-copy { padding: 24px 20px !important; }
+  .home-v11-art { grid-template-columns: 1fr; }
+  .home-v11-module { min-height: 84px !important; }
+  .home-v11-resume { grid-template-columns: 1fr !important; }
+}
