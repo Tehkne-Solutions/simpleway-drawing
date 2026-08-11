@@ -1,0 +1,202 @@
+/* V1.1 Composition Polish — proportional desktop layout, no doubled offset */
+:root {
+  --swd-rail: 196px;
+  --swd-topbar: 52px;
+  --swd-composition-gap: 18px;
+}
+
+/* Critical correction: AppShell already uses CSS grid. Do not offset stage a second time. */
+.app-shell-v1 {
+  grid-template-columns: var(--swd-rail) minmax(0, 1fr) !important;
+}
+.atelier-rail {
+  width: auto !important;
+  padding: 16px 12px 14px !important;
+  gap: 14px !important;
+}
+.atelier-stage {
+  margin-left: 0 !important;
+  width: 100%;
+  min-width: 0;
+}
+.atelier-brand {
+  grid-template-columns: 38px 1fr !important;
+  gap: 9px !important;
+  margin-bottom: 6px !important;
+}
+.atelier-mark { width: 38px !important; height: 38px !important; font-size: 20px !important; }
+.atelier-brand strong, .atelier-brand b { font-size: 16px !important; }
+.atelier-brand small { margin-top: 3px !important; font-size: 10px !important; }
+.atelier-nav a { min-height: 36px !important; padding: 6px 8px !important; grid-template-columns: 22px 1fr !important; gap: 7px !important; }
+.atelier-nav a span { font-size: 15px !important; }
+.atelier-nav a b { font-size: 12px !important; }
+.atelier-nav-secondary { margin-top: 6px !important; padding-top: 8px !important; }
+.atelier-profile { margin-top: 6px !important; padding: 9px 8px !important; }
+.atelier-signature { margin-top: 6px !important; }
+
+.atelier-topbar {
+  min-height: var(--swd-topbar) !important;
+  height: var(--swd-topbar);
+  padding: 0 20px !important;
+}
+.atelier-context { font-size: 13px !important; }
+.atelier-topbar-actions { gap: 12px !important; }
+.atelier-topbar-actions > a:first-child { font-size: 12px !important; }
+.atelier-hnk { padding: 7px 11px !important; }
+
+/* Main stage should visually dominate the viewport. */
+.shell,
+.flow-shell {
+  max-width: 1500px !important;
+  padding-left: clamp(16px, 1.6vw, 24px) !important;
+  padding-right: clamp(16px, 1.6vw, 24px) !important;
+}
+.shell.home-v11 {
+  width: 100% !important;
+  max-width: 1500px !important;
+  padding: 18px clamp(16px, 1.6vw, 24px) 24px !important;
+  gap: var(--swd-composition-gap) !important;
+}
+
+/* Home: compact hero, adaptive modules, clearer hierarchy. */
+.home-v11-hero {
+  min-height: 350px !important;
+  grid-template-columns: minmax(420px, .9fr) minmax(360px, 1.1fr) !important;
+}
+.home-v11-copy { padding: 34px 38px !important; }
+.home-v11-copy h1 {
+  font-size: clamp(2.6rem, 3.7vw, 4rem) !important;
+  line-height: 1 !important;
+  max-width: 13ch !important;
+  margin: 8px 0 16px !important;
+}
+.home-v11-copy .lead { max-width: 50ch !important; margin-top: 0 !important; }
+.home-v11-copy .actions { margin-top: 20px !important; }
+.home-v11-art {
+  min-height: 350px !important;
+  padding: 24px !important;
+  display: grid !important;
+  align-content: center;
+  gap: 10px;
+  background: #efe3ca !important;
+}
+.home-v11-art::before,
+.home-v11-art::after { display: none !important; }
+.art-plate {
+  position: static !important;
+  transform: none !important;
+  min-width: 0 !important;
+  padding: 13px 15px !important;
+  box-shadow: none !important;
+  background: rgba(255,250,240,.7) !important;
+  border-left: 3px solid var(--swd-ocra) !important;
+}
+.art-plate-eye { border-left-color: var(--swd-oltremare) !important; }
+.art-plate-hand { border-left-color: var(--swd-terracotta) !important; }
+.art-plate strong { font-size: 19px !important; }
+
+.home-v11-modules {
+  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+}
+.home-v11-module {
+  min-height: 126px !important;
+  padding: 16px !important;
+  display: grid !important;
+  grid-template-columns: 34px 1fr auto;
+  grid-template-rows: auto 1fr;
+  column-gap: 12px;
+  align-items: start;
+}
+.home-v11-module .module-glyph { grid-row: 1 / 3; width: 32px !important; height: 32px !important; }
+.home-v11-module strong { margin: 2px 0 0 !important; font-size: 14px !important; }
+.home-v11-module p { margin: 6px 0 0 !important; font-size: 12px !important; line-height: 1.45; }
+.home-v11-module > b { grid-column: 3; grid-row: 1 / 3; align-self: center !important; }
+
+.home-v11-dashboard {
+  grid-template-columns: minmax(0, 1.55fr) minmax(260px, .65fr) !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+}
+.home-v11-resume { grid-template-columns: 180px 1fr !important; gap: 18px !important; padding: 16px !important; }
+.resume-visual { min-height: 152px !important; }
+.resume-progress { margin: 12px 0 6px !important; }
+.home-v11-next { padding: 16px !important; }
+.home-v11-next ol { margin: 10px 0 14px !important; }
+.home-v11-next li { padding: 8px 0 !important; }
+.home-v11-metrics { margin-top: 0 !important; }
+.home-v11-metrics > div { padding: 13px 16px !important; }
+.home-v11-metrics strong { font-size: 20px !important; }
+
+/* Major workspaces should not look like a card floating inside another card. */
+.gym-card,
+.learn-foundation-card,
+.observation-card,
+.construction-card,
+.form-card {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Curricular and workspace rhythm. */
+.learn-foundation-card > .eyebrow,
+.learn-foundation-card > .flow-title,
+.learn-foundation-card > .lead { margin-left: 2px !important; }
+.foundation-cycles { margin-top: 18px !important; }
+.cycle-panel { padding: 16px !important; }
+.cycle-panel .lesson-row { padding: 9px 4px !important; }
+
+.lesson-player { margin-top: 18px !important; gap: 10px !important; }
+.lesson-player .lesson-hook { padding: 16px 18px !important; }
+.lesson-player .lesson-block { padding: 16px 18px !important; }
+.lesson-player .lesson-reflection { padding: 16px 18px !important; }
+
+.gym-drill-nav { margin-bottom: 12px !important; }
+.gym-drill-nav a { padding: 8px 10px !important; }
+.gym-session,
+.observation-session,
+.construction-session,
+.form-session { gap: 10px !important; }
+.line-gym-board { min-height: 320px !important; max-height: 460px !important; }
+.coach-card { padding: 14px 16px !important; }
+.observation-visual,
+.construction-visual,
+.form-visual { min-height: 260px !important; }
+
+.flow-actions,
+.lesson-player > .flow-actions,
+.gym-session > .flow-actions,
+.observation-session > .flow-actions,
+.construction-session > .flow-actions,
+.form-session > .flow-actions {
+  margin-top: 16px !important;
+  padding-top: 14px !important;
+}
+
+.app-footer { margin-top: 8px !important; padding-block: 10px !important; }
+
+@media (min-width: 1500px) {
+  .home-v11-modules { grid-template-columns: repeat(6, minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 1100px) {
+  :root { --swd-rail: 176px; }
+  .home-v11-hero { grid-template-columns: 1fr !important; }
+  .home-v11-art { min-height: 210px !important; grid-template-columns: repeat(3,1fr); }
+  .home-v11-dashboard { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 760px) {
+  .app-shell-v1 { grid-template-columns: 1fr !important; }
+  .atelier-stage { margin-left: 0 !important; }
+  .shell.home-v11 { padding-inline: 12px !important; }
+  .home-v11-copy { padding: 26px 20px !important; }
+  .home-v11-art { grid-template-columns: 1fr; padding: 16px !important; }
+  .home-v11-modules { grid-template-columns: 1fr !important; }
+  .home-v11-module { min-height: 92px !important; }
+  .home-v11-resume { grid-template-columns: 1fr !important; }
+  .home-v11-metrics { grid-template-columns: 1fr 1fr !important; }
+}
