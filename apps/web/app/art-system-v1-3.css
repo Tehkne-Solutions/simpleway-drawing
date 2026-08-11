@@ -1,0 +1,110 @@
+/* SimpleWay Drawing V1.3 — Art Systems Overdrive */
+:root {
+  --swd-paper: #f4ead7;
+  --swd-paper-light: #fff8eb;
+  --swd-paper-deep: #e8d6b5;
+  --swd-graphite: #28251f;
+  --swd-sepia: #7b5d3b;
+  --swd-brass: #b78026;
+}
+
+body { background: var(--swd-paper); }
+.app-stage-v12 { background: var(--swd-paper); }
+.global-header { background: #efe2c9; border-bottom-color: #cdbb99; }
+.global-brand-mark { background: var(--swd-graphite); color: var(--swd-giallo); border-color: var(--swd-graphite); }
+.shell-menu-button { background: #f8eedb; border-color: #cdbb99; }
+.collapsible-sidebar { background: #24211c; border-right: 1px solid #554835; }
+.sidebar-nav a.is-active { background: #6b4a1f; box-shadow: inset 3px 0 0 var(--swd-giallo); }
+
+/* UI pieces behave like atelier instruments, not generic SaaS cards. */
+.primary, .secondary, .link-button, button { border-radius: 7px !important; }
+.primary { border: 1px solid #b57c10; box-shadow: 3px 3px 0 #6f4d12 !important; }
+.primary:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #6f4d12 !important; }
+.secondary { border: 1px solid #a99371 !important; background: #f8edd8 !important; box-shadow: 2px 2px 0 #c7b28f !important; }
+.card, .flow-card, .lesson-block, .practice-card, .journey-item, .artwork-tile, .version-card { border-radius: 9px !important; }
+.flow-card { background: #f9efdc !important; border-color: #cdbb99 !important; }
+
+/* Small authored marks give every panel a SWD signature. */
+.flow-card, .home-v11-module, .home-v11-resume, .home-v11-next, .studio-mode-card, .codex-sheet, .journey-item {
+  position: relative;
+}
+.flow-card::before, .home-v11-resume::before, .studio-mode-card::before, .codex-sheet::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: -1px;
+  width: 42px;
+  height: 5px;
+  background: var(--swd-brass);
+}
+
+/* Croma coach */
+.croma-coach {
+  --coach-accent: var(--swd-giallo);
+  display: grid;
+  grid-template-columns: 74px minmax(0,1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+  border: 1px solid #594c3a;
+  border-left: 6px solid var(--coach-accent);
+  border-radius: 10px;
+  background: #2c2923;
+  color: #f7eddc;
+  box-shadow: 5px 5px 0 #cdb995;
+}
+.croma-tone-terracotta { --coach-accent: var(--swd-terracotta); }
+.croma-tone-ultramarine { --coach-accent: var(--swd-oltremare); }
+.croma-tone-veronese { --coach-accent: var(--swd-veronese); }
+.croma-tone-violet { --coach-accent: var(--swd-violetto); }
+.croma-coach-avatar { width: 62px; height: 62px; border: 2px solid var(--coach-accent); border-radius: 50% 46% 52% 44%; position: relative; background: #f4e5c9; color: #292722; }
+.croma-eye { position:absolute; left:16px; top:11px; font-size:18px; color:var(--coach-accent); }
+.croma-tail { position:absolute; right:9px; bottom:7px; font-size:25px; font-family:var(--swd-font-editorial); }
+.croma-coach-copy strong { display:block; font:600 19px/1.15 var(--swd-font-editorial); color:#fff5e4; }
+.croma-coach-copy p { margin:5px 0 0; color:#cfc4b4; font-size:13px; line-height:1.5; }
+.croma-coach-eyebrow { margin:0 0 4px !important; color:var(--coach-accent) !important; font-size:10px !important; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
+.croma-coach-action { color:#221f1a; background:var(--coach-accent); border:1px solid #171512; padding:10px 13px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:850; white-space:nowrap; box-shadow:3px 3px 0 #111; }
+
+/* Home becomes a game board / atelier desk. */
+.home-v11 { padding-top: 20px !important; }
+.home-v11-hero { background:#e7d3ad !important; border-color:#bda27a !important; min-height:330px !important; box-shadow:6px 6px 0 #c6ad86 !important; }
+.home-v11-copy { background:#efe0c5; }
+.home-v11-copy .eyebrow { color:#8b5d17; }
+.home-v11-art { background:#d3b887 !important; border-left-color:#aa8c60 !important; }
+.home-v11-module { min-height:150px !important; border-width:1px 1px 5px !important; box-shadow:4px 4px 0 rgba(70,51,28,.16) !important; }
+.home-v11-module:hover { transform:translate(-1px,-2px) rotate(-.2deg) !important; box-shadow:6px 7px 0 rgba(70,51,28,.17) !important; }
+.home-v11-module strong { text-transform:none !important; font-family:var(--swd-font-editorial); font-size:18px !important; }
+.module-glyph { border-radius:50% 44% 50% 45% !important; background:rgba(255,248,235,.7); }
+.home-v11-resume { background:#f4e4c8 !important; border-color:#bfa47c !important; }
+.home-v11-next { background:#2b2822 !important; border-color:#433c31 !important; color:#f7eddd; }
+.home-v11-next .eyebrow { color:var(--swd-giallo); }
+.home-v11-next li { border-color:#4b4439 !important; }
+.home-v11-next li strong { color:#f6ecdc; }
+.home-v11-next li small { color:#bfb4a4; }
+.home-v11-metrics { background:#dec79e !important; border-color:#b69a6e !important; }
+.home-v11-metrics > div { border-right-color:#b69a6e !important; }
+
+.home-game-ribbon { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:center; margin:14px 0; padding:14px 16px; background:#315b83; border:1px solid #233f59; color:#f4ead7; box-shadow:4px 4px 0 #a38e6d; }
+.home-game-ribbon strong { display:block; font-family:var(--swd-font-editorial); font-size:18px; }
+.home-game-ribbon p { margin:3px 0 0; color:#d7e0e5; font-size:12px; }
+.home-game-ribbon a { color:#1d3141; background:#f2b705; padding:9px 12px; text-decoration:none; font-weight:850; border:1px solid #1d3141; box-shadow:3px 3px 0 #172633; }
+
+/* Studio cards look like boards/tools. */
+.studio-mode-card { border:1px solid #a98e67 !important; border-bottom-width:5px !important; background:#eee0c5 !important; box-shadow:4px 4px 0 #c5ae88; }
+.studio-mode-card.is-playable { background:#dce6db !important; border-color:#62846d !important; }
+.studio-mode-card.manga { background:#e5ddeb !important; }
+.studio-mode-card.comic { background:#d9e4e9 !important; }
+.studio-mode-card.realistic { background:#ead3c7 !important; }
+.create-external-register { border-top:2px dashed #a68d67; padding-top:24px; }
+
+/* Atlas rank */
+.atlas-rank-v13 { display:grid; grid-template-columns:80px minmax(0,1fr) auto; gap:18px; align-items:center; margin:16px 0; padding:18px 20px; background:#2b2822; color:#f5ebdb; border:1px solid #504536; border-left:6px solid var(--swd-giallo); box-shadow:5px 5px 0 #bda985; }
+.atlas-rank-mark { width:64px;height:64px;border:2px solid var(--swd-giallo);border-radius:50%;display:grid;place-items:center;font:700 30px/1 var(--swd-font-editorial);color:var(--swd-giallo); }
+.atlas-rank-v13 strong { display:block;font:600 22px/1.1 var(--swd-font-editorial); }
+.atlas-rank-v13 p { margin:4px 0 0;color:#c9bead;font-size:12px; }
+.atlas-rank-stats { text-align:right;font-size:11px;color:#d8cdbd; }
+.atlas-rank-stats b { display:block;color:var(--swd-giallo);font-size:18px; }
+
+@media(max-width:760px){
+  .croma-coach{grid-template-columns:58px 1fr;padding:15px}.croma-coach-avatar{width:50px;height:50px}.croma-coach-action{grid-column:1/-1;text-align:center}.atlas-rank-v13{grid-template-columns:58px 1fr}.atlas-rank-mark{width:50px;height:50px}.atlas-rank-stats{grid-column:1/-1;text-align:left}.home-game-ribbon{grid-template-columns:1fr}.home-game-ribbon a{text-align:center}
+}
