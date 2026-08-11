@@ -7,16 +7,17 @@ import { useEffect, useState } from "react";
 const navigation = [
   ["⌂", "Início", "/"],
   ["▤", "Aprender", "/learn"],
-  ["─", "Treinar", "/gym"],
-  ["◉", "Observar", "/observation"],
-  ["◇", "Construir", "/construction"],
-  ["○", "Formas", "/form"],
-  ["✎", "Criar", "/create"],
-  ["⌖", "Jornada", "/journey"],
+  ["─", "Gesto", "/gym"],
+  ["◉", "Olhar", "/observation"],
+  ["◇", "Estrutura", "/construction"],
+  ["○", "Volume", "/form"],
+  ["✎", "Atelier Livre", "/create"],
+  ["⌖", "Atlas", "/journey"],
   ["✦", "Alpha", "/alpha"],
 ] as const;
 
 const secondary = [
+  ["C", "Codex Croma", "/codex"],
   ["□", "Meu progresso", "/skills"],
   ["↗", "Continuar", "/resume"],
 ] as const;
@@ -79,7 +80,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           </Link>
         </div>
         <div className="global-header-actions">
-          <Link className="journey-streak" href="/resume"><span aria-hidden="true">♨</span><span><strong>Sequência</strong><small>Minha jornada</small></span></Link>
+          <Link className="journey-streak" href="/codex"><span aria-hidden="true">C</span><span><strong>Croma</strong><small>Aprendiz do Olhar</small></span></Link>
           <Link className="header-notification" href="/feedback" aria-label="Feedback e notificações"><span aria-hidden="true">♢</span></Link>
           <Link className="header-profile" href="/resume"><span className="header-profile-mark">H</span><span><strong>HNK</strong><small>Perfil</small></span><b aria-hidden="true">⌄</b></Link>
         </div>
@@ -87,7 +88,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 
       <aside className="collapsible-sidebar" aria-label="Navegação principal">
         <nav className="sidebar-nav">{navLinks(navigation)}</nav>
-        <nav className="sidebar-nav sidebar-nav-secondary" aria-label="Progresso">{navLinks(secondary)}</nav>
+        <nav className="sidebar-nav sidebar-nav-secondary" aria-label="Progresso e Codex">{navLinks(secondary)}</nav>
         <div className="sidebar-bottom">
           <Link href="/diagnostics" title={collapsed ? "Configurações" : undefined}><span className="nav-glyph" aria-hidden="true">⚙</span><b className="nav-label">Configurações</b></Link>
         </div>
