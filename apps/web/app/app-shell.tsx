@@ -28,6 +28,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric");
   const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   useEffect(() => {
@@ -55,20 +56,30 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
       href={href}
       className={active(href) ? "is-active" : undefined}
       aria-current={active(href) ? "page" : undefined}
-      title={collapsed ? label : undefined}
+      title={collapsed || gameWorkspace ? label : undefined}
     >
       <span className="nav-glyph" aria-hidden="true">{glyph}</span>
       <b className="nav-label">{label}</b>
     </Link>
   ));
 
+  const desktopMenuLabel = gameWorkspace
+    ? mobileOpen ? "Fechar navegação" : "Abrir navegação"
+    : collapsed ? "Expandir menu" : "Recolher menu";
+
   return (
-    <div className={`app-shell app-shell-v12 ${collapsed ? "is-collapsed" : "is-expanded"} ${mobileOpen ? "is-mobile-open" : ""}`}>
+    <div className={`app-shell app-shell-v12 ${collapsed ? "is-collapsed" : "is-expanded"} ${mobileOpen ? "is-mobile-open" : ""} ${gameWorkspace ? "is-game-workspace" : ""}`}>
       <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
 
       <header className="global-header">
         <div className="global-header-left">
-          <button className="shell-menu-button desktop-menu" type="button" onClick={toggleCollapsed} aria-label={collapsed ? "Expandir menu" : "Recolher menu"} aria-expanded={!collapsed}>
+          <button
+            className="shell-menu-button desktop-menu"
+            type="button"
+            onClick={gameWorkspace ? () => setMobileOpen((value) => !value) : toggleCollapsed}
+            aria-label={desktopMenuLabel}
+            aria-expanded={gameWorkspace ? mobileOpen : !collapsed}
+          >
             <span aria-hidden="true">☰</span>
           </button>
           <button className="shell-menu-button mobile-menu" type="button" onClick={() => setMobileOpen((value) => !value)} aria-label="Abrir menu" aria-expanded={mobileOpen}>
@@ -90,7 +101,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
         <nav className="sidebar-nav">{navLinks(navigation)}</nav>
         <nav className="sidebar-nav sidebar-nav-secondary" aria-label="Progresso e Codex">{navLinks(secondary)}</nav>
         <div className="sidebar-bottom">
-          <Link href="/diagnostics" title={collapsed ? "Configurações" : undefined}><span className="nav-glyph" aria-hidden="true">⚙</span><b className="nav-label">Configurações</b></Link>
+          <Link href="/diagnostics" title={collapsed || gameWorkspace ? "Configurações" : undefined}><span className="nav-glyph" aria-hidden="true">⚙</span><b className="nav-label">Configurações</b></Link>
         </div>
       </aside>
 
