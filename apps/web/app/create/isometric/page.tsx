@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CROMA_CANON } from "../../../game/croma-canon";
+import { CromaCoach } from "../../components/croma-coach";
 import { IsometricCanvas } from "./isometric-canvas";
 import "./isometric-v13.css";
 
@@ -14,11 +14,14 @@ export default function IsometricPracticePage() {
         </div>
         <Link className="secondary link-button" href="/create">Voltar ao Atelier Livre</Link>
       </header>
-      <div className="croma-challenge">
-        <div className="croma-seal" aria-hidden="true">C</div>
-        <div><h3>{CROMA_CANON.shortName} abriu uma missão de construção.</h3><p>{CROMA_CANON.mottoPt} O objetivo é compreender as direções antes de detalhar.</p></div>
-        <Link className="secondary link-button" href="/codex">Abrir Codex</Link>
-      </div>
+      <CromaCoach
+        eyebrow="Missão de Croma · Estrutura 001"
+        title="Construa primeiro. Decore depois."
+        message="Use as três direções da grade para fechar um cubo. Depois desligue o snap e faça uma segunda tentativa por observação. O objetivo é compreender as direções antes do detalhe."
+        actionLabel="Consultar o Codex"
+        actionHref="/codex"
+        tone="ultramarine"
+      />
       <IsometricCanvas />
     </main>
   );
