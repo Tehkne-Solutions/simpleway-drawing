@@ -130,11 +130,12 @@ assert.equal(c1Progress.completedLessons, 1);
 assert.equal(c1Progress.cycleCompleted, false);
 
 const learn = await fetch(`${baseUrl}/learn`, { headers: { cookie }, cache: "no-store" });
-await assertHttp(learn, 200, "learning dashboard");
+await assertHttp(learn, 200, "learning campaign");
 const learnHtml = await learn.text();
-assert.match(learnHtml, /I Can Draw concluído|I Can Draw/);
-assert.match(learnHtml, /Control/);
-assert.match(learnHtml, /Continuar C1/);
+assert.match(learnHtml, /Portal do Olhar/);
+assert.match(learnHtml, /Atelier do Gesto/);
+assert.match(learnHtml, /Sociedade Croma · Campanha Foundation/);
+assert.match(learnHtml, /\/learn\/c1\//);
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "learning Journey projection");
@@ -148,4 +149,4 @@ const idempotentProgress = await idempotent.json();
 assert.equal(idempotentProgress.completedLessons, C0.length);
 assert.equal(idempotentProgress.cycleCompleted, true);
 
-console.log("LEARNING_RUNTIME_E2E=PASS lesson_csrf prerequisite_order drawing_zero_gate drawing_zero_unlock c0_progress cycle_completion c1_unlock future_cycle_lock learning_dashboard journey_cycle_projection lesson_idempotency");
+console.log("LEARNING_RUNTIME_E2E=PASS lesson_csrf prerequisite_order drawing_zero_gate drawing_zero_unlock c0_progress cycle_completion c1_unlock future_cycle_lock learning_campaign journey_cycle_projection lesson_idempotency");
