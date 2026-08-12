@@ -13,39 +13,64 @@ export const dynamic = "force-dynamic";
 type CycleSlug = "c0" | "c1" | "c2" | "c3" | "c4";
 type LessonList = LessonDefinition[];
 
-const cycleMeta: Record<CycleSlug, { title: string; description: string; lock: string }> = {
-  c0: { title: "I Can Draw", description: "Aprenda o loop de observar, tentar, comparar e corrigir.", lock: "" },
-  c1: { title: "Control", description: "Desenvolva controle motor consciente: linhas, curvas, elipses, direção, pressão e ritmo.", lock: "Conclua C0 para desbloquear C1. O Gym continua disponível para exploração." },
-  c2: { title: "Learn to See", description: "Treine proporção, ângulo, alinhamento, landmarks e espaço negativo antes de pedir execução à mão.", lock: "Conclua C1 para desbloquear C2. O Observation Lab continua disponível para exploração." },
-  c3: { title: "Shape Language", description: "Transforme percepção em estrutura usando envelope, formas simples, silhueta e sobreposição.", lock: "Conclua C2 para desbloquear C3. O Construction Lab continua disponível para exploração." },
-  c4: { title: "Form · Thinking in 3D", description: "Transforme shapes em volumes: caixas, cilindros, elipses no espaço, superfícies e rotação mental.", lock: "Conclua C3 para desbloquear C4. O Form Lab continua disponível para exploração." },
+type CycleMeta = {
+  title: string;
+  societyName: string;
+  description: string;
+  lock: string;
+  atelier: string;
+  atelierHref: string;
+  pigment: string;
 };
 
-function CycleLessons({ cycle, lessons, completedSet, unlocked }: { cycle: CycleSlug; lessons: LessonList; completedSet: Set<string>; unlocked: boolean }) {
+const cycleMeta: Record<CycleSlug, CycleMeta> = {
+  c0: { title: "I Can Draw", societyName: "Portal do Olhar", description: "Aprenda o ritual fundamental: observar, tentar, comparar e corrigir.", lock: "Primeira região da campanha.", atelier: "Drawing Zero", atelierHref: "/drawing-zero", pigment: "gold" },
+  c1: { title: "Control", societyName: "Atelier do Gesto", description: "Domine linha, curva, elipse, direção, pressão e ritmo.", lock: "Conclua o Portal do Olhar para abrir esta região.", atelier: "Desafio do Gesto", atelierHref: "/gym", pigment: "terracotta" },
+  c2: { title: "Learn to See", societyName: "Atelier do Olhar", description: "Treine proporção, ângulo, alinhamento, landmarks e espaço negativo.", lock: "Conclua o Atelier do Gesto para abrir esta região.", atelier: "Desafio do Olhar", atelierHref: "/observation", pigment: "ultramarine" },
+  c3: { title: "Shape Language", societyName: "Atelier da Estrutura", description: "Transforme percepção em envelope, formas simples, silhueta e sobreposição.", lock: "Conclua o Atelier do Olhar para abrir esta região.", atelier: "Desafio da Estrutura", atelierHref: "/construction", pigment: "veronese" },
+  c4: { title: "Thinking in 3D", societyName: "Atelier do Volume", description: "Converta shapes em caixas, cilindros, elipses no espaço e rotação mental.", lock: "Conclua o Atelier da Estrutura para abrir esta região.", atelier: "Desafio do Volume", atelierHref: "/form", pigment: "violet" },
+};
+
+function CampaignRegion({ cycle, lessons, completedSet, unlocked, active }: { cycle: CycleSlug; lessons: LessonList; completedSet: Set<string>; unlocked: boolean; active: boolean }) {
   const doneCount = lessons.filter((lesson) => completedSet.has(lesson.key)).length;
   const progress = Math.round((doneCount / lessons.length) * 100);
+  const nextLesson = unlocked ? lessons.find((lesson) => !completedSet.has(lesson.key)) ?? null : null;
+  const complete = doneCount === lessons.length;
   const meta = cycleMeta[cycle];
+
   return (
-    <section className={`cycle-panel ${unlocked ? "" : "is-locked"}`}>
-      <div className="cycle-panel-head">
-        <div><p className="eyebrow">{cycle.toUpperCase()}</p><h2>{meta.title}</h2></div>
-        <strong>{unlocked ? `${progress}%` : "Bloqueado"}</strong>
+    <article className={`campaign-region pigment-${meta.pigment} ${unlocked ? "is-unlocked" : "is-locked"} ${active ? "is-active" : ""} ${complete ? "is-complete" : ""}`}>
+      <div className="campaign-region-top">
+        <span className="campaign-region-code">{cycle.toUpperCase()}</span>
+        <span className="campaign-region-state">{complete ? "DOMINADO" : unlocked ? `${progress}%` : "SELADO"}</span>
       </div>
-      <p className="cycle-description">{meta.description}</p>
-      {unlocked ? (
-        <div className="lesson-list">
-          {lessons.map((lesson, index) => {
-            const done = completedSet.has(lesson.key);
-            return (
-              <Link className={`lesson-row ${done ? "is-complete" : ""}`} href={`/learn/${cycle}/${encodeURIComponent(lesson.key)}`} key={lesson.key}>
-                <span className="lesson-index">{done ? "✓" : String(index + 1).padStart(2, "0")}</span>
-                <span><strong>{lesson.title["pt-BR"]}</strong><small>{lesson.estimatedActiveMinutes} min ativos</small></span>
-              </Link>
-            );
-          })}
-        </div>
-      ) : <div className="cycle-lock-message">{meta.lock}</div>}
-    </section>
+      <div className="campaign-region-mark" aria-hidden="true">{complete ? "✓" : unlocked ? cycle.slice(1) : "◆"}</div>
+      <h2>{meta.societyName}</h2>
+      <p className="campaign-region-subtitle">{meta.title}</p>
+      <p>{meta.description}</p>
+
+      <div className="campaign-mission-nodes" aria-label={`Missões de ${meta.societyName}`}>
+        {lessons.map((lesson, index) => {
+          const done = completedSet.has(lesson.key);
+          const current = nextLesson?.key === lesson.key;
+          return unlocked ? (
+            <Link
+              key={lesson.key}
+              href={`/learn/${cycle}/${encodeURIComponent(lesson.key)}`}
+              className={`${done ? "is-done" : ""} ${current ? "is-current" : ""}`}
+              title={`${String(index + 1).padStart(2, "0")} · ${lesson.title["pt-BR"]}`}
+              aria-label={`${lesson.title["pt-BR"]}${done ? " · concluída" : current ? " · missão atual" : ""}`}
+            >{done ? "✓" : String(index + 1).padStart(2, "0")}</Link>
+          ) : <span key={lesson.key} aria-hidden="true">·</span>;
+        })}
+      </div>
+
+      <div className="campaign-region-action">
+        {!unlocked ? <small>{meta.lock}</small>
+          : nextLesson ? <Link href={`/learn/${cycle}/${encodeURIComponent(nextLesson.key)}`}><span>MISSÃO ATUAL</span><strong>{nextLesson.title["pt-BR"]}</strong><small>{nextLesson.estimatedActiveMinutes} min ativos</small></Link>
+            : <Link href={meta.atelierHref}><span>DESAFIO DA REGIÃO</span><strong>{meta.atelier}</strong><small>Transforme conteúdo em Evidence.</small></Link>}
+      </div>
+    </article>
   );
 }
 
@@ -53,41 +78,51 @@ export default async function LearnPage() {
   const userId = await getSessionUserId();
   const completed = userId ? await getLearningProgressRepository().getCompletedLessonKeys(userId) : [];
   const completedSet = new Set(completed);
-  const c0Complete = C0_LESSONS.every((lesson) => completedSet.has(lesson.key));
-  const c1Complete = C1_LESSONS.every((lesson) => completedSet.has(lesson.key));
-  const c2Complete = C2_LESSONS.every((lesson) => completedSet.has(lesson.key));
-  const c3Complete = C3_LESSONS.every((lesson) => completedSet.has(lesson.key));
-  const c4Complete = C4_LESSONS.every((lesson) => completedSet.has(lesson.key));
-  const nextC0 = C0_LESSONS.find((lesson) => !completedSet.has(lesson.key)) ?? null;
-  const nextC1 = c0Complete ? C1_LESSONS.find((lesson) => !completedSet.has(lesson.key)) ?? null : null;
-  const nextC2 = c1Complete ? C2_LESSONS.find((lesson) => !completedSet.has(lesson.key)) ?? null : null;
-  const nextC3 = c2Complete ? C3_LESSONS.find((lesson) => !completedSet.has(lesson.key)) ?? null : null;
-  const nextC4 = c3Complete ? C4_LESSONS.find((lesson) => !completedSet.has(lesson.key)) ?? null : null;
+  const cycles: Array<[CycleSlug, LessonList]> = [["c0", C0_LESSONS], ["c1", C1_LESSONS], ["c2", C2_LESSONS], ["c3", C3_LESSONS], ["c4", C4_LESSONS]];
+
+  const completeByCycle = Object.fromEntries(cycles.map(([cycle, lessons]) => [cycle, lessons.every((lesson) => completedSet.has(lesson.key))])) as Record<CycleSlug, boolean>;
+  const unlockedByCycle: Record<CycleSlug, boolean> = {
+    c0: true,
+    c1: completeByCycle.c0,
+    c2: completeByCycle.c1,
+    c3: completeByCycle.c2,
+    c4: completeByCycle.c3,
+  };
+  const activeCycle = cycles.find(([cycle]) => unlockedByCycle[cycle] && !completeByCycle[cycle])?.[0] ?? "c4";
+  const activeLessons = cycles.find(([cycle]) => cycle === activeCycle)?.[1] ?? C4_LESSONS;
+  const activeNext = activeLessons.find((lesson) => !completedSet.has(lesson.key)) ?? null;
+  const totalLessons = cycles.reduce((sum, [, lessons]) => sum + lessons.length, 0);
+  const completedLessons = cycles.reduce((sum, [, lessons]) => sum + lessons.filter((lesson) => completedSet.has(lesson.key)).length, 0);
+  const campaignProgress = Math.round((completedLessons / totalLessons) * 100);
+  const activeMeta = cycleMeta[activeCycle];
 
   return (
-    <main className="flow-shell">
-      <section className="flow-card learn-foundation-card">
-        <p className="eyebrow">Learn · Foundation</p>
-        <h1 className="flow-title">Construa habilidade em camadas.</h1>
-        <p className="lead compact">C0 ensina como aprender. C1 treina controle. C2 treina percepção. C3 organiza shapes. C4 transforma essas estruturas em volumes que existem no espaço.</p>
-        <div className="foundation-cycles">
-          <CycleLessons cycle="c0" lessons={C0_LESSONS} completedSet={completedSet} unlocked />
-          <CycleLessons cycle="c1" lessons={C1_LESSONS} completedSet={completedSet} unlocked={c0Complete} />
-          <CycleLessons cycle="c2" lessons={C2_LESSONS} completedSet={completedSet} unlocked={c1Complete} />
-          <CycleLessons cycle="c3" lessons={C3_LESSONS} completedSet={completedSet} unlocked={c2Complete} />
-          <CycleLessons cycle="c4" lessons={C4_LESSONS} completedSet={completedSet} unlocked={c3Complete} />
+    <main className="campaign-shell">
+      <header className="campaign-command">
+        <div className="campaign-command-copy">
+          <p className="eyebrow">Sociedade Croma · Campanha Foundation</p>
+          <h1>O caminho do Aprendiz do Olhar.</h1>
+          <p>Avance por cinco regiões. Cada missão ensina uma ideia; cada Atelier exige que você a use. O mapa registra prática, não presença.</p>
+          <div className="campaign-global-progress"><span><i style={{ width: `${campaignProgress}%` }} /></span><b>{completedLessons}/{totalLessons} missões · {campaignProgress}% da campanha</b></div>
         </div>
-        <div className="flow-actions split-actions">
-          <Link className="secondary link-button" href="/">Início</Link>
-          {nextC0 ? <Link className="primary link-button" href={`/learn/c0/${encodeURIComponent(nextC0.key)}`}>Continuar C0</Link>
-            : nextC1 ? <Link className="primary link-button" href={`/learn/c1/${encodeURIComponent(nextC1.key)}`}>Continuar C1</Link>
-              : nextC2 ? <Link className="primary link-button" href={`/learn/c2/${encodeURIComponent(nextC2.key)}`}>Continuar C2</Link>
-                : nextC3 ? <Link className="primary link-button" href={`/learn/c3/${encodeURIComponent(nextC3.key)}`}>Continuar C3</Link>
-                  : nextC4 ? <Link className="primary link-button" href={`/learn/c4/${encodeURIComponent(nextC4.key)}`}>Continuar C4</Link>
-                    : c4Complete ? <Link className="primary link-button" href="/journey">Ver Foundation Alpha concluída</Link>
-                      : <Link className="primary link-button" href={c3Complete ? "/form" : c2Complete ? "/construction" : c1Complete ? "/observation" : "/gym"}>Explorar prática</Link>}
-        </div>
+
+        <aside className="campaign-current-mission">
+          <span>CROMA · PRÓXIMA MISSÃO</span>
+          <strong>{activeNext ? activeNext.title["pt-BR"] : activeMeta.atelier}</strong>
+          <p>{activeNext ? `${activeMeta.societyName} · ${activeNext.estimatedActiveMinutes} min ativos` : `A região está completa. Entre no ${activeMeta.atelier}.`}</p>
+          <Link className="primary link-button" href={activeNext ? `/learn/${activeCycle}/${encodeURIComponent(activeNext.key)}` : activeMeta.atelierHref}>{activeNext ? "Entrar na missão" : "Abrir desafio"}</Link>
+        </aside>
+      </header>
+
+      <section className="campaign-map" aria-label="Mapa da campanha Foundation">
+        <div className="campaign-map-line" aria-hidden="true" />
+        {cycles.map(([cycle, lessons]) => <CampaignRegion key={cycle} cycle={cycle} lessons={lessons} completedSet={completedSet} unlocked={unlockedByCycle[cycle]} active={cycle === activeCycle} />)}
       </section>
+
+      <footer className="campaign-footer-actions">
+        <Link className="secondary link-button" href="/codex">Consultar Codex Croma</Link>
+        <div><Link className="secondary link-button" href="/journey">Abrir Atlas</Link><Link className="primary link-button" href="/create">Entrar no Atelier Livre</Link></div>
+      </footer>
     </main>
   );
 }
