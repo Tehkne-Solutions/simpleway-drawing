@@ -69,7 +69,7 @@ export function PixelCanvas() {
   const [tool, setTool] = useState<Tool>("pencil");
   const [brushSize, setBrushSize] = useState<BrushSize>(1);
   const [palette, setPalette] = useState<PaletteKey>("croma");
-  const [activeColor, setActiveColor] = useState(PALETTES.croma.colors[0]);
+  const [activeColor, setActiveColor] = useState<string>(PALETTES.croma.colors[0]);
   const [showGrid, setShowGrid] = useState(true);
   const [symmetry, setSymmetry] = useState(false);
 
@@ -183,6 +183,7 @@ export function PixelCanvas() {
     setHistory((items) => {
       if (!items.length) return items;
       const previous = items[items.length - 1];
+      if (!previous) return items;
       setPixels(previous.slice());
       return items.slice(0, -1);
     });
@@ -296,9 +297,9 @@ export function PixelCanvas() {
   const stats = useMemo(() => {
     const colors = new Set<string>();
     let painted = 0;
-    let minX = resolution;
+    let minX: number = resolution;
     let maxX = -1;
-    let minY = resolution;
+    let minY: number = resolution;
     let maxY = -1;
     pixels.forEach((color, index) => {
       if (!color) return;
