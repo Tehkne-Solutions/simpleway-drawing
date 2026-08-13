@@ -201,7 +201,9 @@ assert.equal(cohort.completionRate, 100);
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "cohort graduation Journey");
 const journeyHtml = await journey.text();
-assert.match(journeyHtml, /Foundation Alpha · Graduation/);
-assert.match(journeyHtml, /Drawing Zero · Before \/ After/);
+assert.match(journeyHtml, /ARCO CONCLUÍDO/);
+assert.match(journeyHtml, /Foundation Alpha/);
+assert.match(journeyHtml, /ANTES \/ DEPOIS/);
+assert.match(journeyHtml, /Drawing Zero/);
 
 console.log("COHORT_COMPLETION_E2E=PASS ops_session invite consent invited_identity onboarding drawing_zero foundation cross_domain_evidence capstone revisit alpha_gate complete_resume complete_heartbeat feedback_csrf feedback feedback_readback tester_feedback_projection cohort_activation cohort_completion cohort_rating graduation_projection");
