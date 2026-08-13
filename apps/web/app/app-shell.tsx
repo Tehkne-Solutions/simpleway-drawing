@@ -28,7 +28,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric");
+  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric") || pathname.startsWith("/create/pixel");
   const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   useEffect(() => {

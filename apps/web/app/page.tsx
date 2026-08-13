@@ -62,6 +62,10 @@ export default async function HomePage() {
             <span>ATELIER DA ESTRUTURA</span><strong>Canvas Isométrico</strong><p>Treine espaço 3D em 2D com grade 30°, snap e construção por segmentos.</p><b>Entrar no Studio →</b>
             <div className="studio-emblem iso-emblem" aria-hidden="true">◇</div>
           </Link>
+          <Link className="hub-studio-card pixel" href="/create/pixel">
+            <span>ATELIER DA SÍNTESE</span><strong>Pixel Studio</strong><p>Crie com grid pixel-a-pixel, paletas limitadas, blocos e resolução controlada.</p><b>Entrar no Studio →</b>
+            <div className="studio-emblem pixel-emblem" aria-hidden="true">▦</div>
+          </Link>
         </div>
       </section>
 
