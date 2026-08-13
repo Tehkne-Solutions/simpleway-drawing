@@ -143,7 +143,7 @@ const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: 
 assert.equal(journey.status, 200);
 const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Minha jornada começou/);
-assert.match(journeyHtml, /baseline privado/i);
+assert.match(journeyHtml, /Seu ponto de partida privado/i);
 
 const unauthorizedOps = await fetch(`${baseUrl}/api/ops/alpha`, { cache: "no-store" });
 assert.equal(unauthorizedOps.status, 401);
