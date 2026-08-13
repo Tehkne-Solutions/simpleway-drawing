@@ -9,10 +9,11 @@ function source(path: string) {
 
 test("Sprite Lab keeps the Atelier da Sintese game contract", () => {
   const pixelPage = source("app/create/pixel/page.tsx");
+  const modeNav = source("app/create/pixel/pixel-mode-nav.tsx");
   const spritePage = source("app/create/pixel/sprite/page.tsx");
   const sprite = source("app/create/pixel/sprite/sprite-lab.tsx");
-
-  assert.match(pixelPage, /Sprite Lab/);
+  assert.match(pixelPage, /PixelModeNav/);
+  assert.match(modeNav, /Sprite Lab/);
   assert.match(spritePage, /Atelier da Síntese/);
   assert.match(spritePage, /SpriteLab/);
   assert.match(sprite, /onionSkin/);
