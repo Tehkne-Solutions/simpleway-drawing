@@ -18,3 +18,4 @@ export * from "./repositories/closed-alpha-feedback";
 export * from "./repositories/operations";
 export * from "./repositories/invitations";
 export * from "./repositories/cohort-analytics";
+export * from "./repositories/pixel-expedition";
