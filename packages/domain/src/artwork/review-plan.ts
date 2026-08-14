@@ -9,9 +9,10 @@ export type ArtworkReviewPlan = {
 export function normalizeArtworkReviewPlan(value: unknown): ArtworkReviewPlan | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const raw = value as Record<string, unknown>;
-  const preserve = typeof raw.preserve === "string" ? raw.preserve.trim().slice(0, REVIEW_PLAN_DECISION_MAX_LENGTH) : "";
-  const transform = typeof raw.transform === "string" ? raw.transform.trim().slice(0, REVIEW_PLAN_DECISION_MAX_LENGTH) : "";
+  const preserve = typeof raw.preserve === "string" ? raw.preserve.trim() : "";
+  const transform = typeof raw.transform === "string" ? raw.transform.trim() : "";
   const baseVersionNumber = raw.baseVersionNumber;
-  if (!preserve || !transform || typeof baseVersionNumber !== "number" || !Number.isInteger(baseVersionNumber) || baseVersionNumber < 1) return null;
+  if (!preserve || !transform || preserve.length > REVIEW_PLAN_DECISION_MAX_LENGTH || transform.length > REVIEW_PLAN_DECISION_MAX_LENGTH) return null;
+  if (typeof baseVersionNumber !== "number" || !Number.isInteger(baseVersionNumber) || baseVersionNumber < 1) return null;
   return { preserve, transform, baseVersionNumber };
 }
