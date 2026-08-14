@@ -16,6 +16,7 @@ import {
   DrizzleObservationRepository,
   DrizzleOperationsRepository,
   DrizzlePixelExpeditionRepository,
+  DrizzleStudioEvidenceRepository,
   type Database,
 } from "@swd/database";
 import { ConfirmPrivateUpload, PreparePrivateUpload } from "@swd/domain";
@@ -70,3 +71,4 @@ export function getOperationsRepository(): DrizzleOperationsRepository { return 
 export function getInvitationRepository(): DrizzleInvitationRepository { return new DrizzleInvitationRepository(getDatabase()); }
 export function getCohortAnalyticsRepository(): DrizzleCohortAnalyticsRepository { return new DrizzleCohortAnalyticsRepository(getDatabase()); }
 export function getPixelExpeditionRepository(): DrizzlePixelExpeditionRepository { return new DrizzlePixelExpeditionRepository(getDatabase()); }
+export function getStudioEvidenceRepository(): DrizzleStudioEvidenceRepository { return new DrizzleStudioEvidenceRepository(getDatabase()); }

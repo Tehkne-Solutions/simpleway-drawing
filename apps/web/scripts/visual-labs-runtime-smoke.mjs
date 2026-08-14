@@ -18,11 +18,42 @@ function validPixelArtifact() {
   const resolution = 16;
   const pixels = Array.from({ length: resolution * resolution }, () => null);
   for (let y = 4; y < 12; y += 1) {
-    for (let x = 4; x < 12; x += 1) {
-      pixels[y * resolution + x] = (x + y) % 2 === 0 ? "#181715" : "#f2b705";
-    }
+    for (let x = 4; x < 12; x += 1) pixels[y * resolution + x] = (x + y) % 2 === 0 ? "#181715" : "#f2b705";
   }
   return { missionId: "pixel", payload: { resolution, pixels } };
+}
+
+function validMangaArtifact() {
+  const view = (offset = 0) => [
+    { points: [{ x: 420 + offset, y: 180 }, { x: 540 + offset, y: 130 }, { x: 660 + offset, y: 180 }] },
+    { points: [{ x: 400 + offset, y: 260 }, { x: 540 + offset, y: 240 }, { x: 680 + offset, y: 260 }] },
+    { points: [{ x: 410 + offset, y: 350 }, { x: 540 + offset, y: 480 }, { x: 670 + offset, y: 350 }] },
+    { points: [{ x: 540 + offset, y: 130 }, { x: 540 + offset, y: 470 }] },
+    { points: [{ x: 430 + offset, y: 300 }, { x: 650 + offset, y: 300 }] },
+    { points: [{ x: 470 + offset, y: 210 }, { x: 610 + offset, y: 420 }] },
+  ];
+  const guides = { skull: true, center: true, eyes: true, jaw: true };
+  return {
+    missionId: "manga",
+    payload: {
+      strokesByView: { front: view(), "three-quarter": view(12), profile: view(24) },
+      guideUsageByView: { front: guides, "three-quarter": guides, profile: guides },
+    },
+  };
+}
+
+function validIsometricArtifact() {
+  const segment = (x1, y1, x2, y2) => ({ tool: "segment", snapped: true, points: [{ x: x1, y: y1 }, { x: x2, y: y2 }] });
+  return {
+    missionId: "isometric",
+    payload: {
+      strokes: [
+        segment(100, 120, 184, 168.5), segment(130, 210, 214, 258.5), segment(160, 300, 244, 348.5),
+        segment(300, 100, 300, 196), segment(360, 160, 360, 256), segment(420, 220, 420, 316),
+        segment(620, 120, 536, 168.5), segment(590, 210, 506, 258.5), segment(560, 300, 476, 348.5),
+      ],
+    },
+  };
 }
 
 const cookie = await createSession();
@@ -118,7 +149,7 @@ const unsupportedForm = await fetch(`${baseUrl}/api/form`, {
 assert.equal(unsupportedForm.status, 400);
 assert.equal((await unsupportedForm.json()).code, "FORM_EXERCISE_NOT_SUPPORTED");
 
-for (const [path, label] of [["/observation", "Observation Lab"], ["/construction", "Construction Lab"], ["/form", "Form Lab"]]) {
+for (const [path, label] of [["/observation", "Observation Lab"], ["/construction", "Construction Lab"], ["/form", "Form Lab"], ["/create/manga", "Manga Studio"], ["/create/isometric", "Isometric Studio"]]) {
   const page = await fetch(`${baseUrl}${path}`, { headers: { cookie }, cache: "no-store" });
   await assertHttp(page, 200, `${label} page`);
 }
@@ -171,6 +202,59 @@ const creativeSnapshotPayload = await creativeSnapshot.json();
 assert.deepEqual(creativeSnapshotPayload.completedMissionIds, ["pixel"]);
 assert.equal(creativeSnapshotPayload.xp, 125);
 
+const studioCsrf = await fetch(`${baseUrl}/api/studio/evidence`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json", origin: "https://malicious.example" },
+  body: JSON.stringify(validMangaArtifact()),
+});
+assert.equal(studioCsrf.status, 403);
+assert.equal((await studioCsrf.json()).code, "CROSS_ORIGIN_REQUEST_BLOCKED");
+
+const invalidStudio = await fetch(`${baseUrl}/api/studio/evidence`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify({ missionId: "manga", payload: { complete: true } }),
+});
+assert.equal(invalidStudio.status, 400);
+assert.equal((await invalidStudio.json()).code, "INVALID_MANGA_ARTIFACT");
+
+const mangaEvidence = await fetch(`${baseUrl}/api/studio/evidence`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify(validMangaArtifact()),
+});
+await assertHttp(mangaEvidence, 201, "manga studio evidence");
+const mangaPayload = await mangaEvidence.json();
+assert.equal(mangaPayload.created, true);
+assert.equal(mangaPayload.missionId, "manga");
+assert.deepEqual(mangaPayload.snapshot.completedMissionIds, ["manga"]);
+assert.equal(mangaPayload.snapshot.evidence.find((item) => item.missionId === "manga")?.evidenceCount, 1);
+
+const mangaRepeat = await fetch(`${baseUrl}/api/studio/evidence`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify(validMangaArtifact()),
+});
+await assertHttp(mangaRepeat, 200, "manga studio evidence idempotency");
+assert.equal((await mangaRepeat.json()).created, false);
+
+const isometricEvidence = await fetch(`${baseUrl}/api/studio/evidence`, {
+  method: "POST",
+  headers: { cookie, "content-type": "application/json" },
+  body: JSON.stringify(validIsometricArtifact()),
+});
+await assertHttp(isometricEvidence, 201, "isometric studio evidence");
+const isometricPayload = await isometricEvidence.json();
+assert.equal(isometricPayload.created, true);
+assert.equal(isometricPayload.missionId, "isometric");
+assert.deepEqual(isometricPayload.snapshot.completedMissionIds.sort(), ["isometric", "manga"]);
+assert.equal(isometricPayload.snapshot.evidence.find((item) => item.missionId === "isometric")?.evidenceCount, 1);
+
+const studioSnapshot = await fetch(`${baseUrl}/api/studio/evidence`, { headers: { cookie }, cache: "no-store" });
+await assertHttp(studioSnapshot, 200, "studio evidence snapshot");
+const studioSnapshotPayload = await studioSnapshot.json();
+assert.deepEqual(studioSnapshotPayload.completedMissionIds.sort(), ["isometric", "manga"]);
+
 const skills = await fetch(`${baseUrl}/skills`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(skills, 200, "cross-lab skill profile");
 const skillHtml = await skills.text();
@@ -179,15 +263,21 @@ assert.match(skillHtml, /Proporção visual/);
 assert.match(skillHtml, /Decomposição estrutural/);
 assert.match(skillHtml, /Construção de caixas/);
 assert.match(skillHtml, /Síntese em Pixel Art/);
+assert.match(skillHtml, /Construção de cabeça em múltiplas vistas/);
+assert.match(skillHtml, /Construção isométrica em três eixos/);
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "creative evidence atlas projection");
 const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Olho de Croma/);
 assert.match(journeyHtml, /Sigilo da Forma/);
+assert.match(journeyHtml, /Códice de Croma/);
+assert.match(journeyHtml, /Sigilo das Vistas/);
+assert.match(journeyHtml, /Prisma de Croma/);
+assert.match(journeyHtml, /Sigilo dos Eixos/);
 
 const diagnostics = await fetch(`${baseUrl}/api/diagnostics`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(diagnostics, 200, "visual labs diagnostics");
 assert.ok((await diagnostics.json()).diagnostics);
 
-console.log("VISUAL_LABS_E2E=PASS observation_catalog observation_csrf perceptual_evidence repeated_perceptual_evidence construction_csrf structural_evidence invalid_answer form_csrf spatial_evidence unsupported_exercise lab_pages creative_csrf creative_artifact_validation creative_evidence creative_idempotency creative_snapshot cross_lab_atelier_skill_profile creative_atlas_projection diagnostics_projection");
+console.log("VISUAL_LABS_E2E=PASS observation_catalog observation_csrf perceptual_evidence repeated_perceptual_evidence construction_csrf structural_evidence invalid_answer form_csrf spatial_evidence unsupported_exercise lab_pages creative_csrf creative_artifact_validation creative_evidence creative_idempotency creative_snapshot studio_csrf studio_artifact_validation manga_evidence manga_idempotency isometric_evidence studio_snapshot cross_lab_atelier_skill_profile creative_atlas_projection diagnostics_projection");

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { IsometricCanvas } from "./isometric-canvas";
 import "./isometric-v13.css";
+import "./evidence-v14.css";
 
 export default function IsometricPracticePage() {
   return (

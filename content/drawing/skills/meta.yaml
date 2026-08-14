@@ -77,3 +77,23 @@
   transferable: true
   title:
     pt-BR: Timing de animação
+
+- key: skill.drawing.creative.manga_head_construction
+  version: 1
+  domain: meta
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: false
+  transferable: true
+  title:
+    pt-BR: Construção de cabeça em múltiplas vistas
+
+- key: skill.drawing.creative.isometric_construction
+  version: 1
+  domain: meta
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: false
+  transferable: true
+  title:
+    pt-BR: Construção isométrica em três eixos
