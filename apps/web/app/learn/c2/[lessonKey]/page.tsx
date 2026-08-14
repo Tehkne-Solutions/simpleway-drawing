@@ -7,18 +7,7 @@ export default async function C2LessonPage({ params }: { params: Promise<{ lesso
   const decoded = decodeURIComponent(lessonKey);
   const lesson = getC2Lesson(decoded);
   if (!lesson) notFound();
-
   const index = C2_LESSONS.findIndex((item) => item.key === lesson.key);
   const nextLessonKey = C2_LESSONS[index + 1]?.key ?? null;
-
-  return (
-    <main className="flow-shell">
-      <article className="flow-card">
-        <p className="eyebrow">C2 · Lição {index + 1} de {C2_LESSONS.length}</p>
-        <h1 className="flow-title">{lesson.title["pt-BR"]}</h1>
-        <p className="lead compact">{lesson.objective["pt-BR"]}</p>
-        <FoundationLessonPlayer lesson={lesson} cycleSlug="c2" nextLessonKey={nextLessonKey} />
-      </article>
-    </main>
-  );
+  return <FoundationLessonPlayer lesson={lesson} cycleSlug="c2" nextLessonKey={nextLessonKey} lessonIndex={index} lessonCount={C2_LESSONS.length} />;
 }

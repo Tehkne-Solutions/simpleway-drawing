@@ -1,8 +1,5 @@
-import { getFoundationLesson } from "@swd/content";
-import { getC2Lesson } from "@swd/content/c2";
-import { getC3Lesson } from "@swd/content/c3";
-import { getC4Lesson } from "@swd/content/c4";
 import { NextResponse } from "next/server";
+import { getFoundationMissionState, resolveFoundationLesson } from "../../../../../../server/foundation-mission-state";
 import { logServerError } from "../../../../../../server/logger";
 import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../../../server/request-security";
 import { getLearningProgressRepository } from "../../../../../../server/runtime";
@@ -13,8 +10,13 @@ export async function POST(request: Request, context: { params: Promise<{ lesson
     assertSameOrigin(request);
     const userId = await requireSessionUserId();
     const { lessonKey } = await context.params;
-    const lesson = getFoundationLesson(lessonKey) ?? getC2Lesson(lessonKey) ?? getC3Lesson(lessonKey) ?? getC4Lesson(lessonKey);
+    const lesson = resolveFoundationLesson(lessonKey);
     if (!lesson) return NextResponse.json({ code: "LESSON_NOT_FOUND" }, { status: 404 });
+
+    const missionState = await getFoundationMissionState(userId, lesson);
+    const missingPractice = missionState.practices.find((practice) => !practice.completed);
+    if (missingPractice) return NextResponse.json({ code: "LESSON_PRACTICE_REQUIRED", exerciseKey: missingPractice.exerciseKey }, { status: 409, headers: { "cache-control": "no-store" } });
+    if (missionState.drawingZeroRequired && !missionState.drawingZeroComplete) return NextResponse.json({ code: "DRAWING_ZERO_REQUIRED" }, { status: 409, headers: { "cache-control": "no-store" } });
 
     const body = await readJsonBody<{ reflection?: Record<string, unknown> }>(request, 16_384);
     const reflection = body.reflection && typeof body.reflection === "object" && !Array.isArray(body.reflection) ? body.reflection : {};

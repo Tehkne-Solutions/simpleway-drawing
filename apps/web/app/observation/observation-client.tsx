@@ -13,8 +13,9 @@ function VisualPrompt({ exerciseKey }: { exerciseKey: string }) {
   return <div className="observation-visual negative-space-visual"><span className="negative-left" /><span className="negative-right" /><i /></div>;
 }
 
-export function ObservationClient({ exercises, localUiOnly = false }: { exercises: Exercise[]; localUiOnly?: boolean }) {
-  const [index, setIndex] = useState(0);
+export function ObservationClient({ exercises, localUiOnly = false, initialExerciseKey = null, returnTo = null }: { exercises: Exercise[]; localUiOnly?: boolean; initialExerciseKey?: string | null; returnTo?: string | null }) {
+  const initialIndex = Math.max(0, initialExerciseKey ? exercises.findIndex((exercise) => exercise.key === initialExerciseKey) : 0);
+  const [index, setIndex] = useState(initialIndex);
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
@@ -58,11 +59,11 @@ export function ObservationClient({ exercises, localUiOnly = false }: { exercise
   return <div className="observation-session">
     <div className="observation-head"><div><p className="eyebrow">Observation Lab · C2</p><h1 className="flow-title">{exercise.title}</h1></div><span>{progress}</span></div>
     <p className="lead compact">{exercise.prompt}</p>
-    {localUiOnly ? <aside className="lesson-checkpoint">Modo local: este Lab funciona normalmente para inspeção e prática, mas não grava Evidence nem altera o Atlas.</aside> : null}
+    {returnTo ? <aside className="lesson-checkpoint">Portal de missão ativo. Esta tentativa libera a cena Practice quando gerar Evidence.</aside> : localUiOnly ? <aside className="lesson-checkpoint">Modo local: este Lab funciona normalmente para inspeção e prática, mas não grava Evidence nem altera o Atlas.</aside> : null}
     <VisualPrompt exerciseKey={exerciseKey} />
     <div className="observation-options">{exercise.options.map((option, optionIndex) => { const isSelected = selected === optionIndex; const stateClass = result ? optionIndex === result.correctIndex ? "is-correct" : isSelected && !result.correct ? "is-wrong" : "" : isSelected ? "is-selected" : ""; return <button key={option} type="button" className={stateClass} disabled={Boolean(result)} onClick={() => setSelected(optionIndex)}><span>{String.fromCharCode(65 + optionIndex)}</span>{option}</button>; })}</div>
     {result ? <section className={`observation-feedback ${result.correct ? "success" : "retry"}`} aria-live="polite"><p className="eyebrow">{result.localOnly ? "Treino local" : "Evidence · Perception"}</p><h2>{result.correct ? "Você percebeu a relação corretamente." : "Compare novamente antes de desenhar."}</h2><p>{result.explanation}</p>{result.localOnly ? <div className="mastery-strip observation-mastery"><strong>Não persistido</strong><span>Resultado válido para prática local; Evidence será registrado apenas no runtime completo.</span></div> : <div className="mastery-strip observation-mastery"><strong>{result.masteryLevel}</strong><span>{Math.round((result.masteryScore ?? 0) * 100)}% mastery · {result.evidenceCount ?? 0} evidência(s)</span></div>}</section> : null}
     {error ? <p className="flow-error" role="alert">{error}</p> : null}
-    <div className="flow-actions split-actions"><Link className="secondary link-button" href="/learn">Voltar ao Learn</Link>{result ? <button className="primary" type="button" onClick={next}>{index + 1 >= exercises.length ? "Recomeçar Lab" : "Próximo exercício"}</button> : <button className="primary" type="button" disabled={selected == null || busy} onClick={submit}>{busy ? "Analisando…" : "Confirmar percepção"}</button>}</div>
+    <div className="flow-actions split-actions"><Link className="secondary link-button" href={returnTo ?? "/learn"}>{returnTo ? "Voltar à missão" : "Voltar ao Learn"}</Link>{result && returnTo ? <Link className="primary link-button" href={returnTo}>{result.localOnly ? "Voltar e verificar missão" : "Retornar com Evidence →"}</Link> : result ? <button className="primary" type="button" onClick={next}>{index + 1 >= exercises.length ? "Recomeçar Lab" : "Próximo exercício"}</button> : <button className="primary" type="button" disabled={selected == null || busy} onClick={submit}>{busy ? "Analisando…" : "Confirmar percepção"}</button>}</div>
   </div>;
 }

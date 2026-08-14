@@ -6,8 +6,9 @@ import { useState } from "react";
 type Exercise = { key: string; title: string; prompt: string; options: string[]; skillKey: string; localCorrectIndex?: number; localExplanation?: string };
 type Result = { correct: boolean; correctIndex: number; explanation: string; masteryScore?: number; masteryLevel?: string; evidenceCount?: number; localOnly?: boolean };
 
-export function FormClient({ exercises, localUiOnly = false }: { exercises: Exercise[]; localUiOnly?: boolean }) {
-  const [index, setIndex] = useState(0);
+export function FormClient({ exercises, localUiOnly = false, initialExerciseKey = null, returnTo = null }: { exercises: Exercise[]; localUiOnly?: boolean; initialExerciseKey?: string | null; returnTo?: string | null }) {
+  const initialIndex = Math.max(0, initialExerciseKey ? exercises.findIndex((exercise) => exercise.key === initialExerciseKey) : 0);
+  const [index, setIndex] = useState(initialIndex);
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
@@ -24,22 +25,12 @@ export function FormClient({ exercises, localUiOnly = false }: { exercises: Exer
     try {
       if (localUiOnly) {
         if (activeExercise.localCorrectIndex == null) throw new Error("Resposta local indisponível.");
-        setResult({
-          correct: selected === activeExercise.localCorrectIndex,
-          correctIndex: activeExercise.localCorrectIndex,
-          explanation: activeExercise.localExplanation ?? "Compare eixo, plano e profundidade antes da próxima tentativa.",
-          localOnly: true,
-        });
+        setResult({ correct: selected === activeExercise.localCorrectIndex, correctIndex: activeExercise.localCorrectIndex, explanation: activeExercise.localExplanation ?? "Compare eixo, plano e profundidade antes da próxima tentativa.", localOnly: true });
         return;
       }
-
       const session = await fetch("/api/session/guest", { method: "POST" });
       if (!session.ok) throw new Error("Não foi possível iniciar sua sessão.");
-      const response = await fetch("/api/form", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ exerciseKey: activeExercise.key, answerIndex: selected }),
-      });
+      const response = await fetch("/api/form", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ exerciseKey: activeExercise.key, answerIndex: selected }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.code ?? "Não foi possível registrar o treino.");
       setResult(payload as Result);
@@ -52,32 +43,21 @@ export function FormClient({ exercises, localUiOnly = false }: { exercises: Exer
 
   function next() {
     setIndex((current) => current + 1 >= exercises.length ? 0 : current + 1);
-    setSelected(null);
-    setResult(null);
-    setError(null);
+    setSelected(null); setResult(null); setError(null);
   }
 
   return (
     <div className="form-session">
-      <div className="observation-head">
-        <div><p className="eyebrow">Atelier do Volume · C4</p><h1 className="flow-title">{exercise.title}</h1></div>
-        <span>{index + 1} / {exercises.length}</span>
-      </div>
+      <div className="observation-head"><div><p className="eyebrow">Atelier do Volume · C4</p><h1 className="flow-title">{exercise.title}</h1></div><span>{index + 1} / {exercises.length}</span></div>
       <p className="lead compact">{exercise.prompt}</p>
-      {localUiOnly ? <aside className="lesson-checkpoint">Modo local: você pode jogar este Lab normalmente, mas o resultado não gera Evidence nem altera o Atlas até usar o runtime completo.</aside> : null}
+      {returnTo ? <aside className="lesson-checkpoint">Portal de missão ativo. Esta tentativa precisa gerar Evidence antes de liberar a cena Practice.</aside> : localUiOnly ? <aside className="lesson-checkpoint">Modo local: você pode jogar este Lab normalmente, mas o resultado não gera Evidence nem altera o Atlas até usar o runtime completo.</aside> : null}
       <div className="form-visual" aria-hidden="true"><span /><span /><span /></div>
-      <div className="observation-options">
-        {exercise.options.map((option, optionIndex) => {
-          const isSelected = selected === optionIndex;
-          const stateClass = result ? optionIndex === result.correctIndex ? "is-correct" : isSelected && !result.correct ? "is-wrong" : "" : isSelected ? "is-selected" : "";
-          return <button key={option} type="button" className={stateClass} disabled={Boolean(result)} onClick={() => setSelected(optionIndex)}><span>{String.fromCharCode(65 + optionIndex)}</span>{option}</button>;
-        })}
-      </div>
+      <div className="observation-options">{exercise.options.map((option, optionIndex) => { const isSelected = selected === optionIndex; const stateClass = result ? optionIndex === result.correctIndex ? "is-correct" : isSelected && !result.correct ? "is-wrong" : "" : isSelected ? "is-selected" : ""; return <button key={option} type="button" className={stateClass} disabled={Boolean(result)} onClick={() => setSelected(optionIndex)}><span>{String.fromCharCode(65 + optionIndex)}</span>{option}</button>; })}</div>
       {result ? <section className={`observation-feedback ${result.correct ? "success" : "retry"}`}><p className="eyebrow">{result.localOnly ? "Treino local" : "Evidence · Volume"}</p><h2>{result.correct ? "Seu raciocínio espacial está coerente." : "Revise eixo, plano e profundidade."}</h2><p>{result.explanation}</p>{result.localOnly ? <div className="mastery-strip observation-mastery"><strong>Não persistido</strong><span>Resultado válido para prática local; Evidence será registrado apenas no runtime completo.</span></div> : <div className="mastery-strip observation-mastery"><strong>{result.masteryLevel}</strong><span>{Math.round((result.masteryScore ?? 0) * 100)}% mastery · {result.evidenceCount ?? 0} evidência(s)</span></div>}</section> : null}
       {error ? <p className="flow-error" role="alert">{error}</p> : null}
       <div className="flow-actions split-actions">
-        <Link className="secondary link-button" href="/learn">Voltar ao currículo</Link>
-        {result ? <button className="primary" type="button" onClick={next}>{index + 1 >= exercises.length ? "Recomeçar Lab" : "Próximo exercício"}</button> : <button className="primary" type="button" disabled={selected == null || busy} onClick={submit}>{busy ? "Analisando…" : "Confirmar forma"}</button>}
+        <Link className="secondary link-button" href={returnTo ?? "/learn"}>{returnTo ? "Voltar à missão" : "Voltar ao currículo"}</Link>
+        {result && returnTo ? <Link className="primary link-button" href={returnTo}>{result.localOnly ? "Voltar e verificar missão" : "Retornar com Evidence →"}</Link> : result ? <button className="primary" type="button" onClick={next}>{index + 1 >= exercises.length ? "Recomeçar Lab" : "Próximo exercício"}</button> : <button className="primary" type="button" disabled={selected == null || busy} onClick={submit}>{busy ? "Analisando…" : "Confirmar forma"}</button>}
       </div>
     </div>
   );
