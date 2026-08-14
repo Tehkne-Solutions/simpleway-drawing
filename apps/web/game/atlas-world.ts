@@ -126,9 +126,9 @@ export function nextAtlasMission(
   foundationNext: { title: string; description: string; href: string },
   territories: readonly CreativeTerritory[],
 ) {
-  const creativeStarted = territories.some((territory) => territory.evidenceCount > 0);
-  const creativeNext = territories.find((territory) => !territory.complete) ?? null;
-  if (creativeStarted && creativeNext) return { title: creativeNext.title, description: `Continue o território criativo: ${creativeNext.description}`, href: creativeNext.href, kind: "creative" as const };
+  const activeCreative = territories.find((territory) => !territory.complete && territory.evidenceCount > 0) ?? null;
+  const creativeNext = activeCreative ?? territories.find((territory) => !territory.complete) ?? null;
+  if (activeCreative) return { title: activeCreative.title, description: `Continue o território criativo: ${activeCreative.description}`, href: activeCreative.href, kind: "creative" as const };
   if (!foundationComplete) return { ...foundationNext, kind: "foundation" as const };
   if (creativeNext) return { title: creativeNext.title, description: `Abra um novo território criativo: ${creativeNext.description}`, href: creativeNext.href, kind: "creative" as const };
   return { title: "Câmara da Obra", description: "Os territórios medidos estão abertos. Use as habilidades juntas em uma criação autoral.", href: "/create", kind: "capstone" as const };
