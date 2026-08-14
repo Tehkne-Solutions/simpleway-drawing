@@ -3,6 +3,7 @@ import { PixelModeNav } from "../pixel-mode-nav";
 import { PixelQuestBoard } from "./pixel-quest-board";
 import "../pixel-mode-nav.css";
 import "./quest-v1.css";
+import "./evidence-bridge-v1.css";
 
 export default function PixelQuestPage() {
   return <main className="game-studio-page synthesis-quest-page">
