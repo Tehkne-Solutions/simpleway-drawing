@@ -36,7 +36,9 @@ test("historical mode is exact-cycle read-only and cannot create a review intent
   assert.match(component, /const intentReady = !historicalContext && Boolean/);
   assert.match(component, /if \(!intentReady \|\| historicalContext\) return/);
   assert.match(component, /historicalContext \? \([\s\S]*version-historical-readonly[\s\S]*\) : \([\s\S]*version-compare-prompt/);
-  assert.match(component, /const returnToLatest = \(\) => router\.push\(`\/create\/\$\{encodeURIComponent\(artworkId\)\}#version-comparison`\)/);
+  assert.match(component, /const openCycle = \(versionNumber: number\) =>/);
+  assert.match(component, /versionNumber === latest\.versionNumber/);
+  assert.match(component, /const returnToLatest = \(\) => openCycle\(latest\.versionNumber\)/);
 });
 
 test("historical wipe compares preserved base against preserved target rather than latest", () => {
