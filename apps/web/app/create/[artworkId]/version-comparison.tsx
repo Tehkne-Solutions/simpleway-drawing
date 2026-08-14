@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 
 type VersionForComparison = {
@@ -52,7 +53,7 @@ export function VersionComparison({ versions, artworkTitle }: { versions: Versio
 
       <div className="version-wipe-station">
         <div className="version-wipe-copy"><span>RÉGUA DE SOBREPOSIÇÃO</span><strong>Arraste para comparar a mesma área visual.</strong><small>{100 - reveal}% V{selected.versionNumber} · {reveal}% V{current.versionNumber}</small></div>
-        <div className="version-wipe-canvas" style={{ "--compare-reveal": `${reveal}%` } as React.CSSProperties}>
+        <div className="version-wipe-canvas" style={{ "--compare-reveal": `${reveal}%` } as CSSProperties}>
           <img className="version-wipe-base" src={selected.readUrl} alt={`Base V${selected.versionNumber}`} />
           <div className="version-wipe-current"><img src={current.readUrl} alt={`Sobreposição V${current.versionNumber}`} /></div>
           <div className="version-wipe-divider" aria-hidden="true"><i /></div>
