@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CromaCoach } from "../components/croma-coach";
+import { getPlayerContinuity } from "../../server/player-continuity";
 import { getArtworkRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 import { ArtworkForm } from "./artwork-form";
@@ -9,7 +10,9 @@ const typeLabel: Record<string, string> = { BASELINE: "Baseline", STUDY: "Estudo
 
 export default async function CreatePage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
   const userId = await getSessionUserId();
-  const artworks = userId ? await getArtworkRepository().listOwned(userId) : [];
+  const [artworks, continuity] = userId
+    ? await Promise.all([getArtworkRepository().listOwned(userId), getPlayerContinuity(userId)])
+    : [[], null];
   const { mode } = await searchParams;
   const alphaMode = mode === "revisit" || mode === "capstone";
   const preset = mode === "revisit"
@@ -17,6 +20,11 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
     : mode === "capstone"
       ? { type: "PROJECT" as const, title: "Alpha Capstone · Build It", notes: "Observe → simplifique → construa em volume → corrija → crie uma variação própria." }
       : { type: "STUDY" as const, title: "", notes: "" };
+  const normalAction = continuity?.phase === "AUTHORING"
+    ? { title: "A Câmara da Obra está aberta.", message: "Você já atravessou Foundation e os territórios medidos. Agora combine construção e tinta em uma obra autoral dentro do próprio app.", label: "Entrar na Câmara da Obra", href: "/create/work" }
+    : continuity?.phase === "CREATIVE_WORLD"
+      ? { title: "Continue o território que já respondeu.", message: continuity.nextAction.description, label: "Seguir a Bússola", href: continuity.nextAction.href }
+      : { title: "Hoje há uma expedição completa esperando por você.", message: "A Expedição da Síntese conecta quatro oficinas em uma campanha: forma, movimento, continuidade e tempo. O progresso é lido do que você realmente produz nos canvases.", label: "Jogar Expedição da Síntese", href: "/create/pixel/quest" };
 
   return (
     <main className="flow-shell">
@@ -24,7 +32,7 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
         <div>
           <p className="eyebrow">{alphaMode ? "Rito Alpha · Portal da Prova" : "Atelier Livre"}</p>
           <h1 className="flow-title">{alphaMode ? "Registre a prova sem perder o fio do rito." : "Crie dentro do app. Registre o mundo de fora quando quiser."}</h1>
-          <p className="lead compact">{alphaMode ? "O Rito já definiu a identidade canônica deste registro. Você cuida da obra; o sistema cuida de reconhecê-la e devolver você ao selo correto." : "O SimpleWay Drawing trata criação como prática jogável. Canvases especializados são ferramentas principais; upload pelo celular ou PC continua como recurso complementar."}</p>
+          <p className="lead compact">{alphaMode ? "O Rito já definiu a identidade canônica deste registro. Você cuida da obra; o sistema cuida de reconhecê-la e devolver você ao selo correto." : "O SimpleWay Drawing trata criação como prática jogável. Canvases especializados e a Câmara da Obra são ferramentas principais; upload pelo celular ou PC continua como recurso complementar."}</p>
         </div>
 
         {mode === "revisit" ? <aside className="lesson-checkpoint">Prova do Espelho: use a mesma referência e condições gerais do Drawing Zero. Não procure “embelezar”: queremos observar mudança de processo.</aside> : null}
@@ -32,19 +40,20 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
 
         <CromaCoach
           eyebrow={alphaMode ? "Croma · Rito Alpha" : "Croma · Atelier Livre"}
-          title={alphaMode ? "A prova já está preparada." : "Hoje há uma expedição completa esperando por você."}
-          message={alphaMode ? "Tipo e identificação canônica ficam protegidos nesta passagem. Depois do registro, você retorna ao Rito para ver o selo responder." : "A Expedição da Síntese conecta quatro oficinas em uma campanha: forma, movimento, continuidade e tempo. O progresso é lido do que você realmente produz nos canvases."}
-          actionLabel={alphaMode ? "Voltar ao Rito Alpha" : "Jogar Expedição da Síntese"}
-          actionHref={alphaMode ? "/alpha" : "/create/pixel/quest"}
+          title={alphaMode ? "A prova já está preparada." : normalAction.title}
+          message={alphaMode ? "Tipo e identificação canônica ficam protegidos nesta passagem. Depois do registro, você retorna ao Rito para ver o selo responder." : normalAction.message}
+          actionLabel={alphaMode ? "Voltar ao Rito Alpha" : normalAction.label}
+          actionHref={alphaMode ? "/alpha" : normalAction.href}
           tone="veronese"
         />
 
         <section className="studio-launchpad" aria-labelledby="studio-title">
           <div className="studio-launchpad-head">
-            <div><p className="eyebrow">Ferramentas do Atelier</p><h2 id="studio-title">Escolha uma missão ou entre direto no canvas.</h2></div>
+            <div><p className="eyebrow">Ferramentas do Atelier</p><h2 id="studio-title">Escolha uma missão, um canvas ou entre na Câmara.</h2></div>
             <Link className="secondary link-button" href="/journey">Abrir Atlas do Olhar</Link>
           </div>
           <div className="studio-mode-grid">
+            <Link className="studio-mode-card is-playable realistic" href="/create/work"><small>Atelier Autoral</small><strong>Câmara da Obra</strong><p>Canvas livre com construção, tinta, pigmentos, guias, undo/redo e registro privado direto no Atlas.</p></Link>
             <Link className="studio-mode-card is-playable" href="/create/pixel/quest"><small>Campanha jogável · 4 missões</small><strong>Expedição da Síntese</strong><p>Recupere quatro sigilos dominando forma, movimento, continuidade e tempo em Pixel Art.</p></Link>
             <Link className="studio-mode-card is-playable" href="/create/pixel"><small>Atelier da Síntese</small><strong>Pixel Studio</strong><p>Grid pixel-a-pixel, Sprite Lab, Tile Lab, Animation Lab, paletas limitadas e export para produção.</p></Link>
             <Link className="studio-mode-card is-playable" href="/create/isometric"><small>Atelier da Estrutura</small><strong>Canvas Isométrico</strong><p>Grade 30°, snap, segmentos estruturais, traço livre e missão de construção espacial.</p></Link>
@@ -56,14 +65,8 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
 
         <section className="create-external-register" id="registro-externo">
           <div className="section-heading"><div><p className="eyebrow">{alphaMode ? "Registro da Prova" : "Registro externo"}</p><h2>{alphaMode ? preset.title : "Traga estudos feitos fora do app."}</h2></div></div>
-          <p className="compact">{alphaMode ? "Envie a evidência visual da prova. Notas do processo continuam livres; tipo e título permanecem canônicos para o Rito reconhecê-la." : "Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar ao Studio interno."}</p>
-          <ArtworkForm
-            initialType={preset.type}
-            initialTitle={preset.title}
-            initialNotes={preset.notes}
-            lockPreset={alphaMode}
-            {...(alphaMode ? { returnTo: "/alpha" } : {})}
-          />
+          <p className="compact">{alphaMode ? "Envie a evidência visual da prova. Notas do processo continuam livres; tipo e título permanecem canônicos para o Rito reconhecê-la." : "Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar aos Studios e à Câmara."}</p>
+          <ArtworkForm initialType={preset.type} initialTitle={preset.title} initialNotes={preset.notes} lockPreset={alphaMode} {...(alphaMode ? { returnTo: "/alpha" } : {})} />
         </section>
 
         <section className="create-library">
