@@ -57,7 +57,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
           </aside>
         ) : null}
 
-        {comparisonVersions.length >= 2 ? <VersionComparison versions={comparisonVersions} artworkTitle={artworkTitle} /> : (
+        {comparisonVersions.length >= 2 ? <VersionComparison versions={comparisonVersions} artworkTitle={artworkTitle} artworkId={record.artwork.id} /> : (
           <aside className="version-compare-empty"><span>MESA DE COMPARAÇÃO</span><strong>A segunda versão abrirá a comparação visual.</strong><p>Preserve a primeira versão e registre uma nova passagem para enxergar mudanças reais lado a lado.</p></aside>
         )}
 
