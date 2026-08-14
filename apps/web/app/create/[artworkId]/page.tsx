@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getArtworkRepository, getStorage } from "../../../server/runtime";
 import { getSessionUserId } from "../../../server/session";
+import "../review-intent-v123.css";
 import { VersionComparison } from "./version-comparison";
 import { VersionForm } from "./version-form";
 
