@@ -17,7 +17,9 @@ test("comparison captures both review decisions locally without putting creative
   assert.match(component, /window\.sessionStorage\.setItem\(`/);
   assert.match(component, /router\.push\(`\/create\/work\?artworkId=\$\{encodeURIComponent\(artworkId\)\}`\)/);
   assert.doesNotMatch(component, /new URLSearchParams/);
-  assert.doesNotMatch(component, /preserve: preserveIntent[\s\S]*router\.push/);
+  const routerTarget = component.match(/router\.push\(([^;]+)\);/)?.[1] ?? "";
+  assert.match(routerTarget, /artworkId/);
+  assert.doesNotMatch(routerTarget, /preserve|transform/);
   assert.doesNotMatch(component, /fetch\(|method:\s*"POST"|method:\s*"PUT"|method:\s*"PATCH"/);
 });
 
