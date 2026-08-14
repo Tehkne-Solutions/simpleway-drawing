@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type Resolution = 8 | 16 | 32;
 type Tool = "pencil" | "eraser" | "fill" | "picker";
 type Pixel = string | null;
+type SavedTileLab = { pixels?: Pixel[]; color?: string; wrapPaint?: boolean; previewChecks?: number; offsetChecks?: number };
 
 const DISPLAY = 640;
 const RESOLUTIONS: Resolution[] = [8, 16, 32];
@@ -33,20 +34,22 @@ export function TileLab() {
   const [offsetChecks, setOffsetChecks] = useState(0);
 
   useEffect(() => {
+    setHistory([]); setOffsetX(0); setOffsetY(0); setPreviewChecks(0); setOffsetChecks(0);
     try {
       const raw = localStorage.getItem(`${STORAGE}.${resolution}`);
       if (!raw) { setPixels(empty(resolution)); return; }
-      const saved = JSON.parse(raw) as { pixels?: Pixel[]; color?: string; wrapPaint?: boolean };
+      const saved = JSON.parse(raw) as SavedTileLab;
       setPixels(saved.pixels?.length === resolution * resolution ? saved.pixels : empty(resolution));
       if (saved.color) setColor(saved.color);
       if (typeof saved.wrapPaint === "boolean") setWrapPaint(saved.wrapPaint);
+      if (typeof saved.previewChecks === "number") setPreviewChecks(Math.max(0, saved.previewChecks));
+      if (typeof saved.offsetChecks === "number") setOffsetChecks(Math.max(0, saved.offsetChecks));
     } catch { setPixels(empty(resolution)); }
-    setHistory([]); setOffsetX(0); setOffsetY(0);
   }, [resolution]);
 
   useEffect(() => {
-    try { localStorage.setItem(`${STORAGE}.${resolution}`, JSON.stringify({ pixels, color, wrapPaint })); } catch {}
-  }, [pixels, color, wrapPaint, resolution]);
+    try { localStorage.setItem(`${STORAGE}.${resolution}`, JSON.stringify({ pixels, color, wrapPaint, previewChecks, offsetChecks } satisfies SavedTileLab)); } catch {}
+  }, [pixels, color, wrapPaint, previewChecks, offsetChecks, resolution]);
 
   function drawTile(ctx: CanvasRenderingContext2D, x0: number, y0: number, size: number, checker: boolean) {
     const cell = size / resolution;
