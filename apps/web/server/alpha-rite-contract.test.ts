@@ -27,7 +27,7 @@ test("Alpha trials use canonical Atelier presets and return to the rite", () => 
   assert.match(alpha, /\/create\?mode=revisit#registro-externo/);
   assert.match(alpha, /\/create\?mode=capstone#registro-externo/);
   assert.match(create, /lockPreset=\{alphaMode\}/);
-  assert.match(create, /returnTo=\{alphaMode \? "\/alpha"/);
+  assert.match(create, /alphaMode \? \{ returnTo: "\/alpha" \} : \{\}/);
   assert.match(form, /disabled=\{lockPreset\}/);
   assert.match(form, /readOnly=\{lockPreset\}/);
   assert.match(form, /router\.push\(returnTo \?\?/);
