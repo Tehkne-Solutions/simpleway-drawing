@@ -9,15 +9,5 @@ export default async function C3LessonPage({ params }: { params: Promise<{ lesso
   if (!lesson) notFound();
   const index = C3_LESSONS.findIndex((item) => item.key === lesson.key);
   const nextLessonKey = C3_LESSONS[index + 1]?.key ?? null;
-
-  return (
-    <main className="flow-shell">
-      <article className="flow-card">
-        <p className="eyebrow">C3 · Lição {index + 1} de {C3_LESSONS.length}</p>
-        <h1 className="flow-title">{lesson.title["pt-BR"]}</h1>
-        <p className="lead compact">{lesson.objective["pt-BR"]}</p>
-        <FoundationLessonPlayer lesson={lesson} cycleSlug="c3" nextLessonKey={nextLessonKey} />
-      </article>
-    </main>
-  );
+  return <FoundationLessonPlayer lesson={lesson} cycleSlug="c3" nextLessonKey={nextLessonKey} lessonIndex={index} lessonCount={C3_LESSONS.length} />;
 }
