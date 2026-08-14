@@ -19,3 +19,4 @@ export * from "./repositories/operations";
 export * from "./repositories/invitations";
 export * from "./repositories/cohort-analytics";
 export * from "./repositories/pixel-expedition";
+export * from "./repositories/studio-evidence";
