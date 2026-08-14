@@ -14,6 +14,7 @@ type Draft = { strokes: Stroke[]; title: string; notes: string; format: Format; 
 type SaveState = "idle" | "saving" | "error";
 type BaseState = "none" | "loading" | "ready" | "error";
 type InitialArtwork = { id: string; title: string; notes: string; versionNumber: number; imageSrc: string };
+type InitialIntent = { preserve: string; transform: string };
 
 const STORAGE_PREFIX = "swd.create.work-chamber.v2";
 const FORMAT_SIZE: Record<Format, { width: number; height: number }> = {
@@ -28,6 +29,9 @@ function uid(): string { return typeof crypto !== "undefined" && "randomUUID" in
 function isFormat(value: unknown): value is Format { return value === "landscape" || value === "portrait" || value === "square"; }
 function isBackground(value: unknown): value is Background { return value === "paper" || value === "white"; }
 function isGuide(value: unknown): value is Guide { return value === "none" || value === "thirds" || value === "center"; }
+function intentNotes(intent: InitialIntent | undefined, fallback: string): string {
+  return intent ? `Preservar: ${intent.preserve}\nTransformar: ${intent.transform}` : fallback;
+}
 
 function canvasHasVisibleMark(canvas: HTMLCanvasElement, background: Background): boolean {
   const ctx = canvas.getContext("2d");
@@ -68,7 +72,7 @@ async function uploadCanvas(blob: Blob): Promise<string> {
   return String(intent.fileAssetId);
 }
 
-export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: InitialArtwork }) {
+export function WorkChamberCanvas({ initialArtwork, initialIntent }: { initialArtwork?: InitialArtwork; initialIntent?: InitialIntent }) {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const baseImageRef = useRef<HTMLImageElement | null>(null);
@@ -91,7 +95,7 @@ export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: Initial
   const [background, setBackground] = useState<Background>("paper");
   const [guide, setGuide] = useState<Guide>("none");
   const [title, setTitle] = useState(initialArtwork?.title ?? "");
-  const [notes, setNotes] = useState(initialArtwork?.notes ?? "");
+  const [notes, setNotes] = useState(intentNotes(initialIntent, initialArtwork?.notes ?? ""));
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -293,6 +297,7 @@ export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: Initial
       <aside className="work-chamber-record">
         <div className="work-croma-seal"><span>C</span><div><small>CROMA · CÂMARA DA OBRA</small><strong>{initialArtwork ? "Continue sem apagar o passado." : "Combine, não demonstre."}</strong></div></div>
         <p>{initialArtwork ? `A versão ${initialArtwork.versionNumber} é uma base raster imutável. Construção, tinta e borracha desta sessão pertencem à próxima versão.` : "Você já treinou partes separadas. Aqui a pergunta muda: o que essas habilidades conseguem construir juntas?"}</p>
+        {initialIntent ? <section className="work-review-intent"><span>DECISÃO TRAZIDA DA MESA</span><div><p><b>Preservar</b>{initialIntent.preserve}</p><p><b>Transformar</b>{initialIntent.transform}</p></div><small>Esta intenção iniciou a nota da sessão. Se já havia um draft local desta obra, o draft continua tendo prioridade e não é sobrescrito.</small></section> : null}
         <section className="work-record-fields"><label>Nome da obra<input value={title} readOnly={Boolean(initialArtwork)} maxLength={200} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: Guardião do Jardim" /></label><label>Nota de processo<textarea rows={5} maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="O que você combinou, decidiu ou descobriu?" /></label></section>
         <section className="work-save-summary"><span>REGISTRO PRIVADO</span><strong>{initialArtwork ? `Nova versão CANVAS · V${initialArtwork.versionNumber + 1}` : "Artwork · Canvas"}</strong><p>{initialArtwork ? "A nova composição entra no histórico da mesma obra. A versão anterior permanece intacta e pode ser comparada no arquivo." : "O PNG composto entra no Arquivo do Atelier e no Atlas. Guias nunca são incorporadas à obra; o draft permanece apenas neste dispositivo até o registro."}</p></section>
         {error ? <p className="flow-error" role="alert">{error}</p> : null}

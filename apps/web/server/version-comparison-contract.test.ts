@@ -30,7 +30,7 @@ test("comparison provides a visual wipe ruler without inventing automated art sc
   assert.match(component, /type="range"/);
   assert.match(component, /--compare-reveal/);
   assert.match(component, /O sistema não inventa uma nota sobre sua arte/);
-  assert.match(component, /CROMA · LEITURA SEM PONTUAÇÃO/);
+  assert.match(component, /CROMA · DECISÃO DE REVISÃO/);
   assert.doesNotMatch(component, /score|mastery|grade|rating/i);
   assert.doesNotMatch(component, /fetch\(|method:\s*"POST"|method:\s*"PUT"|method:\s*"PATCH"/);
 });
