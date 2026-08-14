@@ -1,5 +1,5 @@
 import { updateMastery } from "@swd/domain";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Database } from "../client";
 import { exerciseAttempts, learnerSkillStates, outboxEvents, skillEvidence } from "../schema/core";
 import { journeyEntries } from "../schema/journey";
@@ -117,6 +117,9 @@ export class DrizzlePixelExpeditionRepository {
     const expected = PIXEL_EXPEDITION_MISSIONS[input.missionId];
     if (!expected || expected.exerciseKey !== input.exerciseKey || expected.skillKey !== input.skillKey) throw new Error("PIXEL_EVIDENCE_CONFIG_MISMATCH");
     const created = await this.db.transaction(async (tx) => {
+      const missionLock = `${userId}:${expected.exerciseKey}`;
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${missionLock}, 0))`);
+
       const [existing] = await tx.select({ id: exerciseAttempts.id }).from(exerciseAttempts).where(and(
         eq(exerciseAttempts.userId, userId),
         eq(exerciseAttempts.exerciseKey, expected.exerciseKey),
