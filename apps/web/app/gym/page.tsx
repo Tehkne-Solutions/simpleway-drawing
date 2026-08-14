@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { normalizeLearningReturnTo } from "../../server/learning-return";
 import { MotorDrillClient, type MotorExerciseKey } from "./motor-drill-client";
 import "./gym-v1.css";
 
@@ -15,21 +16,23 @@ function isExercise(value: string | undefined): value is MotorExerciseKey {
   return drills.some((drill) => drill.key === value);
 }
 
-export default async function GymPage({ searchParams }: { searchParams: Promise<{ exercise?: string }> }) {
+export default async function GymPage({ searchParams }: { searchParams: Promise<{ exercise?: string; returnTo?: string }> }) {
   const params = await searchParams;
   const selected: MotorExerciseKey = isExercise(params.exercise) ? params.exercise : "exercise.swd.gym.intentional_line";
+  const returnTo = normalizeLearningReturnTo(params.returnTo);
+  const suffix = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : "";
 
   return (
     <main className="flow-shell">
       <section className="flow-card gym-card">
         <nav className="gym-drill-nav" aria-label="Drills C1">
           {drills.map((drill) => (
-            <Link key={drill.key} href={`/gym?exercise=${encodeURIComponent(drill.key)}`} className={selected === drill.key ? "is-active" : ""}>
+            <Link key={drill.key} href={`/gym?exercise=${encodeURIComponent(drill.key)}${suffix}`} className={selected === drill.key ? "is-active" : ""}>
               <strong>{drill.label}</strong><span>{drill.short}</span>
             </Link>
           ))}
         </nav>
-        <MotorDrillClient exerciseKey={selected} />
+        <MotorDrillClient exerciseKey={selected} returnTo={returnTo} />
       </section>
     </main>
   );
