@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getActivationRepository } from "../server/runtime";
 import { getLearnerProfile } from "../server/learner-profile";
+import { getPlayerContinuity } from "../server/player-continuity";
 import { getSessionUserId } from "../server/session";
 
 export const dynamic = "force-dynamic";
@@ -16,13 +16,29 @@ const systems = [
 
 const pathLabels: Record<string, string> = { MANGA: "Mangá", COMIC: "Comic", REALISTIC: "Realista", EXPLORE: "Exploração" };
 
+function territoryState(complete: boolean, evidenceCount: number) {
+  return complete ? "CONSAGRADO" : evidenceCount > 0 ? "EM CURSO" : "ABERTO";
+}
+
 export default async function HomePage() {
   const userId = await getSessionUserId();
-  const profile = userId ? await getLearnerProfile(userId) : null;
-  const activation = userId ? await getActivationRepository().getSnapshot(userId) : null;
-  const primary = activation?.nextAction ?? { title: "Começar minha jornada", description: "Onboarding · cerca de 2 minutos", href: "/onboarding" };
-  const progress = activation ? Math.round((activation.completedSteps / Math.max(1, activation.totalSteps)) * 100) : 0;
+  const [profile, continuity] = userId
+    ? await Promise.all([getLearnerProfile(userId), getPlayerContinuity(userId)])
+    : [null, null];
+  const primary = continuity?.nextAction ?? { title: "Começar minha jornada", description: "Onboarding · cerca de 2 minutos", href: "/onboarding", kind: "foundation" as const };
+  const progress = continuity ? Math.round(continuity.focusProgress * 100) : 0;
   const direction = pathLabels[profile?.preferredPath ?? ""] ?? "Exploração";
+  const territoryByKey = new Map(continuity?.territories.map((territory) => [territory.key, territory]) ?? []);
+  const synthesis = territoryByKey.get("synthesis");
+  const narrative = territoryByKey.get("narrative");
+  const structure = territoryByKey.get("structure");
+  const phase = continuity?.phase ?? "FOUNDATION";
+  const cromaTitle = phase === "AUTHORING" ? "Junte o que você aprendeu." : phase === "CREATIVE_WORLD" ? "Continue o fio que já começou." : "Escolha um problema pequeno.";
+  const cromaText = phase === "AUTHORING"
+    ? "Os territórios medidos já responderam. Agora use as habilidades juntas e construa uma obra que não seja apenas um exercício."
+    : phase === "CREATIVE_WORLD"
+      ? "A Foundation está demonstrada. Escolha um território, produza Evidence e deixe o Atlas registrar sua linguagem em formação."
+      : "Observe. Tente. Compare. Corrija. Uma boa sessão termina com uma pergunta melhor do que começou.";
 
   return (
     <main className="player-hub">
@@ -38,7 +54,7 @@ export default async function HomePage() {
           </div>
 
           <div className="hub-active-mission">
-            <div className="hub-active-badge"><span>MISSÃO ATIVA</span><b>{progress}%</b></div>
+            <div className="hub-active-badge"><span>{continuity?.phaseTitle ?? "MISSÃO ATIVA"}</span><b>{progress}%</b></div>
             <div className="hub-active-copy"><strong>{primary.title}</strong><p>{primary.description}</p></div>
             <Link className="hub-play-button" href={primary.href}>Continuar <span>→</span></Link>
           </div>
@@ -46,24 +62,24 @@ export default async function HomePage() {
 
         <aside className="hub-croma-panel">
           <div className="hub-croma-avatar" aria-hidden="true"><span>◉</span><b>↻</b></div>
-          <div><span>CROMA · COACH</span><strong>Escolha um problema pequeno.</strong><p>Observe. Tente. Compare. Corrija. Uma boa sessão termina com uma pergunta melhor do que começou.</p></div>
-          <Link href="/learn">Abrir campanha →</Link>
+          <div><span>CROMA · BÚSSOLA</span><strong>{cromaTitle}</strong><p>{cromaText}</p></div>
+          <Link href="/resume">Abrir minha rota →</Link>
         </aside>
       </section>
 
       <section className="hub-play-zone" aria-labelledby="play-zone-title">
-        <div className="hub-section-heading"><div><p className="eyebrow">Jogar agora</p><h2 id="play-zone-title">Studios ativos</h2></div><Link href="/create">Ver Atelier Livre</Link></div>
+        <div className="hub-section-heading"><div><p className="eyebrow">Jogar agora</p><h2 id="play-zone-title">Territórios ativos</h2></div><Link href="/create">Ver Atelier Livre</Link></div>
         <div className="hub-studios">
           <Link className="hub-studio-card manga" href="/create/manga">
-            <span>ATELIER DA NARRATIVA</span><strong>Manga Canvas</strong><p>Construa cabeça e rosto em frente, 3/4 e perfil usando guias de volume.</p><b>Entrar no Studio →</b>
+            <span>ATELIER DA NARRATIVA · {territoryState(Boolean(narrative?.complete), narrative?.evidenceCount ?? 0)}</span><strong>Manga Canvas</strong><p>Construa cabeça e rosto em frente, 3/4 e perfil usando guias de volume.</p><b>{narrative?.complete ? "Revisitar território →" : narrative?.evidenceCount ? "Continuar território →" : "Entrar no Studio →"}</b>
             <div className="studio-emblem" aria-hidden="true">頭</div>
           </Link>
           <Link className="hub-studio-card iso" href="/create/isometric">
-            <span>ATELIER DA ESTRUTURA</span><strong>Canvas Isométrico</strong><p>Treine espaço 3D em 2D com grade 30°, snap e construção por segmentos.</p><b>Entrar no Studio →</b>
+            <span>ATELIER DA ESTRUTURA · {territoryState(Boolean(structure?.complete), structure?.evidenceCount ?? 0)}</span><strong>Canvas Isométrico</strong><p>Treine espaço 3D em 2D com grade 30°, snap e construção por segmentos.</p><b>{structure?.complete ? "Revisitar território →" : structure?.evidenceCount ? "Continuar território →" : "Entrar no Studio →"}</b>
             <div className="studio-emblem iso-emblem" aria-hidden="true">◇</div>
           </Link>
           <Link className="hub-studio-card pixel" href="/create/pixel/quest">
-            <span>ATELIER DA SÍNTESE · CAMPANHA</span><strong>Expedição da Síntese</strong><p>Quatro missões conectam Pixel Studio, Sprite Lab, Tile Lab e Animation Lab em um único arco jogável.</p><b>Abrir mapa da expedição →</b>
+            <span>ATELIER DA SÍNTESE · {territoryState(Boolean(synthesis?.complete), synthesis?.evidenceCount ?? 0)}</span><strong>Expedição da Síntese</strong><p>Quatro missões conectam Pixel Studio, Sprite Lab, Tile Lab e Animation Lab em um único arco jogável.</p><b>{synthesis?.complete ? "Revisitar expedição →" : synthesis?.evidenceCount ? `Continuar expedição · ${synthesis.completedSteps}/${synthesis.totalSteps} →` : "Abrir mapa da expedição →"}</b>
             <div className="studio-emblem pixel-emblem" aria-hidden="true">▦</div>
           </Link>
         </div>
@@ -74,10 +90,10 @@ export default async function HomePage() {
       </section>
 
       <section className="hub-status-strip">
-        <div><span>ARCO</span><strong>{profile?.onboardingComplete ? "Foundation ativa" : "Início da jornada"}</strong></div>
+        <div><span>ARCO ATUAL</span><strong>{continuity?.phaseTitle ?? "Início da jornada"}</strong></div>
         <div><span>DIREÇÃO</span><strong>{direction}</strong></div>
-        <div><span>EVIDÊNCIA</span><strong>{activation?.completedSteps ?? 0}/{activation?.totalSteps ?? 0} etapas</strong></div>
-        <div><span>PRÓXIMO SISTEMA</span><Link href="/journey">Atlas do Olhar →</Link></div>
+        <div><span>TERRITÓRIOS</span><strong>{continuity ? `${continuity.creative.completed}/${continuity.creative.total} consagrados` : "0/3 consagrados"}</strong></div>
+        <div><span>PRÓXIMA ROTA</span><Link href={primary.href}>{primary.title} →</Link></div>
       </section>
     </main>
   );
