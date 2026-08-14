@@ -27,6 +27,10 @@ const skillLabel: Record<string, string> = {
   "skill.drawing.form.ellipse_space": "Elipses no espaço",
   "skill.drawing.form.cross_contour": "Cross-contour",
   "skill.drawing.spatial.mental_rotation": "Rotação mental",
+  "skill.drawing.creative.pixel_synthesis": "Síntese em Pixel Art",
+  "skill.drawing.creative.sprite_motion": "Movimento por poses",
+  "skill.drawing.creative.pattern_continuity": "Continuidade de padrões",
+  "skill.drawing.creative.animation_timing": "Timing de animação",
 };
 
 export default async function SkillsPage() {
@@ -54,8 +58,8 @@ export default async function SkillsPage() {
         {!userId ? (
           <div className="practice-empty">
             <h2>Seu perfil começa com a primeira evidência.</h2>
-            <p>Faça uma tentativa no Gym e o sistema passa a construir seu mapa de habilidade.</p>
-            <Link href="/gym" className="primary link-button">Gerar minha primeira evidência</Link>
+            <p>Faça uma tentativa no Gym ou conclua uma missão em um Atelier e o sistema passa a construir seu mapa de habilidade.</p>
+            <Link href="/create" className="primary link-button">Produzir minha primeira evidência</Link>
           </div>
         ) : (
           <>
@@ -81,11 +85,11 @@ export default async function SkillsPage() {
             </div>
 
             {labStates.length > 0 ? (
-              <section className="practice-queue" aria-label="Habilidades observadas nos laboratórios">
+              <section className="practice-queue" aria-label="Habilidades observadas nos laboratórios e ateliers">
                 <div>
-                  <p className="eyebrow">Evidências dos Labs</p>
-                  <h2>Percepção, estrutura e raciocínio espacial</h2>
-                  <p>Estas habilidades entram no mesmo perfil de domínio a partir de tentativas reais em Observation, Construction e Form.</p>
+                  <p className="eyebrow">Evidence dos Labs & Ateliers</p>
+                  <h2>Percepção, estrutura, volume e criação</h2>
+                  <p>Observation, Construction, Form e os Ateliers jogáveis alimentam o mesmo perfil quando o sistema consegue validar uma tentativa real.</p>
                 </div>
                 {labStates.map((state) => (
                   <article className="practice-card" key={state.skillKey}>
