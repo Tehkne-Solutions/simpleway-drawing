@@ -153,7 +153,7 @@ const livingArchiveHtml = await livingArchive.text();
 assert.match(livingArchiveHtml, /Arquivo Vivo do Atelier/);
 assert.match(livingArchiveHtml, /Câmara E2E/);
 assert.match(livingArchiveHtml, /VERSÃO ATUAL/);
-assert.match(livingArchiveHtml, />V2</);
+assert.match(livingArchiveHtml, /VERSÃO ATUAL · V(?:<!-- -->)?2/);
 assert.match(livingArchiveHtml, new RegExp(`/api/artworks/${canvasArtwork.id}/current-image`));
 
 const secondUpload = await uploadPrivate(owner.cookie, png2);
