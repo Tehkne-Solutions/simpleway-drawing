@@ -5,23 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const navigation = [
-  ["⌂", "Início", "/"],
-  ["▤", "Aprender", "/learn"],
-  ["─", "Gesto", "/gym"],
-  ["◉", "Olhar", "/observation"],
-  ["◇", "Estrutura", "/construction"],
-  ["○", "Volume", "/form"],
-  ["✎", "Atelier Livre", "/create"],
-  ["⌖", "Atlas", "/journey"],
-  ["✦", "Alpha", "/alpha"],
+  ["⌂", "Início", "/"], ["▤", "Aprender", "/learn"], ["─", "Gesto", "/gym"], ["◉", "Olhar", "/observation"],
+  ["◇", "Estrutura", "/construction"], ["○", "Volume", "/form"], ["✎", "Atelier Livre", "/create"], ["⌖", "Atlas", "/journey"], ["✦", "Alpha", "/alpha"],
 ] as const;
-
-const secondary = [
-  ["C", "Codex Croma", "/codex"],
-  ["□", "Meu progresso", "/skills"],
-  ["↗", "Continuar", "/resume"],
-] as const;
-
+const secondary = [["C", "Codex Croma", "/codex"], ["□", "Meu progresso", "/skills"], ["↗", "Continuar", "/resume"]] as const;
 const STORAGE_KEY = "swd.sidebar.collapsed";
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -30,34 +17,18 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
   const [mobileOpen, setMobileOpen] = useState(false);
   const lessonWorkspace = /^\/learn\/c[0-4]\//.test(pathname);
   const alphaWorkspace = pathname === "/alpha";
-  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric") || pathname.startsWith("/create/pixel") || lessonWorkspace || alphaWorkspace;
+  const authoringWorkspace = pathname.startsWith("/create/work");
+  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric") || pathname.startsWith("/create/pixel") || authoringWorkspace || lessonWorkspace || alphaWorkspace;
   const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved !== null) setCollapsed(saved === "true");
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  const toggleCollapsed = () => {
-    setCollapsed((current) => {
-      const next = !current;
-      try { window.localStorage.setItem(STORAGE_KEY, String(next)); } catch {}
-      return next;
-    });
-  };
-
+  useEffect(() => { try { const saved = window.localStorage.getItem(STORAGE_KEY); if (saved !== null) setCollapsed(saved === "true"); } catch {} }, []);
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  const toggleCollapsed = () => setCollapsed((current) => { const next = !current; try { window.localStorage.setItem(STORAGE_KEY, String(next)); } catch {} return next; });
   const navLinks = (items: readonly (readonly [string, string, string])[]) => items.map(([glyph, label, href]) => (
     <Link key={href} href={href} className={active(href) ? "is-active" : undefined} aria-current={active(href) ? "page" : undefined} title={collapsed || gameWorkspace ? label : undefined}>
       <span className="nav-glyph" aria-hidden="true">{glyph}</span><b className="nav-label">{label}</b>
     </Link>
   ));
-
   const desktopMenuLabel = gameWorkspace ? mobileOpen ? "Fechar navegação" : "Abrir navegação" : collapsed ? "Expandir menu" : "Recolher menu";
 
   return (
