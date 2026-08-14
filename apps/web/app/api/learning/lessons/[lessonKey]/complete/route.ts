@@ -1,13 +1,8 @@
-import { exerciseAttempts } from "@swd/database";
-import { getFoundationLesson } from "@swd/content";
-import { getC2Lesson } from "@swd/content/c2";
-import { getC3Lesson } from "@swd/content/c3";
-import { getC4Lesson } from "@swd/content/c4";
-import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { getFoundationMissionState, resolveFoundationLesson } from "../../../../../../server/foundation-mission-state";
 import { logServerError } from "../../../../../../server/logger";
 import { assertSameOrigin, readJsonBody, securityErrorResponse } from "../../../../../../server/request-security";
-import { getDatabase, getLearningProgressRepository } from "../../../../../../server/runtime";
+import { getLearningProgressRepository } from "../../../../../../server/runtime";
 import { requireSessionUserId } from "../../../../../../server/session";
 
 export async function POST(request: Request, context: { params: Promise<{ lessonKey: string }> }) {
@@ -15,22 +10,13 @@ export async function POST(request: Request, context: { params: Promise<{ lesson
     assertSameOrigin(request);
     const userId = await requireSessionUserId();
     const { lessonKey } = await context.params;
-    const lesson = getFoundationLesson(lessonKey) ?? getC2Lesson(lessonKey) ?? getC3Lesson(lessonKey) ?? getC4Lesson(lessonKey);
+    const lesson = resolveFoundationLesson(lessonKey);
     if (!lesson) return NextResponse.json({ code: "LESSON_NOT_FOUND" }, { status: 404 });
 
-    const practiceKeys = lesson.blocks.flatMap((block) => block.type === "PRACTICE" ? [block.exerciseKey] : []);
-    if (practiceKeys.length > 0) {
-      const attempts = await getDatabase().select({ exerciseKey: exerciseAttempts.exerciseKey })
-        .from(exerciseAttempts)
-        .where(and(
-          eq(exerciseAttempts.userId, userId),
-          eq(exerciseAttempts.status, "SUBMITTED"),
-          inArray(exerciseAttempts.exerciseKey, practiceKeys),
-        ));
-      const completed = new Set(attempts.map((attempt) => attempt.exerciseKey));
-      const missing = practiceKeys.find((exerciseKey) => !completed.has(exerciseKey));
-      if (missing) return NextResponse.json({ code: "LESSON_PRACTICE_REQUIRED", exerciseKey: missing }, { status: 409, headers: { "cache-control": "no-store" } });
-    }
+    const missionState = await getFoundationMissionState(userId, lesson);
+    const missingPractice = missionState.practices.find((practice) => !practice.completed);
+    if (missingPractice) return NextResponse.json({ code: "LESSON_PRACTICE_REQUIRED", exerciseKey: missingPractice.exerciseKey }, { status: 409, headers: { "cache-control": "no-store" } });
+    if (missionState.drawingZeroRequired && !missionState.drawingZeroComplete) return NextResponse.json({ code: "DRAWING_ZERO_REQUIRED" }, { status: 409, headers: { "cache-control": "no-store" } });
 
     const body = await readJsonBody<{ reflection?: Record<string, unknown> }>(request, 16_384);
     const reflection = body.reflection && typeof body.reflection === "object" && !Array.isArray(body.reflection) ? body.reflection : {};
