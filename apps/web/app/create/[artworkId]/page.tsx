@@ -6,6 +6,7 @@ import "../historical-comparison-v128.css";
 import "../review-cycle-v125.css";
 import "../review-intent-v123.css";
 import "../review-notebook-v127.css";
+import "../review-timeline-v129.css";
 import { resolveReviewCycle } from "../review-cycle";
 import { VersionComparison } from "./version-comparison";
 import { VersionForm } from "./version-form";
@@ -53,6 +54,8 @@ export default async function ArtworkDetailPage({ params, searchParams }: { para
     && historyVersions.some((version) => version.versionNumber === requestedCycleVersion && Boolean(version.reviewCycle))
       ? requestedCycleVersion
       : null;
+  const reviewTimeline = historyVersions.filter((version) => Boolean(version.reviewCycle)).slice().reverse();
+  const activeCycleVersion = focusCycleVersion ?? (historyVersions[0]?.reviewCycle ? latestVersionNumber : null);
 
   return (
     <main className="flow-shell">
@@ -80,6 +83,29 @@ export default async function ArtworkDetailPage({ params, searchParams }: { para
           <aside className="version-compare-empty"><span>MESA DE COMPARAÇÃO</span><strong>A segunda versão abrirá a comparação visual.</strong><p>Preserve a primeira versão e registre uma nova passagem para enxergar mudanças reais lado a lado.</p></aside>
         )}
 
+        {reviewTimeline.length > 0 ? (
+          <nav className="review-timeline" aria-label="Linha de revisão da obra">
+            <header><div><p className="eyebrow">Linha de Revisão</p><strong>Navegue pelo tempo da obra sem procurar cartões no arquivo.</strong></div><span>{reviewTimeline.length} ciclo(s)</span></header>
+            <div className="review-timeline-track">
+              {reviewTimeline.map((version, index) => {
+                const cycle = version.reviewCycle!;
+                const isCurrent = version.versionNumber === latestVersionNumber;
+                const isActive = activeCycleVersion === version.versionNumber;
+                const href = isCurrent
+                  ? `/create/${record.artwork.id}#version-comparison`
+                  : `/create/${record.artwork.id}?cycle=${version.versionNumber}#version-comparison`;
+                return (
+                  <Link key={version.id} href={href} className={`review-timeline-node ${isCurrent ? "is-current" : ""} ${isActive ? "is-active" : ""}`} aria-current={isActive ? "step" : undefined}>
+                    <span>{isCurrent ? "ATUAL" : `PASSAGEM ${index + 1}`}</span>
+                    <strong>V{cycle.baseVersionNumber} → V{version.versionNumber}</strong>
+                    <small>{cycle.provenance === "STRUCTURED" ? "ESTRUTURADO" : "LEGADO"}</small>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        ) : null}
+
         <section className="version-history version-review-notebook" aria-labelledby="version-history-title">
           <div className="version-history-heading"><p className="eyebrow">Arquivo de versões · Caderno de Revisões</p><h2 id="version-history-title">Cada passagem preserva resultado, intenção e reflexão.</h2><span>{reviewCycleCount} ciclo(s) de revisão reconhecido(s)</span></div>
           {historyVersions.map((version, index) => {
@@ -87,7 +113,7 @@ export default async function ArtworkDetailPage({ params, searchParams }: { para
             const reflection = cycle?.provenance === "LEGACY" ? null : version.notes;
             return (
               <article key={version.id} className={`version-card ${index === 0 ? "is-current" : ""} ${cycle ? "has-review-cycle" : ""}`}>
-                <div className="version-image-wrap"><img src={version.readUrl} alt={`Versão ${version.versionNumber} de ${artworkTitle}`} /></div>
+                <div className="version-image-wrap"><img src={version.readUrl} alt={`Versão ${version.versionNumber} de ${artworkTitle}`} loading={index === 0 ? "eager" : "lazy"} decoding="async" /></div>
                 <div className="version-meta">
                   <div><span>v{version.versionNumber}</span>{index === 0 ? <strong>Atual</strong> : null}</div>
                   <p>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(version.createdAt)}</p>
