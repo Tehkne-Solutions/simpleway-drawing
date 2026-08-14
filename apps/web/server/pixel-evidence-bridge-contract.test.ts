@@ -41,6 +41,8 @@ test("Pixel Evidence Bridge validates artifacts, persists mastery and projects i
   assert.match(repository, /outboxEvents/);
   assert.match(repository, /STUDIO_MISSION_COMPLETED/);
   assert.match(repository, /PIXEL_EXPEDITION_COMPLETED/);
+  assert.match(repository, /pg_advisory_xact_lock/);
+  assert.match(repository, /hashtextextended/);
   assert.match(repository, /eq\(exerciseAttempts\.exerciseKey, expected\.exerciseKey\)/);
 
   assert.match(board, /\/api\/session\/guest/);
