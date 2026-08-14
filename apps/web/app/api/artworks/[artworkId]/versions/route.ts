@@ -1,3 +1,4 @@
+import { normalizeArtworkReviewPlan } from "@swd/domain";
 import { NextResponse } from "next/server";
 import { logServerError } from "../../../../../server/logger";
 import { getArtworkRepository } from "../../../../../server/runtime";
@@ -15,15 +16,18 @@ export async function POST(request: Request, context: { params: Promise<{ artwor
     const fileAssetId = typeof body.fileAssetId === "string" ? body.fileAssetId : "";
     const source = typeof body.source === "string" ? body.source : "";
     const notes = typeof body.notes === "string" ? body.notes.slice(0, 2_000) : null;
+    const reviewPlanRequested = body.reviewPlan !== undefined && body.reviewPlan !== null;
+    const reviewPlan = reviewPlanRequested ? normalizeArtworkReviewPlan(body.reviewPlan) : null;
     if (!fileAssetId || !SOURCES.has(source)) return NextResponse.json({ code: "INVALID_ARTWORK_VERSION_INPUT" }, { status: 400 });
-    const version = await getArtworkRepository().addVersion({ userId, artworkId, fileAssetId, source: source as "PHOTO" | "UPLOAD" | "CANVAS", notes });
+    if (reviewPlanRequested && (!reviewPlan || source !== "CANVAS")) return NextResponse.json({ code: "INVALID_REVIEW_PLAN" }, { status: 400 });
+    const version = await getArtworkRepository().addVersion({ userId, artworkId, fileAssetId, source: source as "PHOTO" | "UPLOAD" | "CANVAS", notes, reviewPlan });
     return NextResponse.json({ version }, { status: 201 });
   } catch (error) {
     const security = securityErrorResponse(error);
     if (security) return NextResponse.json({ code: security.code }, { status: security.status });
     const code = error instanceof Error ? error.message : "ARTWORK_VERSION_FAILED";
     logServerError("artworks.version_failed", request, error);
-    const status = code === "UNAUTHENTICATED" ? 401 : code === "ARTWORK_NOT_FOUND" ? 404 : code === "CREATE_FILE_NOT_READY" ? 409 : 500;
+    const status = code === "UNAUTHENTICATED" ? 401 : code === "ARTWORK_NOT_FOUND" ? 404 : code === "CREATE_FILE_NOT_READY" ? 409 : code === "INVALID_REVIEW_PLAN" ? 400 : 500;
     return NextResponse.json({ code }, { status });
   }
 }
