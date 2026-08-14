@@ -27,6 +27,17 @@ function isFormat(value: unknown): value is Format { return value === "landscape
 function isBackground(value: unknown): value is Background { return value === "paper" || value === "white"; }
 function isGuide(value: unknown): value is Guide { return value === "none" || value === "thirds" || value === "center"; }
 
+function canvasHasVisibleMark(canvas: HTMLCanvasElement, background: Background): boolean {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return false;
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const base = background === "paper" ? [248, 239, 217] : [255, 255, 255];
+  for (let index = 0; index < data.length; index += 4) {
+    if (Math.abs((data[index] ?? 0) - base[0]) > 2 || Math.abs((data[index + 1] ?? 0) - base[1]) > 2 || Math.abs((data[index + 2] ?? 0) - base[2]) > 2) return true;
+  }
+  return false;
+}
+
 async function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Não foi possível materializar a obra.")), "image/png"));
 }
@@ -122,11 +133,33 @@ export function WorkChamberCanvas() {
     renderLayer("ink", inkVisible, 1);
   }, [background, constructionVisible, format, inkVisible]);
 
+  const drawGuide = useCallback((target: HTMLCanvasElement) => {
+    if (guide === "none") return;
+    const ctx = target.getContext("2d");
+    if (!ctx) return;
+    ctx.save();
+    ctx.strokeStyle = "rgba(74,58,37,.24)";
+    ctx.lineWidth = Math.max(1, Math.min(target.width, target.height) / 1000);
+    ctx.setLineDash([9, 9]);
+    const line = (x1: number, y1: number, x2: number, y2: number) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+    if (guide === "thirds") {
+      line(target.width / 3, 0, target.width / 3, target.height);
+      line((target.width * 2) / 3, 0, (target.width * 2) / 3, target.height);
+      line(0, target.height / 3, target.width, target.height / 3);
+      line(0, (target.height * 2) / 3, target.width, (target.height * 2) / 3);
+    } else {
+      line(target.width / 2, 0, target.width / 2, target.height);
+      line(0, target.height / 2, target.width, target.height / 2);
+    }
+    ctx.restore();
+  }, [guide]);
+
   const redraw = useCallback((extra?: Stroke | null) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     renderArtwork(canvas, extra ? [...strokesRef.current, extra] : strokesRef.current);
-  }, [renderArtwork]);
+    drawGuide(canvas);
+  }, [drawGuide, renderArtwork]);
 
   useEffect(() => {
     try {
@@ -168,10 +201,7 @@ export function WorkChamberCanvas() {
   const beginStroke = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (saveState === "saving") return;
     event.currentTarget.setPointerCapture(event.pointerId);
-    const active: Stroke = {
-      id: uid(), layer, erase: tool === "eraser", color: layer === "construction" ? constructionColor : inkColor,
-      size: tool === "eraser" ? eraserSize : brushSize, points: [pointFromEvent(event)],
-    };
+    const active: Stroke = { id: uid(), layer, erase: tool === "eraser", color: layer === "construction" ? constructionColor : inkColor, size: tool === "eraser" ? eraserSize : brushSize, points: [pointFromEvent(event)] };
     activeStrokeRef.current = active;
     setRedoStack([]);
     setError(null);
@@ -230,12 +260,10 @@ export function WorkChamberCanvas() {
     try {
       const exportCanvas = document.createElement("canvas");
       renderArtwork(exportCanvas, strokesRef.current);
+      if (!canvasHasVisibleMark(exportCanvas, background)) throw new Error("Torne visível ao menos uma camada com marca antes de registrar a obra.");
       const blob = await canvasBlob(exportCanvas);
       const fileAssetId = await uploadCanvas(blob);
-      const response = await fetch("/api/artworks", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ fileAssetId, type: "ARTWORK", title: title.trim(), notes: notes.trim() || null, source: "CANVAS" }),
-      });
+      const response = await fetch("/api/artworks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fileAssetId, type: "ARTWORK", title: title.trim(), notes: notes.trim() || null, source: "CANVAS" }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.code ?? "Não foi possível registrar a obra.");
       try { window.localStorage.removeItem(STORAGE_KEY); } catch {}
@@ -261,18 +289,15 @@ export function WorkChamberCanvas() {
           <button type="button" className={layer === "ink" ? "is-active" : ""} onClick={() => { setLayer("ink"); setTool("brush"); }}><b>02</b><span>Tinta</span><small>decisão final</small></button>
           <div className="work-layer-visibility"><label><input type="checkbox" checked={constructionVisible} onChange={(event) => setConstructionVisible(event.target.checked)} /> Construção</label><label><input type="checkbox" checked={inkVisible} onChange={(event) => setInkVisible(event.target.checked)} /> Tinta</label></div>
         </section>
-
         <section className="work-tool-group">
           <span>INSTRUMENTO</span>
           <div className="work-segmented"><button type="button" className={tool === "brush" ? "is-active" : ""} onClick={() => setTool("brush")}>Pincel</button><button type="button" className={tool === "eraser" ? "is-active" : ""} onClick={() => setTool("eraser")}>Borracha</button></div>
           <label className="work-range">{tool === "brush" ? "Espessura" : "Raio da borracha"}<input type="range" min={tool === "brush" ? 2 : 10} max={tool === "brush" ? 22 : 60} value={tool === "brush" ? brushSize : eraserSize} onChange={(event) => tool === "brush" ? setBrushSize(Number(event.target.value)) : setEraserSize(Number(event.target.value))} /><b>{tool === "brush" ? brushSize : eraserSize}</b></label>
         </section>
-
         <section className="work-tool-group">
           <span>PIGMENTOS</span>
           <div className="work-palette">{PALETTE.map((pigment) => <button key={pigment.color} type="button" className={activeColor === pigment.color ? "is-active" : ""} onClick={() => { setActiveColor(pigment.color); setTool("brush"); }} title={pigment.name} aria-label={pigment.name}><i style={{ backgroundColor: pigment.color }} /></button>)}</div>
         </section>
-
         <section className="work-tool-group work-history-tools">
           <span>GESTO</span>
           <div><button type="button" disabled={strokes.length === 0} onClick={undo}>↶ Desfazer</button><button type="button" disabled={redoStack.length === 0} onClick={redo}>↷ Refazer</button></div>
@@ -285,11 +310,7 @@ export function WorkChamberCanvas() {
           <div className="work-format-tools" aria-label="Formato da obra"><button type="button" className={format === "landscape" ? "is-active" : ""} onClick={() => setFormat("landscape")}>Paisagem</button><button type="button" className={format === "portrait" ? "is-active" : ""} onClick={() => setFormat("portrait")}>Retrato</button><button type="button" className={format === "square" ? "is-active" : ""} onClick={() => setFormat("square")}>Quadrado</button></div>
           <div className="work-guide-tools"><label>Guia<select value={guide} onChange={(event) => setGuide(event.target.value as Guide)}><option value="none">Nenhuma</option><option value="thirds">Terços</option><option value="center">Eixos centrais</option></select></label><label>Papel<select value={background} onChange={(event) => setBackground(event.target.value as Background)}><option value="paper">Marfim</option><option value="white">Branco</option></select></label></div>
         </header>
-
-        <div className={`work-canvas-frame format-${format}`}>
-          <div className={`work-canvas-guide guide-${guide}`} aria-hidden="true"><i /><i /><i /><i /></div>
-          <canvas ref={canvasRef} className="work-canvas" aria-label="Canvas livre da Câmara da Obra" onPointerDown={beginStroke} onPointerMove={moveStroke} onPointerUp={finishStroke} onPointerCancel={cancelStroke} />
-        </div>
+        <div className={`work-canvas-frame format-${format}`}><canvas ref={canvasRef} className="work-canvas" aria-label="Canvas livre da Câmara da Obra" onPointerDown={beginStroke} onPointerMove={moveStroke} onPointerUp={finishStroke} onPointerCancel={cancelStroke} /></div>
         <footer className="work-canvas-status"><span>{layer === "construction" ? "CONSTRUÇÃO" : "TINTA"} · {tool === "brush" ? "PINCEL" : "BORRACHA"}</span><span>{strokes.length} gesto(s) preservado(s) no draft local</span></footer>
       </section>
 
@@ -297,7 +318,7 @@ export function WorkChamberCanvas() {
         <div className="work-croma-seal"><span>C</span><div><small>CROMA · CÂMARA DA OBRA</small><strong>Combine, não demonstre.</strong></div></div>
         <p>Você já treinou partes separadas. Aqui a pergunta muda: o que essas habilidades conseguem construir juntas?</p>
         <section className="work-record-fields"><label>Nome da obra<input value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: Guardião do Jardim" /></label><label>Nota de processo<textarea rows={5} maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="O que você combinou, decidiu ou descobriu?" /></label></section>
-        <section className="work-save-summary"><span>REGISTRO PRIVADO</span><strong>Artwork · Canvas</strong><p>O PNG composto entra no Arquivo do Atelier e no Atlas. Seu draft permanece apenas neste dispositivo até o registro.</p></section>
+        <section className="work-save-summary"><span>REGISTRO PRIVADO</span><strong>Artwork · Canvas</strong><p>O PNG composto entra no Arquivo do Atelier e no Atlas. Guias nunca são incorporadas à obra; o draft permanece apenas neste dispositivo até o registro.</p></section>
         {error ? <p className="flow-error" role="alert">{error}</p> : null}
         <button className="primary work-save-button" type="button" disabled={saveState === "saving"} onClick={saveArtwork}>{saveState === "saving" ? "Materializando obra…" : "Registrar obra no Atlas"}</button>
       </aside>
