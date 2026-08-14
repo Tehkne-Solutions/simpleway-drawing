@@ -124,7 +124,7 @@ export class DrizzleArtworkRepository {
       await tx.update(artworks).set({ currentVersionId: version.id, updatedAt: new Date() }).where(eq(artworks.id, input.artworkId));
       const journeyMetadata = reviewPlan ? { versionNumber: next, reviewPlan } : { versionNumber: next };
       await tx.insert(journeyEntries).values({ userId: input.userId, artworkId: input.artworkId, type: "ARTWORK_VERSION", title: `Versão ${next} registrada`, metadata: journeyMetadata });
-      await tx.insert(outboxEvents).values({ eventType: "drawing.artwork.version_added.v1", aggregateType: "artwork", aggregateId: input.artworkId, payload: { userId: input.userId, artworkId: input.artworkId, artworkVersionId: version.id, versionNumber: next, ...(reviewPlan ? { reviewPlan } : {}) } });
+      await tx.insert(outboxEvents).values({ eventType: "drawing.artwork.version_added.v1", aggregateType: "artwork", aggregateId: input.artworkId, payload: { userId: input.userId, artworkId: input.artworkId, artworkVersionId: version.id, versionNumber: next } });
       return { ...version, reviewPlan };
     });
   }
