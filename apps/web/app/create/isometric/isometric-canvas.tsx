@@ -5,7 +5,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type Point = { x: number; y: number };
 type Tool = "segment" | "free";
 type Pigment = "graphite" | "sanguine" | "ultramarine";
-type Stroke = { tool: Tool; pigment: Pigment; points: Point[] };
+type Stroke = { tool: Tool; pigment: Pigment; points: Point[]; snapped?: boolean };
+type Axis = "axis30" | "vertical" | "axis150" | "off-axis";
+type EvidenceStatus = "idle" | "checking" | "saving" | "synced" | "offline";
 
 const WIDTH = 1200;
 const HEIGHT = 720;
@@ -28,6 +30,25 @@ function distance(a: Point, b: Point) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+function pathLength(points: Point[]) {
+  let total = 0;
+  for (let index = 1; index < points.length; index += 1) total += distance(points[index - 1]!, points[index]!);
+  return total;
+}
+
+function classifyAxis(a: Point, b: Point, tolerance = 8): Axis {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  if (Math.hypot(dx, dy) < 1) return "off-axis";
+  let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  angle = ((angle % 180) + 180) % 180;
+  const delta = (target: number) => Math.min(Math.abs(angle - target), 180 - Math.abs(angle - target));
+  if (delta(30) <= tolerance) return "axis30";
+  if (delta(90) <= tolerance) return "vertical";
+  if (delta(150) <= tolerance) return "axis150";
+  return "off-axis";
+}
+
 export function IsometricCanvas() {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [tool, setTool] = useState<Tool>("segment");
@@ -37,11 +58,16 @@ export function IsometricCanvas() {
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [draft, setDraft] = useState<Stroke | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [evidenceStatus, setEvidenceStatus] = useState<EvidenceStatus>("idle");
+  const [evidenceMessage, setEvidenceMessage] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setStrokes(JSON.parse(raw) as Stroke[]);
+      if (raw) {
+        const saved = JSON.parse(raw) as unknown;
+        if (Array.isArray(saved)) setStrokes(saved as Stroke[]);
+      }
     } catch {}
     setHydrated(true);
   }, []);
@@ -51,18 +77,50 @@ export function IsometricCanvas() {
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(strokes)); } catch {}
   }, [strokes, hydrated]);
 
+  useEffect(() => {
+    let disposed = false;
+    const check = async () => {
+      setEvidenceStatus("checking");
+      try {
+        const session = await fetch("/api/session/guest", { method: "POST" });
+        if (!session.ok) throw new Error("SESSION_UNAVAILABLE");
+        const response = await fetch("/api/studio/evidence", { cache: "no-store" });
+        if (!response.ok) throw new Error("STUDIO_EVIDENCE_UNAVAILABLE");
+        const snapshot = await response.json() as { completedMissionIds?: string[] };
+        if (!disposed) setEvidenceStatus(snapshot.completedMissionIds?.includes("isometric") ? "synced" : "idle");
+      } catch {
+        if (!disposed) setEvidenceStatus("offline");
+      }
+    };
+    void check();
+    return () => { disposed = true; };
+  }, []);
+
   const pattern = useMemo(() => {
     const h = ISO_Y * 2;
     return `M 0 ${ISO_Y} L ${GRID} 0 L ${GRID * 2} ${ISO_Y} L ${GRID} ${h} Z M ${GRID} 0 V ${h}`;
   }, []);
 
+  const metrics = useMemo(() => {
+    const aligned = strokes
+      .filter((stroke) => stroke.tool === "segment" && stroke.points.length >= 2 && pathLength(stroke.points) >= 24)
+      .map((stroke) => ({ stroke, axis: classifyAxis(stroke.points[0]!, stroke.points.at(-1)!) }))
+      .filter((item) => item.axis !== "off-axis");
+    const axis30 = aligned.filter((item) => item.axis === "axis30").length;
+    const vertical = aligned.filter((item) => item.axis === "vertical").length;
+    const axis150 = aligned.filter((item) => item.axis === "axis150").length;
+    const snappedSegments = aligned.filter((item) => item.stroke.snapped === true).length;
+    const allPoints = aligned.flatMap((item) => item.stroke.points);
+    const width = allPoints.length ? Math.max(...allPoints.map((point) => point.x)) - Math.min(...allPoints.map((point) => point.x)) : 0;
+    const height = allPoints.length ? Math.max(...allPoints.map((point) => point.y)) - Math.min(...allPoints.map((point) => point.y)) : 0;
+    const ready = aligned.length >= 9 && axis30 >= 3 && vertical >= 3 && axis150 >= 3 && snappedSegments >= 6 && width >= 96 && height >= 60;
+    return { aligned: aligned.length, axis30, vertical, axis150, snappedSegments, width, height, ready };
+  }, [strokes]);
+
   const toPoint = (event: React.PointerEvent<SVGSVGElement>): Point => {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
-    const point = {
-      x: ((event.clientX - rect.left) / rect.width) * WIDTH,
-      y: ((event.clientY - rect.top) / rect.height) * HEIGHT,
-    };
+    const point = { x: ((event.clientX - rect.left) / rect.width) * WIDTH, y: ((event.clientY - rect.top) / rect.height) * HEIGHT };
     if (!snap || tool === "free") return point;
     return snapToIso(point);
   };
@@ -70,7 +128,7 @@ export function IsometricCanvas() {
   const begin = (event: React.PointerEvent<SVGSVGElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     const point = toPoint(event);
-    setDraft({ tool, pigment, points: [point, point] });
+    setDraft({ tool, pigment, points: [point, point], snapped: tool === "segment" && snap });
   };
 
   const move = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -86,16 +144,17 @@ export function IsometricCanvas() {
 
   const finish = () => {
     setDraft((current) => {
-      if (current && current.points.length >= 2 && distance(current.points[0]!, current.points.at(-1)!) > 3) {
-        setStrokes((items) => [...items, current]);
-      }
+      if (current && current.points.length >= 2 && distance(current.points[0]!, current.points.at(-1)!) > 3) setStrokes((items) => [...items, current]);
       return null;
     });
   };
 
   const undo = () => setStrokes((items) => items.slice(0, -1));
   const clear = () => {
-    if (strokes.length === 0 || window.confirm("Limpar todo o estudo isométrico?")) setStrokes([]);
+    if (strokes.length === 0 || window.confirm("Limpar todo o estudo isométrico?")) {
+      setStrokes([]);
+      if (evidenceStatus !== "synced") setEvidenceStatus("idle");
+    }
   };
 
   const exportSvg = () => {
@@ -112,33 +171,57 @@ export function IsometricCanvas() {
     URL.revokeObjectURL(url);
   };
 
-  const structuralMarks = strokes.filter((stroke) => stroke.tool === "segment").length;
-  const missionStep = structuralMarks >= 9 ? 3 : structuralMarks >= 6 ? 2 : structuralMarks >= 3 ? 1 : 0;
+  async function registerEvidence() {
+    if (!metrics.ready || evidenceStatus === "saving" || evidenceStatus === "synced") return;
+    setEvidenceStatus("saving");
+    setEvidenceMessage(null);
+    try {
+      const session = await fetch("/api/session/guest", { method: "POST" });
+      if (!session.ok) throw new Error("SESSION_UNAVAILABLE");
+      const response = await fetch("/api/studio/evidence", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ missionId: "isometric", payload: { strokes: strokes.filter((stroke) => stroke.tool === "segment") } }),
+      });
+      const payload = await response.json() as { code?: string };
+      if (!response.ok) throw new Error(payload.code ?? "STUDIO_EVIDENCE_FAILED");
+      setEvidenceStatus("synced");
+      setEvidenceMessage("Sigilo dos Eixos registrado no Atlas.");
+    } catch (error) {
+      setEvidenceStatus("offline");
+      setEvidenceMessage(error instanceof Error && error.message !== "SESSION_UNAVAILABLE" ? error.message : "Runtime autoritativo indisponível; seu estudo local permanece salvo.");
+    }
+  }
 
-  const renderStroke = (stroke: Stroke, key: string) => (
-    <polyline
+  const renderStroke = (stroke: Stroke, key: string) => {
+    const axis = stroke.tool === "segment" && stroke.points.length >= 2 ? classifyAxis(stroke.points[0]!, stroke.points.at(-1)!) : "off-axis";
+    return <polyline
       key={key}
       points={stroke.points.map((point) => `${point.x},${point.y}`).join(" ")}
       fill="none"
       stroke={PIGMENTS[stroke.pigment]}
-      strokeWidth={stroke.tool === "free" ? 4 : 3.2}
+      strokeWidth={stroke.tool === "free" ? 4 : axis === "off-axis" ? 2.4 : 3.2}
       strokeLinecap="round"
       strokeLinejoin="round"
-    />
-  );
+      opacity={stroke.tool === "segment" && axis === "off-axis" ? .58 : 1}
+    />;
+  };
 
   return (
     <section className="iso-game-shell">
-      <aside className="iso-mission-panel">
-        <p className="iso-kicker">Missão de Croma · 001</p>
-        <h2>Construa um cubo no espaço.</h2>
-        <p>Use a grade para pensar em três direções. Aqui não avaliamos beleza: treinamos decisão espacial.</p>
+      <aside className={`iso-mission-panel ${metrics.ready ? "is-ready" : ""}`}>
+        <p className="iso-kicker">Missão de Croma · AXIS 01</p>
+        <h2>Construa um volume usando os três eixos.</h2>
+        <p>Segmentos só contam quando seguem 30°, vertical ou 150°. Traço livre serve para estudar; não aumenta o progresso estrutural.</p>
         <ol>
-          <li className={missionStep >= 1 ? "is-done" : ""}><span>01</span><div><strong>Base</strong><small>Faça pelo menos 3 arestas.</small></div></li>
-          <li className={missionStep >= 2 ? "is-done" : ""}><span>02</span><div><strong>Elevação</strong><small>Suba as arestas verticais.</small></div></li>
-          <li className={missionStep >= 3 ? "is-done" : ""}><span>03</span><div><strong>Fechamento</strong><small>Complete o volume.</small></div></li>
+          <li className={metrics.axis30 >= 3 ? "is-done" : ""}><span>↘</span><div><strong>Eixo 30°</strong><small>{metrics.axis30}/3 segmentos alinhados</small></div></li>
+          <li className={metrics.vertical >= 3 ? "is-done" : ""}><span>↕</span><div><strong>Eixo vertical</strong><small>{metrics.vertical}/3 segmentos alinhados</small></div></li>
+          <li className={metrics.axis150 >= 3 ? "is-done" : ""}><span>↙</span><div><strong>Eixo 150°</strong><small>{metrics.axis150}/3 segmentos alinhados</small></div></li>
+          <li className={metrics.snappedSegments >= 6 ? "is-done" : ""}><span>S</span><div><strong>Decisão com Snap</strong><small>{metrics.snappedSegments}/6 segmentos construídos com snap</small></div></li>
         </ol>
-        <div className="iso-progress"><span><i style={{ width: `${Math.min(100, structuralMarks / 9 * 100)}%` }} /></span><b>{Math.min(structuralMarks, 9)}/9 traços estruturais</b></div>
+        <div className="iso-progress"><span><i style={{ width: `${Math.min(100, metrics.aligned / 9 * 100)}%` }} /></span><b>{Math.min(metrics.aligned, 9)}/9 segmentos válidos · área {Math.round(metrics.width)}×{Math.round(metrics.height)}</b></div>
+        <button className="iso-evidence-button" type="button" disabled={!metrics.ready || evidenceStatus === "saving" || evidenceStatus === "synced"} onClick={registerEvidence}>{evidenceStatus === "synced" ? "Evidence registrada ✓" : evidenceStatus === "saving" ? "Validando Evidence…" : metrics.ready ? "Registrar Evidence no Atlas" : "Complete os três eixos"}</button>
+        {evidenceMessage ? <small className="iso-evidence-message">{evidenceMessage}</small> : evidenceStatus === "offline" ? <small className="iso-evidence-message">Modo local ativo · Evidence sincroniza no runtime completo.</small> : null}
         <blockquote>“Prima osserva. Poi crea.” <small>— Codex Croma</small></blockquote>
       </aside>
 
@@ -184,7 +267,7 @@ export function IsometricCanvas() {
             {strokes.map((stroke, index) => renderStroke(stroke, `stroke-${index}`))}
             {draft ? renderStroke(draft, "draft") : null}
           </svg>
-          <div className="iso-canvas-caption"><span>ISOMETRIC STUDY PLATE · SWD</span><b>{snap && tool === "segment" ? "SNAP 30° ATIVO" : "MODO LIVRE"}</b></div>
+          <div className="iso-canvas-caption"><span>ISOMETRIC STUDY PLATE · SWD · 30° {metrics.axis30} · 90° {metrics.vertical} · 150° {metrics.axis150}</span><b>{snap && tool === "segment" ? "SNAP 30° ATIVO" : "MODO LIVRE"}</b></div>
         </div>
       </div>
     </section>
