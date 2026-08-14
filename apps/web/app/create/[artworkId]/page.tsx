@@ -4,6 +4,8 @@ import { getArtworkRepository, getStorage } from "../../../server/runtime";
 import { getSessionUserId } from "../../../server/session";
 import "../review-cycle-v125.css";
 import "../review-intent-v123.css";
+import "../review-notebook-v127.css";
+import { resolveReviewCycle } from "../review-cycle";
 import { VersionComparison } from "./version-comparison";
 import { VersionForm } from "./version-form";
 
@@ -37,6 +39,8 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
     reviewPlan: version.reviewPlan,
     createdAt: version.createdAt.toISOString(),
   }));
+  const historyVersions = versions.map((version) => ({ ...version, reviewCycle: resolveReviewCycle(version) }));
+  const reviewCycleCount = historyVersions.filter((version) => Boolean(version.reviewCycle)).length;
 
   return (
     <main className="flow-shell">
@@ -64,18 +68,28 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
           <aside className="version-compare-empty"><span>MESA DE COMPARAÇÃO</span><strong>A segunda versão abrirá a comparação visual.</strong><p>Preserve a primeira versão e registre uma nova passagem para enxergar mudanças reais lado a lado.</p></aside>
         )}
 
-        <section className="version-history" aria-labelledby="version-history-title">
-          <div className="version-history-heading"><p className="eyebrow">Arquivo de versões</p><h2 id="version-history-title">Histórico completo, sem apagar processo.</h2></div>
-          {versions.map((version, index) => (
-            <article key={version.id} className={`version-card ${index === 0 ? "is-current" : ""}`}>
-              <div className="version-image-wrap"><img src={version.readUrl} alt={`Versão ${version.versionNumber} de ${artworkTitle}`} /></div>
-              <div className="version-meta">
-                <div><span>v{version.versionNumber}</span>{index === 0 ? <strong>Atual</strong> : null}</div>
-                <p>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(version.createdAt)}</p>
-                {version.notes ? <blockquote>{version.notes}</blockquote> : <p>Sem reflexão livre registrada.</p>}
-              </div>
-            </article>
-          ))}
+        <section className="version-history version-review-notebook" aria-labelledby="version-history-title">
+          <div className="version-history-heading"><p className="eyebrow">Arquivo de versões · Caderno de Revisões</p><h2 id="version-history-title">Cada passagem preserva resultado, intenção e reflexão.</h2><span>{reviewCycleCount} ciclo(s) de revisão reconhecido(s)</span></div>
+          {historyVersions.map((version, index) => {
+            const cycle = version.reviewCycle;
+            const reflection = cycle?.provenance === "LEGACY" ? null : version.notes;
+            return (
+              <article key={version.id} className={`version-card ${index === 0 ? "is-current" : ""} ${cycle ? "has-review-cycle" : ""}`}>
+                <div className="version-image-wrap"><img src={version.readUrl} alt={`Versão ${version.versionNumber} de ${artworkTitle}`} /></div>
+                <div className="version-meta">
+                  <div><span>v{version.versionNumber}</span>{index === 0 ? <strong>Atual</strong> : null}</div>
+                  <p>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(version.createdAt)}</p>
+                  {cycle ? (
+                    <aside className="version-cycle-record" aria-label={`Ciclo V${cycle.baseVersionNumber} para V${version.versionNumber}`}>
+                      <header><span>CICLO V{cycle.baseVersionNumber} → V{version.versionNumber}</span><small>{cycle.provenance === "STRUCTURED" ? "ESTRUTURADO" : "LEGADO"}</small></header>
+                      <div className="version-cycle-pair"><div><b>PRESERVAR</b><p>{cycle.plan.preserve}</p></div><div><b>TRANSFORMAR</b><p>{cycle.plan.transform}</p></div></div>
+                      <p className={`version-cycle-reflection ${cycle.provenance === "LEGACY" ? "version-cycle-legacy" : ""}`}><b>REFLEXÃO DA PASSAGEM</b>{cycle.provenance === "LEGACY" ? "Esta versão antiga guardava plano e nota no mesmo texto; não existe reflexão livre separada para recuperar." : reflection || "Sem reflexão livre registrada nesta passagem."}</p>
+                    </aside>
+                  ) : version.notes ? <blockquote>{version.notes}</blockquote> : <p>Sem reflexão livre registrada.</p>}
+                </div>
+              </article>
+            );
+          })}
         </section>
 
         {record.artwork.type === "BASELINE" ? (
