@@ -37,7 +37,7 @@ test("Atlas uses journey metadata versionNumber for ARTWORK_CREATED and ARTWORK_
   assert.match(journey, /typeof metadata\.versionNumber === "number"/);
   assert.match(journey, /getJourneyArtworkPreview\(userId, entry\.artworkId, historicalVersion\)/);
   assert.match(journey, /imageVersionNumber/);
-  assert.match(journey, /VISUAL V\{item\.imageVersionNumber\}/);
+  assert.match(journey, /`VISUAL V\$\{item\.imageVersionNumber\}`/);
   assert.match(journey, /href="\/create\/work" className=\{`atlas-relic atlas-relic-capstone/);
 });
 
