@@ -42,12 +42,55 @@ async function uploadPrivate(cookie) {
   return intent.fileAssetId;
 }
 
+async function submitRequiredPractice(cookie, exerciseKey) {
+  let path;
+  let body;
+  if (exerciseKey === "exercise.swd.gym.intentional_line") {
+    path = "/api/gym/intentional-line";
+    body = { accuracy: 0.93, smoothness: 0.91, durationMs: 950, pointCount: 40 };
+  } else if (exerciseKey.startsWith("exercise.swd.gym.")) {
+    path = "/api/gym/motor-drill";
+    body = { exerciseKey, accuracy: 0.88, smoothness: 0.9, durationMs: 1180, pointCount: 38 };
+  } else if (exerciseKey.startsWith("exercise.swd.observation.")) {
+    path = "/api/observation";
+    body = { exerciseKey, answerIndex: 0, responseMs: 1500 };
+  } else if (exerciseKey.startsWith("exercise.swd.construction.")) {
+    path = "/api/construction";
+    body = { exerciseKey, answerIndex: 0 };
+  } else if (exerciseKey.startsWith("exercise.swd.form.")) {
+    path = "/api/form";
+    body = { exerciseKey, answerIndex: 0 };
+  } else {
+    throw new Error(`unsupported required Practice in cohort smoke: ${exerciseKey}`);
+  }
+
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    headers: { cookie, "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  await assertHttp(response, 200, `cohort required Practice ${exerciseKey}`);
+  return response.json();
+}
+
 async function completeLesson(cookie, lessonKey) {
-  const response = await fetch(`${baseUrl}/api/learning/lessons/${encodeURIComponent(lessonKey)}/complete`, {
+  const submit = () => fetch(`${baseUrl}/api/learning/lessons/${encodeURIComponent(lessonKey)}/complete`, {
     method: "POST",
     headers: { cookie, "content-type": "application/json" },
     body: JSON.stringify({ reflection: { source: "cohort-completion-e2e" } }),
   });
+
+  let response = await submit();
+  if (response.status === 409) {
+    const blocked = await response.json();
+    if (blocked.code === "LESSON_PRACTICE_REQUIRED" && typeof blocked.exerciseKey === "string") {
+      await submitRequiredPractice(cookie, blocked.exerciseKey);
+      response = await submit();
+    } else {
+      throw new Error(`cohort lesson ${lessonKey} blocked unexpectedly: 409 ${JSON.stringify(blocked)}`);
+    }
+  }
+
   await assertHttp(response, 200, `cohort lesson ${lessonKey}`);
 }
 
@@ -206,4 +249,4 @@ assert.match(journeyHtml, /Foundation Alpha/);
 assert.match(journeyHtml, /ANTES \/ DEPOIS/);
 assert.match(journeyHtml, /Drawing Zero/);
 
-console.log("COHORT_COMPLETION_E2E=PASS ops_session invite consent invited_identity onboarding drawing_zero foundation cross_domain_evidence capstone revisit alpha_gate complete_resume complete_heartbeat feedback_csrf feedback feedback_readback tester_feedback_projection cohort_activation cohort_completion cohort_rating graduation_projection");
+console.log("COHORT_COMPLETION_E2E=PASS ops_session invite consent invited_identity onboarding drawing_zero foundation practice_gate_transition cross_domain_evidence capstone revisit alpha_gate complete_resume complete_heartbeat feedback_csrf feedback feedback_readback tester_feedback_projection cohort_activation cohort_completion cohort_rating graduation_projection");
