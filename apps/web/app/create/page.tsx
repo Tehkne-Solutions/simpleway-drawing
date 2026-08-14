@@ -31,29 +31,29 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
 
         <CromaCoach
           eyebrow="Croma · Atelier Livre"
-          title="Comece pela ferramenta que reduz o problema."
-          message="No Atelier você não recebe uma folha vazia sem contexto. Escolha um canvas, ative guias quando precisar e preserve tentativas para comparar processo."
-          actionLabel="Jogar Canvas Isométrico"
-          actionHref="/create/isometric"
+          title="Hoje há uma expedição completa esperando por você."
+          message="A Expedição da Síntese conecta quatro oficinas em uma campanha: forma, movimento, continuidade e tempo. O progresso é lido do que você realmente produz nos canvases."
+          actionLabel="Jogar Expedição da Síntese"
+          actionHref="/create/pixel/quest"
           tone="veronese"
         />
 
         <section className="studio-launchpad" aria-labelledby="studio-title">
           <div className="studio-launchpad-head">
-            <div><p className="eyebrow">Ferramentas do Atelier</p><h2 id="studio-title">Escolha como você quer praticar.</h2></div>
+            <div><p className="eyebrow">Ferramentas do Atelier</p><h2 id="studio-title">Escolha uma missão ou entre direto no canvas.</h2></div>
             <Link className="secondary link-button" href="/journey">Abrir Atlas do Olhar</Link>
           </div>
           <div className="studio-mode-grid">
-            <Link className="studio-mode-card is-playable" href="/create/isometric">
-              <small>Jogável agora</small><strong>Canvas Isométrico</strong><p>Grade 30°, snap, segmentos estruturais, traço livre e missão de construção espacial.</p>
-            </Link>
-            <Link className="studio-mode-card is-playable manga" href="/create/manga"><small>Jogável agora</small><strong>Manga Canvas</strong><p>Crânio, eixo, olhos, mandíbula, terços e vistas frente, 3/4 e perfil para construção de personagem.</p></Link>
+            <Link className="studio-mode-card is-playable" href="/create/pixel/quest"><small>Campanha jogável · 4 missões</small><strong>Expedição da Síntese</strong><p>Recupere quatro sigilos dominando forma, movimento, continuidade e tempo em Pixel Art.</p></Link>
+            <Link className="studio-mode-card is-playable" href="/create/pixel"><small>Atelier da Síntese</small><strong>Pixel Studio</strong><p>Grid pixel-a-pixel, Sprite Lab, Tile Lab, Animation Lab, paletas limitadas e export para produção.</p></Link>
+            <Link className="studio-mode-card is-playable" href="/create/isometric"><small>Atelier da Estrutura</small><strong>Canvas Isométrico</strong><p>Grade 30°, snap, segmentos estruturais, traço livre e missão de construção espacial.</p></Link>
+            <Link className="studio-mode-card is-playable manga" href="/create/manga"><small>Atelier da Narrativa</small><strong>Manga Canvas</strong><p>Crânio, eixo, olhos, mandíbula, terços e vistas frente, 3/4 e perfil para construção de personagem.</p></Link>
             <article className="studio-mode-card is-upcoming comic" aria-disabled="true"><small>Próxima oficina</small><strong>Comic Canvas</strong><p>Painéis, storytelling, composição, perspectiva e ritmo visual de página.</p></article>
             <article className="studio-mode-card is-upcoming realistic" aria-disabled="true"><small>Próxima oficina</small><strong>Realistic Canvas</strong><p>Envelope, medição, block-in, eixos, planos, luz e comparação visual.</p></article>
           </div>
         </section>
 
-        <section className="create-external-register">
+        <section className="create-external-register" id="registro-externo">
           <div className="section-heading"><div><p className="eyebrow">Registro externo</p><h2>Traga estudos feitos fora do app.</h2></div></div>
           <p className="compact">Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar ao Studio interno.</p>
           <ArtworkForm initialType={preset.type} initialTitle={preset.title} initialNotes={preset.notes} />
