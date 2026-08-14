@@ -62,12 +62,55 @@ async function uploadPrivate(cookie) {
   return intent.fileAssetId;
 }
 
+async function submitRequiredPractice(cookie, exerciseKey) {
+  let path;
+  let body;
+  if (exerciseKey === "exercise.swd.gym.intentional_line") {
+    path = "/api/gym/intentional-line";
+    body = { accuracy: 0.91, smoothness: 0.89, durationMs: 980, pointCount: 36 };
+  } else if (exerciseKey.startsWith("exercise.swd.gym.")) {
+    path = "/api/gym/motor-drill";
+    body = { exerciseKey, accuracy: 0.86, smoothness: 0.9, durationMs: 1200, pointCount: 38 };
+  } else if (exerciseKey.startsWith("exercise.swd.observation.")) {
+    path = "/api/observation";
+    body = { exerciseKey, answerIndex: 0, responseMs: 1600 };
+  } else if (exerciseKey.startsWith("exercise.swd.construction.")) {
+    path = "/api/construction";
+    body = { exerciseKey, answerIndex: 0 };
+  } else if (exerciseKey.startsWith("exercise.swd.form.")) {
+    path = "/api/form";
+    body = { exerciseKey, answerIndex: 0 };
+  } else {
+    throw new Error(`unsupported required Practice in resume smoke: ${exerciseKey}`);
+  }
+
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    headers: { cookie, "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  await assertHttp(response, 200, `submit required Practice ${exerciseKey}`);
+  return response.json();
+}
+
 async function completeLesson(cookie, lessonKey) {
-  const response = await fetch(`${baseUrl}/api/learning/lessons/${encodeURIComponent(lessonKey)}/complete`, {
+  const submit = () => fetch(`${baseUrl}/api/learning/lessons/${encodeURIComponent(lessonKey)}/complete`, {
     method: "POST",
     headers: { cookie, "content-type": "application/json" },
     body: JSON.stringify({ reflection: { source: "resume-orchestration-e2e" } }),
   });
+
+  let response = await submit();
+  if (response.status === 409) {
+    const blocked = await response.json();
+    if (blocked.code === "LESSON_PRACTICE_REQUIRED" && typeof blocked.exerciseKey === "string") {
+      await submitRequiredPractice(cookie, blocked.exerciseKey);
+      response = await submit();
+    } else {
+      throw new Error(`complete ${lessonKey} blocked unexpectedly: 409 ${JSON.stringify(blocked)}`);
+    }
+  }
+
   await assertHttp(response, 200, `complete ${lessonKey}`);
   return response.json();
 }
@@ -199,4 +242,4 @@ assert.match(journeyHtml, /Shape/);
 assert.match(journeyHtml, /Form/);
 assert.match(journeyHtml, /Habilidades/);
 
-console.log("RESUME_ORCHESTRATION_E2E=PASS unauthenticated_resume onboarding_stage drawing_zero_stage first_lesson_stage first_practice_stage foundation_stage all_cycles alpha_gate_stage cross_domain_evidence form_skill_contract capstone revisit alpha_gate_csrf alpha_gate_completion complete_stage home_projection graduation_summary before_after_projection graduation_domains journey_projection gate_idempotency");
+console.log("RESUME_ORCHESTRATION_E2E=PASS unauthenticated_resume onboarding_stage drawing_zero_stage first_lesson_stage first_practice_stage foundation_stage practice_gate_transition all_cycles alpha_gate_stage cross_domain_evidence form_skill_contract capstone revisit alpha_gate_csrf alpha_gate_completion complete_stage home_projection graduation_summary before_after_projection graduation_domains journey_projection gate_idempotency");
