@@ -1,4 +1,5 @@
-import { exerciseAttempts, getFoundationLesson } from "@swd/database";
+import { exerciseAttempts } from "@swd/database";
+import { getFoundationLesson } from "@swd/content";
 import { getC2Lesson } from "@swd/content/c2";
 import { getC3Lesson } from "@swd/content/c3";
 import { getC4Lesson } from "@swd/content/c4";
