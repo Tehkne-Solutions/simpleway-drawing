@@ -29,7 +29,8 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
   const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const lessonWorkspace = /^\/learn\/c[0-4]\//.test(pathname);
-  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric") || pathname.startsWith("/create/pixel") || lessonWorkspace;
+  const alphaWorkspace = pathname === "/alpha";
+  const gameWorkspace = pathname.startsWith("/create/manga") || pathname.startsWith("/create/isometric") || pathname.startsWith("/create/pixel") || lessonWorkspace || alphaWorkspace;
   const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   useEffect(() => {

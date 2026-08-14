@@ -15,13 +15,13 @@ export function AlphaGateButton({ ready }: { ready: boolean }) {
       const response = await fetch("/api/alpha/gate", { method: "POST" });
       const payload = await response.json();
       if (!response.ok) {
-        setMessage(payload.nextAction?.description ?? "Ainda há requisitos do Alpha Gate para concluir.");
+        setMessage(payload.nextAction?.description ?? "O selo ainda aguarda uma das provas do Rito Alpha.");
         return;
       }
-      setMessage("Foundation Alpha registrada no seu Journey.");
+      router.push("/resume");
       router.refresh();
     } catch {
-      setMessage("Não foi possível registrar o Alpha Gate agora.");
+      setMessage("Não foi possível registrar o Rito Alpha agora.");
     } finally {
       setBusy(false);
     }
@@ -30,7 +30,7 @@ export function AlphaGateButton({ ready }: { ready: boolean }) {
   return (
     <div className="alpha-gate-action">
       <button className="primary" type="button" disabled={!ready || busy} onClick={record}>
-        {busy ? "Registrando…" : ready ? "Concluir Alpha Gate" : "Alpha Gate ainda bloqueado"}
+        {busy ? "Selando…" : ready ? "Selar Alpha e abrir a próxima região" : "Selo Alpha ainda fechado"}
       </button>
       {message ? <p className="alpha-gate-message" role="status">{message}</p> : null}
     </div>

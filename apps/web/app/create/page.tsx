@@ -11,6 +11,7 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
   const userId = await getSessionUserId();
   const artworks = userId ? await getArtworkRepository().listOwned(userId) : [];
   const { mode } = await searchParams;
+  const alphaMode = mode === "revisit" || mode === "capstone";
   const preset = mode === "revisit"
     ? { type: "STUDY" as const, title: "Drawing Zero Revisited", notes: "Mesma referência do Drawing Zero. Compare processo, proporção, simplificação e volume." }
     : mode === "capstone"
@@ -21,20 +22,20 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
     <main className="flow-shell">
       <section className="flow-card create-card">
         <div>
-          <p className="eyebrow">Atelier Livre</p>
-          <h1 className="flow-title">Crie dentro do app. Registre o mundo de fora quando quiser.</h1>
-          <p className="lead compact">O SimpleWay Drawing trata criação como prática jogável. Canvases especializados são ferramentas principais; upload pelo celular ou PC continua como recurso complementar.</p>
+          <p className="eyebrow">{alphaMode ? "Rito Alpha · Portal da Prova" : "Atelier Livre"}</p>
+          <h1 className="flow-title">{alphaMode ? "Registre a prova sem perder o fio do rito." : "Crie dentro do app. Registre o mundo de fora quando quiser."}</h1>
+          <p className="lead compact">{alphaMode ? "O Rito já definiu a identidade canônica deste registro. Você cuida da obra; o sistema cuida de reconhecê-la e devolver você ao selo correto." : "O SimpleWay Drawing trata criação como prática jogável. Canvases especializados são ferramentas principais; upload pelo celular ou PC continua como recurso complementar."}</p>
         </div>
 
-        {mode === "revisit" ? <aside className="lesson-checkpoint">Use a mesma referência e condições gerais do Drawing Zero. Não procure “embelezar”: queremos observar mudança de processo.</aside> : null}
-        {mode === "capstone" ? <aside className="lesson-checkpoint">Capstone: escolha um objeto real, mapeie shapes, construa forms e crie uma variação autoral.</aside> : null}
+        {mode === "revisit" ? <aside className="lesson-checkpoint">Prova do Espelho: use a mesma referência e condições gerais do Drawing Zero. Não procure “embelezar”: queremos observar mudança de processo.</aside> : null}
+        {mode === "capstone" ? <aside className="lesson-checkpoint">Prova da Obra: escolha um objeto real, mapeie shapes, construa forms e crie uma variação autoral.</aside> : null}
 
         <CromaCoach
-          eyebrow="Croma · Atelier Livre"
-          title="Hoje há uma expedição completa esperando por você."
-          message="A Expedição da Síntese conecta quatro oficinas em uma campanha: forma, movimento, continuidade e tempo. O progresso é lido do que você realmente produz nos canvases."
-          actionLabel="Jogar Expedição da Síntese"
-          actionHref="/create/pixel/quest"
+          eyebrow={alphaMode ? "Croma · Rito Alpha" : "Croma · Atelier Livre"}
+          title={alphaMode ? "A prova já está preparada." : "Hoje há uma expedição completa esperando por você."}
+          message={alphaMode ? "Tipo e identificação canônica ficam protegidos nesta passagem. Depois do registro, você retorna ao Rito para ver o selo responder." : "A Expedição da Síntese conecta quatro oficinas em uma campanha: forma, movimento, continuidade e tempo. O progresso é lido do que você realmente produz nos canvases."}
+          actionLabel={alphaMode ? "Voltar ao Rito Alpha" : "Jogar Expedição da Síntese"}
+          actionHref={alphaMode ? "/alpha" : "/create/pixel/quest"}
           tone="veronese"
         />
 
@@ -54,16 +55,22 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
         </section>
 
         <section className="create-external-register" id="registro-externo">
-          <div className="section-heading"><div><p className="eyebrow">Registro externo</p><h2>Traga estudos feitos fora do app.</h2></div></div>
-          <p className="compact">Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar ao Studio interno.</p>
-          <ArtworkForm initialType={preset.type} initialTitle={preset.title} initialNotes={preset.notes} />
+          <div className="section-heading"><div><p className="eyebrow">{alphaMode ? "Registro da Prova" : "Registro externo"}</p><h2>{alphaMode ? preset.title : "Traga estudos feitos fora do app."}</h2></div></div>
+          <p className="compact">{alphaMode ? "Envie a evidência visual da prova. Notas do processo continuam livres; tipo e título permanecem canônicos para o Rito reconhecê-la." : "Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar ao Studio interno."}</p>
+          <ArtworkForm
+            initialType={preset.type}
+            initialTitle={preset.title}
+            initialNotes={preset.notes}
+            lockPreset={alphaMode}
+            {...(alphaMode ? { returnTo: "/alpha" } : {})}
+          />
         </section>
 
         <section className="create-library">
           <div className="section-heading"><div><p className="eyebrow">Arquivo do Atelier</p><h2>Criações privadas</h2></div><Link href="/journey" className="secondary link-button">Ver Atlas</Link></div>
           {artworks.length === 0 ? <div className="empty-create"><strong>Ainda não há registros no arquivo.</strong><span>Seu primeiro estudo salvo aparecerá aqui e no Atlas do Olhar.</span></div> : <div className="artwork-grid">{artworks.map((artwork) => <Link key={artwork.id} href={`/create/${artwork.id}`} className="artwork-tile"><span className="artwork-type">{typeLabel[artwork.type] ?? artwork.type}</span><h3>{artwork.title ?? "Sem título"}</h3><p>{artwork.visibility === "PRIVATE" ? "Privado" : artwork.visibility} · atualizado {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(artwork.updatedAt)}</p></Link>)}</div>}
         </section>
-        <div className="flow-actions"><Link className="secondary link-button" href="/">Voltar à Home</Link></div>
+        <div className="flow-actions"><Link className="secondary link-button" href={alphaMode ? "/alpha" : "/"}>{alphaMode ? "Voltar ao Rito Alpha" : "Voltar à Home"}</Link></div>
       </section>
     </main>
   );
