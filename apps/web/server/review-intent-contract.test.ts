@@ -12,8 +12,9 @@ test("comparison captures both review decisions locally without putting creative
   assert.match(component, /const \[preserve, setPreserve\] = useState\(""\)/);
   assert.match(component, /const \[transform, setTransform\] = useState\(""\)/);
   assert.match(component, /maxLength=\{REVIEW_PLAN_DECISION_MAX_LENGTH\}/);
-  assert.match(component, /const intentReady = Boolean\(preserveIntent && transformIntent\)/);
-  assert.match(component, /baseVersionNumber: current\.versionNumber/);
+  assert.match(component, /const intentReady = !historicalContext && Boolean\(preserveIntent && transformIntent\)/);
+  assert.match(component, /if \(!intentReady \|\| historicalContext\) return/);
+  assert.match(component, /baseVersionNumber: target\.versionNumber/);
   assert.match(component, /window\.sessionStorage\.setItem\(`/);
   assert.match(component, /router\.push\(`\/create\/work\?artworkId=\$\{encodeURIComponent\(artworkId\)\}`\)/);
   assert.doesNotMatch(component, /new URLSearchParams/);
