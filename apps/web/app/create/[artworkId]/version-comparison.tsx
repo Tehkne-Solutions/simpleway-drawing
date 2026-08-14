@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 
@@ -13,17 +14,34 @@ type VersionForComparison = {
 };
 
 const sourceLabel: Record<string, string> = { CANVAS: "Câmara", UPLOAD: "Upload", PHOTO: "Foto" };
+const MAX_INTENT = 280;
 
-export function VersionComparison({ versions, artworkTitle }: { versions: VersionForComparison[]; artworkTitle: string }) {
+export function VersionComparison({ versions, artworkTitle, artworkId }: { versions: VersionForComparison[]; artworkTitle: string; artworkId: string }) {
+  const router = useRouter();
   const current = versions[0] ?? null;
   const historical = versions.slice(1);
   const [selectedVersion, setSelectedVersion] = useState(historical[0]?.versionNumber ?? current?.versionNumber ?? 1);
   const [reveal, setReveal] = useState(50);
+  const [preserve, setPreserve] = useState("");
+  const [transform, setTransform] = useState("");
   const selected = useMemo(() => historical.find((version) => version.versionNumber === selectedVersion) ?? historical[0] ?? current, [current, historical, selectedVersion]);
 
   if (!current || !selected || versions.length < 2) return null;
 
-  const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(value));
+  const preserveIntent = preserve.trim();
+  const transformIntent = transform.trim();
+  const intentReady = Boolean(preserveIntent && transformIntent);
+
+  const continueWithIntent = () => {
+    if (!intentReady) return;
+    const params = new URLSearchParams({
+      artworkId,
+      preserve: preserveIntent.slice(0, MAX_INTENT),
+      transform: transformIntent.slice(0, MAX_INTENT),
+    });
+    router.push(`/create/work?${params.toString()}`);
+  };
 
   return (
     <section className="version-comparison" aria-labelledby="version-comparison-title">
@@ -64,9 +82,14 @@ export function VersionComparison({ versions, artworkTitle }: { versions: Versio
       </div>
 
       <aside className="version-compare-prompt">
-        <span>CROMA · LEITURA SEM PONTUAÇÃO</span>
-        <strong>Antes de criar V{current.versionNumber + 1}, escolha conscientemente:</strong>
-        <div><p><b>Preservar</b> uma decisão que ficou mais clara na versão atual.</p><p><b>Transformar</b> uma decisão que ainda não serve à intenção da obra.</p></div>
+        <span>CROMA · DECISÃO DE REVISÃO</span>
+        <strong>Antes de criar V{current.versionNumber + 1}, transforme observação em intenção.</strong>
+        <div className="version-intent-grid">
+          <label><b>Preservar</b><span>Qual decisão da versão atual deve continuar viva?</span><textarea rows={3} maxLength={MAX_INTENT} value={preserve} onChange={(event) => setPreserve(event.target.value)} placeholder="Ex.: preservar a silhueta simples e legível" /><small>{preserve.length}/{MAX_INTENT}</small></label>
+          <label><b>Transformar</b><span>Qual decisão precisa mudar na próxima passagem?</span><textarea rows={3} maxLength={MAX_INTENT} value={transform} onChange={(event) => setTransform(event.target.value)} placeholder="Ex.: transformar o peso das linhas nas áreas de sombra" /><small>{transform.length}/{MAX_INTENT}</small></label>
+        </div>
+        <button className="primary version-intent-action" type="button" disabled={!intentReady} onClick={continueWithIntent}>Levar decisão para a Câmara →</button>
+        <p className="version-intent-note">A decisão viaja somente para a próxima sessão. Ela não altera a obra nem cria Evidence até uma nova versão ser realmente registrada.</p>
       </aside>
     </section>
   );
