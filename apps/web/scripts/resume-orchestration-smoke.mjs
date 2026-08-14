@@ -224,7 +224,17 @@ await assertHttp(repeatedGate, 200, "resume alpha gate idempotency");
 const home = await fetch(`${baseUrl}/`, { headers: { cookie: learner.cookie }, cache: "no-store" });
 await assertHttp(home, 200, "resume Home projection");
 const homeHtml = await home.text();
-assert.match(homeHtml, /Revisar minha evolução/);
+assert.match(homeHtml, /Territórios Criativos/);
+assert.match(homeHtml, /Santuário da Síntese/);
+assert.match(homeHtml, /Abrir um novo território criativo|Abra um novo território criativo/);
+
+const continuityPage = await fetch(`${baseUrl}/resume`, { headers: { cookie: learner.cookie }, cache: "no-store" });
+await assertHttp(continuityPage, 200, "Croma continuity compass");
+const continuityHtml = await continuityPage.text();
+assert.match(continuityHtml, /Bússola de Continuidade/);
+assert.match(continuityHtml, /Territórios Criativos/);
+assert.match(continuityHtml, /Santuário da Síntese/);
+assert.match(continuityHtml, /Selos de ativação/);
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie: learner.cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "resume Journey projection");
@@ -242,4 +252,4 @@ assert.match(journeyHtml, /Shape/);
 assert.match(journeyHtml, /Form/);
 assert.match(journeyHtml, /Habilidades/);
 
-console.log("RESUME_ORCHESTRATION_E2E=PASS unauthenticated_resume onboarding_stage drawing_zero_stage first_lesson_stage first_practice_stage foundation_stage practice_gate_transition all_cycles alpha_gate_stage cross_domain_evidence form_skill_contract capstone revisit alpha_gate_csrf alpha_gate_completion complete_stage home_projection graduation_summary before_after_projection graduation_domains journey_projection gate_idempotency");
+console.log("RESUME_ORCHESTRATION_E2E=PASS unauthenticated_resume onboarding_stage drawing_zero_stage first_lesson_stage first_practice_stage foundation_stage practice_gate_transition all_cycles alpha_gate_stage cross_domain_evidence form_skill_contract capstone revisit alpha_gate_csrf alpha_gate_completion complete_stage creative_home_continuity continuity_compass graduation_summary before_after_projection graduation_domains journey_projection gate_idempotency");
