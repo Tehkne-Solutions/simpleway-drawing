@@ -57,7 +57,13 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
         <section className="create-external-register" id="registro-externo">
           <div className="section-heading"><div><p className="eyebrow">{alphaMode ? "Registro da Prova" : "Registro externo"}</p><h2>{alphaMode ? preset.title : "Traga estudos feitos fora do app."}</h2></div></div>
           <p className="compact">{alphaMode ? "Envie a evidência visual da prova. Notas do processo continuam livres; tipo e título permanecem canônicos para o Rito reconhecê-la." : "Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar ao Studio interno."}</p>
-          <ArtworkForm initialType={preset.type} initialTitle={preset.title} initialNotes={preset.notes} lockPreset={alphaMode} returnTo={alphaMode ? "/alpha" : undefined} />
+          <ArtworkForm
+            initialType={preset.type}
+            initialTitle={preset.title}
+            initialNotes={preset.notes}
+            lockPreset={alphaMode}
+            {...(alphaMode ? { returnTo: "/alpha" } : {})}
+          />
         </section>
 
         <section className="create-library">
