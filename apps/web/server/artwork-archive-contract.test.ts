@@ -24,11 +24,11 @@ test("Atelier library is visual and derives each preview from the current artwor
 
 test("Journey artwork preview can resolve an exact historical version instead of currentVersionId", () => {
   const archive = source("server/artwork-archive.ts");
-  assert.match(archive, /getJourneyArtworkPreview/);
-  assert.match(archive, /versionNumber: number \| null/);
-  assert.match(archive, /filters\.push\(eq\(artworkVersions\.versionNumber, versionNumber\)\)/);
-  assert.match(archive, /innerJoin\(artworkVersions, eq\(artworkVersions\.artworkId, artworks\.id\)\)/);
-  assert.doesNotMatch(archive, /currentVersionId.*getJourneyArtworkPreview/s);
+  const historicalPreview = archive.slice(archive.indexOf("export async function getJourneyArtworkPreview"));
+  assert.match(historicalPreview, /versionNumber: number \| null/);
+  assert.match(historicalPreview, /filters\.push\(eq\(artworkVersions\.versionNumber, versionNumber\)\)/);
+  assert.match(historicalPreview, /innerJoin\(artworkVersions, eq\(artworkVersions\.artworkId, artworks\.id\)\)/);
+  assert.doesNotMatch(historicalPreview, /currentVersionId/);
 });
 
 test("Atlas uses journey metadata versionNumber for ARTWORK_CREATED and ARTWORK_VERSION visuals", () => {
