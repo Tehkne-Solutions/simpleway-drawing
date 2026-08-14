@@ -49,13 +49,13 @@ test("after Alpha continuity enters creative world and resumes the territory in 
   assert.equal(result.creative.completed, 0);
 });
 
-test("continuity opens authoring only after all creative territories are complete", () => {
+test("continuity opens the Work Chamber only after all creative territories are complete", () => {
   const result = derivePlayerContinuity(activation("COMPLETE", 6, 6, 1), [
     territory("synthesis", true, 4), territory("narrative", true, 1), territory("structure", true, 1),
   ]);
   assert.equal(result.phase, "AUTHORING");
   assert.equal(result.nextAction.kind, "capstone");
-  assert.equal(result.nextAction.href, "/create");
+  assert.equal(result.nextAction.href, "/create/work");
   assert.equal(result.worldProgress, 1);
   assert.equal(result.completedMilestones, result.totalMilestones);
 });
