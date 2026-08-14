@@ -13,7 +13,9 @@ export async function GET(_request: Request, context: { params: Promise<{ artwor
     if (!current.mimeType.startsWith("image/")) return Response.json({ code: "ARTWORK_IMAGE_NOT_AVAILABLE" }, { status: 415, headers: { "cache-control": "no-store" } });
 
     const file = await getStorage().readPrivateFile(current.storageKey);
-    return new Response(file.body, {
+    const body = new ArrayBuffer(file.body.byteLength);
+    new Uint8Array(body).set(file.body);
+    return new Response(body, {
       status: 200,
       headers: {
         "content-type": current.mimeType,
