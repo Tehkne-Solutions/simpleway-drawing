@@ -31,7 +31,7 @@ function canvasHasVisibleMark(canvas: HTMLCanvasElement, background: Background)
   const ctx = canvas.getContext("2d");
   if (!ctx) return false;
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  const base = background === "paper" ? [248, 239, 217] : [255, 255, 255];
+  const base: readonly [number, number, number] = background === "paper" ? [248, 239, 217] : [255, 255, 255];
   for (let index = 0; index < data.length; index += 4) {
     if (Math.abs((data[index] ?? 0) - base[0]) > 2 || Math.abs((data[index + 1] ?? 0) - base[1]) > 2 || Math.abs((data[index + 2] ?? 0) - base[2]) > 2) return true;
   }
