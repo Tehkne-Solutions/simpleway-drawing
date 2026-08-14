@@ -6,7 +6,7 @@ import { parseReviewCyclePlan } from "../app/create/review-cycle";
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
-test("review-cycle parser recognizes only the exact authored Preserve/Transform pair", () => {
+test("review-cycle parser remains a strict compatibility reader for legacy notes", () => {
   assert.deepEqual(parseReviewCyclePlan("Preservar: silhueta simples\nTransformar: peso das linhas"), {
     preserve: "silhueta simples",
     transform: "peso das linhas",
@@ -17,7 +17,7 @@ test("review-cycle parser recognizes only the exact authored Preserve/Transform 
   });
 });
 
-test("review-cycle parser fails closed for partial, reordered, expanded or oversized notes", () => {
+test("legacy parser fails closed for partial, reordered, expanded or oversized notes", () => {
   assert.equal(parseReviewCyclePlan(null), null);
   assert.equal(parseReviewCyclePlan("Preservar: silhueta"), null);
   assert.equal(parseReviewCyclePlan("Transformar: linhas\nPreservar: silhueta"), null);
@@ -26,9 +26,12 @@ test("review-cycle parser fails closed for partial, reordered, expanded or overs
   assert.equal(parseReviewCyclePlan(`Preservar: ${"a".repeat(281)}\nTransformar: linhas`), null);
 });
 
-test("Mesa gives review-cycle semantics only to the current CANVAS version", () => {
+test("Mesa prefers structured reviewPlan and only parses notes when structured data is absent", () => {
   const component = source("app/create/[artworkId]/version-comparison.tsx");
-  assert.match(component, /current\.source === "CANVAS" \? parseReviewCyclePlan\(current\.notes\) : null/);
+  assert.match(component, /current\.source === "CANVAS" && !current\.reviewPlan \? parseReviewCyclePlan\(current\.notes\) : null/);
+  assert.match(component, /current\.reviewPlan \?\? legacyCurrentPlan/);
+  assert.match(component, /current\.reviewPlan\?\.baseVersionNumber \?\? Math\.max\(1, current\.versionNumber - 1\)/);
+  assert.match(component, /current\.reviewPlan[\s\S]*current\.notes \|\| "Sem reflexão livre registrada nesta passagem\."/);
   assert.match(component, /CICLO DE REVISÃO · V/);
   assert.match(component, /RESULTADO VISÍVEL/);
   assert.match(component, /A Mesa não decide se a intenção foi cumprida/);
