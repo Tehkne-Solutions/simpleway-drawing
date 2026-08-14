@@ -1,0 +1,39 @@
+- key: skill.drawing.creative.pixel_synthesis
+  version: 1
+  domain: creative
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: false
+  transferable: true
+  title:
+    pt-BR: Síntese em Pixel Art
+
+- key: skill.drawing.creative.sprite_motion
+  version: 1
+  domain: creative
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: false
+  transferable: true
+  title:
+    pt-BR: Movimento por poses
+
+- key: skill.drawing.creative.pattern_continuity
+  version: 1
+  domain: creative
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: false
+  transferable: true
+  title:
+    pt-BR: Continuidade de padrões
+
+- key: skill.drawing.creative.animation_timing
+  version: 1
+  domain: creative
+  type: CREATIVE
+  retentionMode: PROJECT_BASED
+  foundational: false
+  transferable: true
+  title:
+    pt-BR: Timing de animação
