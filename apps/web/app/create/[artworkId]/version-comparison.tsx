@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
+import { parseReviewCyclePlan } from "../review-cycle";
 
 type VersionForComparison = {
   id: string;
@@ -30,6 +31,7 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
 
   if (!current || !selected || versions.length < 2) return null;
 
+  const currentPlan = current.source === "CANVAS" ? parseReviewCyclePlan(current.notes) : null;
   const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(value));
   const preserveIntent = preserve.trim();
   const transformIntent = transform.trim();
@@ -73,9 +75,24 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
         </article>
         <article className="version-compare-card is-current">
           <div className="version-compare-image"><img src={current.readUrl} alt={`${artworkTitle} · versão atual ${current.versionNumber}`} /></div>
-          <div className="version-compare-meta"><span>ATUAL · V{current.versionNumber}</span><strong>{sourceLabel[current.source] ?? current.source}</strong><small>{formatDate(current.createdAt)}</small><p>{current.notes || "Sem nota de processo nesta versão."}</p></div>
+          <div className="version-compare-meta"><span>ATUAL · V{current.versionNumber}</span><strong>{sourceLabel[current.source] ?? current.source}</strong><small>{formatDate(current.createdAt)}</small><p>{currentPlan ? "Plano de revisão preservado abaixo para leitura junto da evidência visual." : current.notes || "Sem nota de processo nesta versão."}</p></div>
         </article>
       </div>
+
+      {currentPlan ? (
+        <aside className="review-cycle-ledger" aria-label={`Plano que antecedeu a versão ${current.versionNumber}`}>
+          <header>
+            <span>CICLO DE REVISÃO · V{Math.max(1, current.versionNumber - 1)} → V{current.versionNumber}</span>
+            <strong>O plano que antecedeu esta versão continua visível ao lado do resultado.</strong>
+            <p>A Mesa não decide se a intenção foi cumprida. Compare o plano com a evidência atual e use sua própria leitura para definir a próxima passagem.</p>
+          </header>
+          <div className="review-cycle-decisions">
+            <article><span>PRESERVAR</span><p>{currentPlan.preserve}</p></article>
+            <article><span>TRANSFORMAR</span><p>{currentPlan.transform}</p></article>
+          </div>
+          <footer><b>RESULTADO VISÍVEL</b><span>Use a comparação lado a lado e a régua abaixo. A evidência é a imagem; não existe nota automática de qualidade.</span></footer>
+        </aside>
+      ) : null}
 
       <div className="version-wipe-station">
         <div className="version-wipe-copy"><span>RÉGUA DE SOBREPOSIÇÃO</span><strong>Arraste para comparar a mesma área visual.</strong><small>{100 - reveal}% V{selected.versionNumber} · {reveal}% V{current.versionNumber}</small></div>
