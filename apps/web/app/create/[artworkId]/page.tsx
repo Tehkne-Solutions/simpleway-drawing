@@ -34,6 +34,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
     readUrl: version.readUrl,
     source: version.source,
     notes: version.notes,
+    reviewPlan: version.reviewPlan,
     createdAt: version.createdAt.toISOString(),
   }));
 
@@ -71,7 +72,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
               <div className="version-meta">
                 <div><span>v{version.versionNumber}</span>{index === 0 ? <strong>Atual</strong> : null}</div>
                 <p>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(version.createdAt)}</p>
-                {version.notes ? <blockquote>{version.notes}</blockquote> : <p>Sem notas de processo.</p>}
+                {version.notes ? <blockquote>{version.notes}</blockquote> : <p>Sem reflexão livre registrada.</p>}
               </div>
             </article>
           ))}
