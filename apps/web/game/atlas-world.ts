@@ -131,5 +131,5 @@ export function nextAtlasMission(
   if (activeCreative) return { title: activeCreative.title, description: `Continue o território criativo: ${activeCreative.description}`, href: activeCreative.href, kind: "creative" as const };
   if (!foundationComplete) return { ...foundationNext, kind: "foundation" as const };
   if (creativeNext) return { title: creativeNext.title, description: `Abra um novo território criativo: ${creativeNext.description}`, href: creativeNext.href, kind: "creative" as const };
-  return { title: "Câmara da Obra", description: "Os territórios medidos estão abertos. Use as habilidades juntas em uma criação autoral.", href: "/create", kind: "capstone" as const };
+  return { title: "Câmara da Obra", description: "Os territórios medidos estão abertos. Use as habilidades juntas em uma criação autoral.", href: "/create/work", kind: "capstone" as const };
 }
