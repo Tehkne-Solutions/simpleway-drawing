@@ -57,6 +57,19 @@ test("Atlas recommendation follows an active creative thread before returning to
   assert.equal(recommendation.href, "/create/pixel/quest");
 });
 
+test("Atlas continues the territory actually started instead of the first incomplete territory", () => {
+  const territories = deriveCreativeTerritories({
+    completedMissionIds: [], completedCount: 0, complete: false, evidence: [],
+  }, {
+    completedMissionIds: [],
+    evidence: [state("skill.drawing.creative.manga_head_construction", 1, .72)],
+  });
+  const recommendation = nextAtlasMission(true, { title: "Foundation", description: "done", href: "/learn" }, territories);
+  assert.equal(recommendation.kind, "creative");
+  assert.equal(recommendation.href, "/create/manga");
+  assert.match(recommendation.description, /Continue o território criativo/);
+});
+
 test("Atlas opens Câmara da Obra only after Foundation and all creative territories are complete", () => {
   const territories = deriveCreativeTerritories({
     completedMissionIds: ["pixel", "sprite", "tile", "animation"], completedCount: 4, complete: true,
