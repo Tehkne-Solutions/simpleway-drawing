@@ -147,6 +147,15 @@ const canvasCurrentV2 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}
 await assertHttp(canvasCurrentV2, 200, "Work Chamber same-origin current image v2");
 assert.deepEqual(Buffer.from(await canvasCurrentV2.arrayBuffer()), png1);
 
+const livingArchive = await fetch(`${baseUrl}/create`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(livingArchive, 200, "Atelier living visual archive");
+const livingArchiveHtml = await livingArchive.text();
+assert.match(livingArchiveHtml, /Arquivo Vivo do Atelier/);
+assert.match(livingArchiveHtml, /Câmara E2E/);
+assert.match(livingArchiveHtml, /VERSÃO ATUAL/);
+assert.match(livingArchiveHtml, /VERSÃO ATUAL · V(?:<!-- -->)?2/);
+assert.match(livingArchiveHtml, new RegExp(`/api/artworks/${canvasArtwork.id}/current-image`));
+
 const secondUpload = await uploadPrivate(owner.cookie, png2);
 const crossOriginVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`, {
   method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json", origin: "https://malicious.example" },
@@ -177,5 +186,7 @@ await assertHttp(journey, 200, "Create Journey projection");
 const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Nova criação registrada/);
 assert.match(journeyHtml, /Versão 2 registrada/);
+assert.match(journeyHtml, /VISUAL V1/);
+assert.match(journeyHtml, /VISUAL V2/);
 
-console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canvas_same_origin_read canvas_roundtrip_owner_isolation canvas_same_artwork_versioning canvas_current_image_switch version_csrf immutable_version_history journey_projection");
+console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canvas_same_origin_read canvas_roundtrip_owner_isolation canvas_same_artwork_versioning canvas_current_image_switch living_visual_archive version_faithful_journey version_csrf immutable_version_history journey_projection");

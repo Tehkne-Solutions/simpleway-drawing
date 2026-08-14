@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CROMA_CANON } from "../../game/croma-canon";
 import { creativeWorldSummary, deriveCreativeTerritories, nextAtlasMission } from "../../game/atlas-world";
 import { derivePlayerRank } from "../../game/progression";
+import { getJourneyArtworkPreview } from "../../server/artwork-archive";
 import { getAlphaRepository, getDatabase, getPixelExpeditionRepository, getStorage, getStudioEvidenceRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 import "./journey-v13.css";
@@ -53,12 +54,18 @@ export default async function JourneyPage() {
   const worldComplete = foundationCovered === alpha.domains.length && creativeSummary.complete;
 
   const items = await Promise.all(entries.map(async (entry) => {
-    if (!entry.artworkId) return { ...entry, imageUrl: null };
-    const [row] = await db.select({ storageKey: fileAssets.storageKey }).from(artworks)
-      .innerJoin(artworkVersions, eq(artworkVersions.id, artworks.currentVersionId))
-      .innerJoin(fileAssets, eq(fileAssets.id, artworkVersions.fileAssetId))
-      .where(eq(artworks.id, entry.artworkId)).limit(1);
-    return { ...entry, imageUrl: row ? await getStorage().createPrivateReadUrl(row.storageKey) : null };
+    if (!entry.artworkId) return { ...entry, imageUrl: null, imageVersionNumber: null, imageSource: null };
+    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata as Record<string, unknown> : {};
+    const historicalVersion = (entry.type === "ARTWORK_CREATED" || entry.type === "ARTWORK_VERSION") && typeof metadata.versionNumber === "number"
+      ? metadata.versionNumber
+      : null;
+    const preview = await getJourneyArtworkPreview(userId, entry.artworkId, historicalVersion);
+    return {
+      ...entry,
+      imageUrl: preview?.imageUrl ?? null,
+      imageVersionNumber: preview?.versionNumber ?? null,
+      imageSource: preview?.source ?? null,
+    };
   }));
 
   const describe = (item: (typeof items)[number]) => {
@@ -144,7 +151,7 @@ export default async function JourneyPage() {
         <div className="atlas-section-head"><div><p className="eyebrow">Relicário dos Ateliers</p><h2 id="atlas-reliquary-title">Sigilos que existem porque você demonstrou habilidade</h2></div><span>{creativeSummary.completed}/{creativeSummary.total} territórios consagrados</span></div>
         <div className="atlas-relic-grid">
           {creativeTerritories.map((territory) => <Link href={territory.href} key={territory.key} className={`atlas-relic relic-${territory.key} ${territory.complete ? "is-earned" : ""}`}><div className="atlas-relic-glyph" aria-hidden="true">{territory.complete ? "◆" : "◇"}</div><div><span>{territory.reward}</span><strong>{territory.title}</strong><p>{territory.description}</p></div><b>{territory.complete ? "EVIDENCE ✓" : "AINDA NÃO DESPERTADO"}</b></Link>)}
-          <Link href="/create" className={`atlas-relic atlas-relic-capstone ${worldComplete ? "is-earned" : ""}`}><div className="atlas-relic-glyph" aria-hidden="true">✦</div><div><span>CÂMARA DA OBRA</span><strong>Convergência autoral</strong><p>Use gesto, percepção, forma e os três Ateliers criativos em uma peça que não segue um exercício pronto.</p></div><b>{worldComplete ? "MUNDO ABERTO" : "EXPLORE OS TERRITÓRIOS"}</b></Link>
+          <Link href="/create/work" className={`atlas-relic atlas-relic-capstone ${worldComplete ? "is-earned" : ""}`}><div className="atlas-relic-glyph" aria-hidden="true">✦</div><div><span>CÂMARA DA OBRA</span><strong>Convergência autoral</strong><p>Use gesto, percepção, forma e os três Ateliers criativos em uma peça que não segue um exercício pronto.</p></div><b>{worldComplete ? "MUNDO ABERTO" : "EXPLORE OS TERRITÓRIOS"}</b></Link>
         </div>
       </section>
 
@@ -153,7 +160,7 @@ export default async function JourneyPage() {
         <div className="atlas-milestone-grid">
           {baseline && revisit ? <article className="atlas-milestone before-after"><span>ANTES / DEPOIS</span><div><img src={baseline.imageUrl} alt="Drawing Zero original" /><img src={revisit.imageUrl} alt="Drawing Zero revisitado" /></div><strong>Drawing Zero</strong><p>Compare processo, proporção, simplificação e volume.</p></article> : null}
           {graduation ? <article className="atlas-milestone graduation"><span>ARCO CONCLUÍDO</span><div className="milestone-seal">✦</div><strong>Foundation Alpha</strong><p>Primeiro arco integrado demonstrado com Evidence real.</p></article> : null}
-          {items.slice(0, baseline && revisit ? 2 : 3).map((item) => <article className="atlas-milestone" key={item.id}>{item.imageUrl ? <img className="milestone-preview" src={item.imageUrl} alt="Evidência privada da jornada" /> : <div className="milestone-seal">{item.type === "ARTWORK_CREATED" ? "✎" : item.type === "STUDIO_MISSION_COMPLETED" ? "◆" : "◇"}</div>}<span>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</span><strong>{item.title}</strong><p>{describe(item)}</p>{item.artworkId ? <Link href={`/create/${item.artworkId}`}>Abrir criação →</Link> : null}</article>)}
+          {items.slice(0, baseline && revisit ? 2 : 3).map((item) => <article className="atlas-milestone" key={item.id}>{item.imageUrl ? <div className="milestone-preview-wrap"><img className="milestone-preview" src={item.imageUrl} alt={`Evidência privada${item.imageVersionNumber ? ` v${item.imageVersionNumber}` : ""}`} />{item.imageVersionNumber ? <span>{`VISUAL V${item.imageVersionNumber}`}</span> : null}</div> : <div className="milestone-seal">{item.type === "ARTWORK_CREATED" ? "✎" : item.type === "STUDIO_MISSION_COMPLETED" ? "◆" : "◇"}</div>}<span>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</span><strong>{item.title}</strong><p>{describe(item)}</p>{item.artworkId ? <Link href={`/create/${item.artworkId}`}>Abrir criação →</Link> : null}</article>)}
           {items.length === 0 && !graduation && !(baseline && revisit) ? <article className="atlas-milestone empty"><div className="milestone-seal">C</div><strong>O mapa espera sua primeira marca.</strong><p>Entre em um Atelier e produza uma evidência.</p><Link href="/create">Abrir Atelier Livre →</Link></article> : null}
         </div>
       </section>
@@ -161,7 +168,7 @@ export default async function JourneyPage() {
       <details className="atlas-archive">
         <summary><span>Arquivo completo do Atlas</span><b>{items.length} registros</b></summary>
         <div className="atlas-archive-list">
-          {items.map((item) => <article key={item.id}>{item.imageUrl ? <img src={item.imageUrl} alt="Evidência privada" /> : <span className="archive-glyph">{item.type === "STUDIO_MISSION_COMPLETED" ? "◆" : "◇"}</span>}<div><small>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</small><strong>{item.title}</strong><p>{describe(item)}</p>{item.artworkId ? <Link href={`/create/${item.artworkId}`}>Abrir histórico →</Link> : null}</div></article>)}
+          {items.map((item) => <article key={item.id}>{item.imageUrl ? <div className="atlas-archive-image"><img src={item.imageUrl} alt={`Evidência privada${item.imageVersionNumber ? ` v${item.imageVersionNumber}` : ""}`} />{item.imageVersionNumber ? <small>{`VISUAL V${item.imageVersionNumber}`}</small> : null}</div> : <span className="archive-glyph">{item.type === "STUDIO_MISSION_COMPLETED" ? "◆" : "◇"}</span>}<div><small>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</small><strong>{item.title}</strong><p>{describe(item)}</p>{item.artworkId ? <Link href={`/create/${item.artworkId}`}>Abrir histórico →</Link> : null}</div></article>)}
           {items.length === 0 ? <p>Nenhum registro arquivado ainda.</p> : null}
         </div>
       </details>

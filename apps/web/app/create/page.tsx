@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { CromaCoach } from "../components/croma-coach";
+import { getArtworkLibrary } from "../../server/artwork-archive";
 import { getPlayerContinuity } from "../../server/player-continuity";
-import { getArtworkRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 import { ArtworkForm } from "./artwork-form";
 import "./isometric/isometric-v13.css";
 
 const typeLabel: Record<string, string> = { BASELINE: "Baseline", STUDY: "Estudo", SKETCH: "Sketch", PROJECT: "Projeto", ARTWORK: "Artwork" };
+const sourceLabel: Record<string, string> = { CANVAS: "Câmara da Obra", UPLOAD: "Upload", PHOTO: "Foto" };
 
 export default async function CreatePage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
   const userId = await getSessionUserId();
   const [artworks, continuity] = userId
-    ? await Promise.all([getArtworkRepository().listOwned(userId), getPlayerContinuity(userId)])
+    ? await Promise.all([getArtworkLibrary(userId), getPlayerContinuity(userId)])
     : [[], null];
   const { mode } = await searchParams;
   const alphaMode = mode === "revisit" || mode === "capstone";
@@ -70,8 +71,25 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
         </section>
 
         <section className="create-library">
-          <div className="section-heading"><div><p className="eyebrow">Arquivo do Atelier</p><h2>Criações privadas</h2></div><Link href="/journey" className="secondary link-button">Ver Atlas</Link></div>
-          {artworks.length === 0 ? <div className="empty-create"><strong>Ainda não há registros no arquivo.</strong><span>Seu primeiro estudo salvo aparecerá aqui e no Atlas do Olhar.</span></div> : <div className="artwork-grid">{artworks.map((artwork) => <Link key={artwork.id} href={`/create/${artwork.id}`} className="artwork-tile"><span className="artwork-type">{typeLabel[artwork.type] ?? artwork.type}</span><h3>{artwork.title ?? "Sem título"}</h3><p>{artwork.visibility === "PRIVATE" ? "Privado" : artwork.visibility} · atualizado {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(artwork.updatedAt)}</p></Link>)}</div>}
+          <div className="section-heading"><div><p className="eyebrow">Arquivo Vivo do Atelier</p><h2>Suas obras são visuais antes de serem registros.</h2></div><Link href="/journey" className="secondary link-button">Ver Atlas</Link></div>
+          {artworks.length === 0 ? <div className="empty-create"><strong>Ainda não há registros no arquivo.</strong><span>Seu primeiro estudo salvo aparecerá aqui e no Atlas do Olhar.</span></div> : (
+            <div className="artwork-grid artwork-grid-visual">
+              {artworks.map((artwork) => (
+                <Link key={artwork.id} href={`/create/${artwork.id}`} className="artwork-tile artwork-tile-visual">
+                  <div className="artwork-tile-preview">
+                    <img src={artwork.imageUrl} alt={`Versão atual de ${artwork.title ?? "obra"}`} />
+                    <span className="artwork-version-badge">VERSÃO ATUAL · V{artwork.versionNumber}</span>
+                  </div>
+                  <div className="artwork-tile-copy">
+                    <span className="artwork-type">{typeLabel[artwork.type] ?? artwork.type}</span>
+                    <h3>{artwork.title ?? "Sem título"}</h3>
+                    <p>{sourceLabel[artwork.source] ?? artwork.source} · {artwork.visibility === "PRIVATE" ? "Privado" : artwork.visibility}</p>
+                    <small>Atualizado {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(artwork.updatedAt)}</small>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
         <div className="flow-actions"><Link className="secondary link-button" href={alphaMode ? "/alpha" : "/"}>{alphaMode ? "Voltar ao Rito Alpha" : "Voltar à Home"}</Link></div>
       </section>
