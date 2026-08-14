@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArtworkRepository } from "../../../server/runtime";
 import { getSessionUserId } from "../../../server/session";
+import "../review-intent-v123.css";
 import { WorkChamberCanvas } from "./work-chamber-canvas";
 import "./work-chamber-v19.css";
 
