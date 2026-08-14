@@ -14,7 +14,7 @@ test("artwork detail builds deterministic same-origin version image URLs without
   assert.match(page, /loading=\{index === 0 \? "eager" : "lazy"\}/);
 });
 
-test("version image route validates an exact immutable version before reading private storage", () => {
+test("version image route validates an exact owned version before reading private storage", () => {
   const route = source("app/api/artworks/[artworkId]/versions/[versionNumber]/image/route.ts");
   assert.match(route, /const parsedVersion = Number\(versionNumber\)/);
   assert.match(route, /!Number\.isInteger\(parsedVersion\) \|\| parsedVersion < 1/);
@@ -27,15 +27,18 @@ test("version image route validates an exact immutable version before reading pr
   assert.ok(rowGuard >= 0 && storageRead > rowGuard, "storage read must happen only after exact owner-scoped version lookup");
 });
 
-test("version image route returns copied bytes with private immutable browser caching and nosniff", () => {
+test("version image route returns copied adapter bytes without browser persistence and with nosniff", () => {
   const route = source("app/api/artworks/[artworkId]/versions/[versionNumber]/image/route.ts");
-  assert.match(route, /const body = new Uint8Array\(bytes\.byteLength\)/);
-  assert.match(route, /body\.set\(bytes\)/);
-  assert.match(route, /new Response\(body\.buffer/);
+  assert.match(route, /const file = await getStorage\(\)\.readPrivateFile\(row\.storageKey\)/);
+  assert.match(route, /const body = new ArrayBuffer\(file\.body\.byteLength\)/);
+  assert.match(route, /new Uint8Array\(body\)\.set\(file\.body\)/);
+  assert.match(route, /new Response\(body/);
   assert.match(route, /"content-type": row\.mimeType/);
-  assert.match(route, /"content-length": String\(body\.byteLength\)/);
-  assert.match(route, /"cache-control": "private, max-age=600, immutable"/);
+  assert.match(route, /"content-length": String\(file\.byteSize\)/);
+  assert.match(route, /"cache-control": "private, no-store"/);
   assert.match(route, /"x-content-type-options": "nosniff"/);
+  assert.doesNotMatch(route, /max-age=/);
+  assert.doesNotMatch(route, /immutable/);
 });
 
 test("unauthenticated, invalid and missing versions fail closed without cacheable error responses", () => {
