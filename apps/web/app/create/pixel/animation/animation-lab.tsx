@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type Pixel = string | null;
 type Frame = { pixels: Pixel[]; duration: number };
 type Mode = "loop" | "pingpong";
+type SavedAnimationLab = { frames?: Frame[]; mode?: Mode; tag?: string; timingUsed?: boolean; onionUsed?: boolean; playUsed?: boolean };
 const R = 16, SIZE = 608, MAX = 8, STORAGE = "swd.pixel.animation.v1";
 const COLORS = ["#181715","#f4ead7","#f2b705","#a44e2d","#315b83","#39745a","#74567d","#d98c3f"];
 const blank = (): Pixel[] => Array.from({length:R*R},()=>null);
@@ -18,8 +19,8 @@ export function AnimationLab(){
   const [color,setColor]=useState(COLORS[0]!),[erase,setErase]=useState(false),[onion,setOnion]=useState(true),[mode,setMode]=useState<Mode>("loop"),[tag,setTag]=useState("idle");
   const [timingUsed,setTimingUsed]=useState(false),[onionUsed,setOnionUsed]=useState(false),[playUsed,setPlayUsed]=useState(false);
 
-  useEffect(()=>{try{const raw=localStorage.getItem(STORAGE);if(raw){const saved=JSON.parse(raw) as {frames?:Frame[],mode?:Mode,tag?:string};if(saved.frames?.length)setFrames(saved.frames.slice(0,MAX));if(saved.mode)setMode(saved.mode);if(saved.tag)setTag(saved.tag)}}catch{}},[]);
-  useEffect(()=>{try{localStorage.setItem(STORAGE,JSON.stringify({frames,mode,tag}))}catch{}},[frames,mode,tag]);
+  useEffect(()=>{try{const raw=localStorage.getItem(STORAGE);if(raw){const saved=JSON.parse(raw) as SavedAnimationLab;if(saved.frames?.length)setFrames(saved.frames.slice(0,MAX));if(saved.mode)setMode(saved.mode);if(saved.tag)setTag(saved.tag);if(typeof saved.timingUsed==="boolean")setTimingUsed(saved.timingUsed);if(typeof saved.onionUsed==="boolean")setOnionUsed(saved.onionUsed);if(typeof saved.playUsed==="boolean")setPlayUsed(saved.playUsed)}}catch{}},[]);
+  useEffect(()=>{try{localStorage.setItem(STORAGE,JSON.stringify({frames,mode,tag,timingUsed,onionUsed,playUsed} satisfies SavedAnimationLab))}catch{}},[frames,mode,tag,timingUsed,onionUsed,playUsed]);
 
   function draw(ctx:CanvasRenderingContext2D,pixels:Pixel[],size:number,alpha=1,checker=false){const cell=size/R;ctx.globalAlpha=alpha;for(let y=0;y<R;y++)for(let x=0;x<R;x++){const p=pixels[at(x,y)];if(!p&&!checker)continue;ctx.fillStyle=p??((x+y)%2?"#e1d4bc":"#f2e8d5");ctx.fillRect(x*cell,y*cell,Math.ceil(cell),Math.ceil(cell))}ctx.globalAlpha=1}
   useEffect(()=>{const c=editor.current,ctx=c?.getContext("2d"),current=frames[active];if(!c||!ctx||!current)return;c.width=SIZE;c.height=SIZE;ctx.imageSmoothingEnabled=false;draw(ctx,blank(),SIZE,1,true);if(onion&&frames.length>1){const previous=frames[(active-1+frames.length)%frames.length];if(previous){draw(ctx,previous.pixels,SIZE,.18);setOnionUsed(true)}}draw(ctx,current.pixels,SIZE);const cell=SIZE/R;ctx.beginPath();ctx.strokeStyle="rgba(42,35,27,.23)";for(let n=0;n<=R;n++){const p=Math.round(n*cell)+.5;ctx.moveTo(p,0);ctx.lineTo(p,SIZE);ctx.moveTo(0,p);ctx.lineTo(SIZE,p)}ctx.stroke()},[frames,active,onion]);
