@@ -54,7 +54,18 @@ export function VersionComparison({ versions, artworkTitle, artworkId, focusCycl
   const preserveIntent = preserve.trim();
   const transformIntent = transform.trim();
   const intentReady = !historicalContext && Boolean(preserveIntent && transformIntent);
-  const returnToLatest = () => router.push(`/create/${encodeURIComponent(artworkId)}#version-comparison`);
+  const cycleTargets = versions.filter((version) => Boolean(resolveReviewCycle(version))).map((version) => version.versionNumber);
+  const cycleIndex = historicalContext ? cycleTargets.indexOf(target.versionNumber) : -1;
+  const newerCycleVersion = cycleIndex > 0 ? cycleTargets[cycleIndex - 1] ?? null : null;
+  const olderCycleVersion = cycleIndex >= 0 ? cycleTargets[cycleIndex + 1] ?? null : null;
+  const previousHistoricalCycle = cycleTargets.find((versionNumber) => versionNumber < latest.versionNumber) ?? null;
+  const openCycle = (versionNumber: number) => {
+    const destination = versionNumber === latest.versionNumber
+      ? `/create/${encodeURIComponent(artworkId)}#version-comparison`
+      : `/create/${encodeURIComponent(artworkId)}?cycle=${versionNumber}#version-comparison`;
+    router.push(destination);
+  };
+  const returnToLatest = () => openCycle(latest.versionNumber);
 
   const continueWithIntent = () => {
     if (!intentReady || historicalContext) return;
@@ -85,14 +96,21 @@ export function VersionComparison({ versions, artworkTitle, artworkId, focusCycl
             <span>CICLO PRESERVADO</span>
             <strong>{`V${historicalContext.base.versionNumber} → V${target.versionNumber}`}</strong>
             <small>Base autoritativa fixa · versão atual da obra: V{latest.versionNumber}</small>
+            <div className="version-cycle-stepper" aria-label="Navegar pelos ciclos de revisão">
+              <button type="button" disabled={!olderCycleVersion} onClick={() => olderCycleVersion && openCycle(olderCycleVersion)}>← Mais antigo</button>
+              <button type="button" disabled={!newerCycleVersion} onClick={() => newerCycleVersion && openCycle(newerCycleVersion)}>Mais recente →</button>
+            </div>
             <button type="button" onClick={returnToLatest}>Voltar à versão atual</button>
           </div>
         ) : (
-          <label className="version-compare-select">Versão de referência
-            <select value={selected.versionNumber} onChange={(event) => { setSelectedVersion(Number(event.target.value)); setReveal(50); }}>
-              {referenceCandidates.map((version) => <option key={version.id} value={version.versionNumber}>V{version.versionNumber} · {sourceLabel[version.source] ?? version.source}</option>)}
-            </select>
-          </label>
+          <div className="version-current-control">
+            <label className="version-compare-select">Versão de referência
+              <select value={selected.versionNumber} onChange={(event) => { setSelectedVersion(Number(event.target.value)); setReveal(50); }}>
+                {referenceCandidates.map((version) => <option key={version.id} value={version.versionNumber}>V{version.versionNumber} · {sourceLabel[version.source] ?? version.source}</option>)}
+              </select>
+            </label>
+            {previousHistoricalCycle ? <button className="version-open-history" type="button" onClick={() => openCycle(previousHistoricalCycle)}>← Rever ciclo anterior</button> : null}
+          </div>
         )}
       </header>
 
@@ -139,6 +157,10 @@ export function VersionComparison({ versions, artworkTitle, artworkId, focusCycl
           <span>MODO SOMENTE LEITURA</span>
           <strong>O passado não vira uma nova branch da obra.</strong>
           <p>Você está revendo V{historicalContext.base.versionNumber} → V{target.versionNumber}. Para planejar e criar V{latest.versionNumber + 1}, volte à versão atual; a Câmara sempre parte do estado mais recente.</p>
+          <div className="version-cycle-stepper compact">
+            <button type="button" disabled={!olderCycleVersion} onClick={() => olderCycleVersion && openCycle(olderCycleVersion)}>← Mais antigo</button>
+            <button type="button" disabled={!newerCycleVersion} onClick={() => newerCycleVersion && openCycle(newerCycleVersion)}>Mais recente →</button>
+          </div>
           <button type="button" onClick={returnToLatest}>Voltar à versão atual</button>
         </aside>
       ) : (

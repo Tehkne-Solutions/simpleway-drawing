@@ -117,6 +117,15 @@ assert.match(html, /Mesa de Comparação/);
 assert.match(html, /RÉGUA DE SOBREPOSIÇÃO/);
 assert.match(html, /Base V2/);
 assert.match(html, /Sobreposição V3/);
+assert.match(html, /Linha de Revisão/);
+assert.match(html, /Navegue pelo tempo da obra sem procurar cartões no arquivo/);
+assert.ok((html.match(/review-timeline-node/g) ?? []).length >= 2, "revision timeline must expose both recognized cycles");
+assert.match(html, new RegExp(`/create/${artwork.id}\\?cycle=2#version-comparison`));
+assert.match(html, new RegExp(`/create/${artwork.id}#version-comparison`));
+assert.match(html, /Rever ciclo anterior/);
+assert.match(html, /aria-current="step"/);
+assert.match(html, /loading="eager"/);
+assert.match(html, /loading="lazy"/);
 assert.match(html, /Caderno de Revisões/);
 assert.match(html, /Cada passagem preserva resultado, intenção e reflexão/);
 assert.ok((html.match(/version-cycle-record/g) ?? []).length >= 2, "historical notebook must render both V1→V2 and V2→V3 cycle records");
@@ -145,6 +154,10 @@ assert.match(historicalHtml, /Base V1/);
 assert.match(historicalHtml, /Sobreposição V2/);
 assert.match(historicalHtml, /RESULTADO/);
 assert.match(historicalHtml, /CICLO HISTÓRICO/);
+assert.match(historicalHtml, /Linha de Revisão/);
+assert.match(historicalHtml, /Mais antigo/);
+assert.match(historicalHtml, /Mais recente/);
+assert.match(historicalHtml, /aria-current="step"/);
 assert.match(historicalHtml, new RegExp(escapeRegex(preservedV2)));
 assert.match(historicalHtml, new RegExp(escapeRegex(transformedV2)));
 assert.match(historicalHtml, new RegExp(escapeRegex(reflectionV2)));
@@ -161,6 +174,7 @@ assert.doesNotMatch(invalidHtml, /Mesa Histórica/);
 assert.match(invalidHtml, /Base V2/);
 assert.match(invalidHtml, /Sobreposição V3/);
 assert.match(invalidHtml, /Levar decisão para a Câmara/);
+assert.match(invalidHtml, /Linha de Revisão/);
 
 const currentCycleIgnored = await fetch(`${baseUrl}/create/${artwork.id}?cycle=3`, { headers: { cookie: ownerCookie }, cache: "no-store" });
 await assertHttp(currentCycleIgnored, 200, "current cycle query remains latest mode");
@@ -169,6 +183,7 @@ assert.match(currentCycleHtml, /Mesa de Comparação/);
 assert.doesNotMatch(currentCycleHtml, /Mesa Histórica/);
 assert.match(currentCycleHtml, /Base V2/);
 assert.match(currentCycleHtml, /Sobreposição V3/);
+assert.match(currentCycleHtml, /Linha de Revisão/);
 
 const preserveIntent = "Preservar a silhueta simples";
 const transformIntent = "Transformar o peso das linhas";
@@ -221,4 +236,4 @@ const outsiderHandoff = await fetch(`${baseUrl}/create/work?artworkId=${encodeUR
 await assertHttp(outsiderHandoff, 200, "private review outsider Chamber page");
 assert.match(await outsiderHandoff.text(), /Esta etapa não foi encontrada/);
 
-console.log("VERSION_COMPARISON_E2E=PASS three_version_truth structured_review_ledger historical_review_notebook two_preserved_cycles historical_exact_cycle readonly_historical_no_branch invalid_cycle_falls_back_latest current_cycle_stays_latest free_process_reflection invalid_base_rejected shared_cycle_resolver no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
+console.log("VERSION_COMPARISON_E2E=PASS three_version_truth structured_review_ledger historical_review_notebook review_timeline lazy_history_images temporal_stepper two_preserved_cycles historical_exact_cycle readonly_historical_no_branch invalid_cycle_falls_back_latest current_cycle_stays_latest free_process_reflection invalid_base_rejected shared_cycle_resolver no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
