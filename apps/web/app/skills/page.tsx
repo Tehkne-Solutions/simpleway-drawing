@@ -31,6 +31,8 @@ const skillLabel: Record<string, string> = {
   "skill.drawing.creative.sprite_motion": "Movimento por poses",
   "skill.drawing.creative.pattern_continuity": "Continuidade de padrões",
   "skill.drawing.creative.animation_timing": "Timing de animação",
+  "skill.drawing.creative.manga_head_construction": "Construção de cabeça em múltiplas vistas",
+  "skill.drawing.creative.isometric_construction": "Construção isométrica em três eixos",
 };
 
 export default async function SkillsPage() {
