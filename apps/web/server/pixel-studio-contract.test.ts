@@ -11,10 +11,14 @@ test("Pixel Studio remains a first-class immersive game workspace", () => {
   const shell = source("app/app-shell.tsx");
   const home = source("app/page.tsx");
   const page = source("app/create/pixel/page.tsx");
+  const nav = source("app/create/pixel/pixel-mode-nav.tsx");
   const canvas = source("app/create/pixel/pixel-canvas.tsx");
 
   assert.match(shell, /pathname\.startsWith\("\/create\/pixel"\)/);
-  assert.match(home, /href="\/create\/pixel"/);
+  assert.match(home, /href="\/create\/pixel\/quest"/);
+  assert.match(home, /Expedição da Síntese/);
+  assert.match(nav, /href="\/create\/pixel"/);
+  assert.match(nav, /01 · Pixel Studio/);
   assert.match(page, /Atelier da Síntese/);
   assert.match(page, /PixelCanvas/);
 
