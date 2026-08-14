@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeArtworkReviewPlan, type ArtworkReviewPlan } from "@swd/domain";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -10,15 +11,14 @@ type Background = "paper" | "white";
 type Guide = "none" | "thirds" | "center";
 type Point = { x: number; y: number };
 type Stroke = { id: string; layer: Layer; erase: boolean; color: string; size: number; points: Point[] };
-type ReviewIntent = { preserve: string; transform: string; baseVersionNumber: number };
+type ReviewIntent = ArtworkReviewPlan;
 type Draft = { strokes: Stroke[]; title: string; notes: string; format: Format; background: Background; guide: Guide; constructionVisible: boolean; inkVisible: boolean; reviewIntent?: ReviewIntent };
 type SaveState = "idle" | "saving" | "error";
 type BaseState = "none" | "loading" | "ready" | "error";
-type InitialArtwork = { id: string; title: string; notes: string; versionNumber: number; imageSrc: string };
+type InitialArtwork = { id: string; title: string; versionNumber: number; imageSrc: string };
 
 const STORAGE_PREFIX = "swd.create.work-chamber.v2";
 const REVIEW_INTENT_PREFIX = "swd.create.review-intent.v1";
-const MAX_INTENT = 280;
 const FORMAT_SIZE: Record<Format, { width: number; height: number }> = {
   landscape: { width: 1200, height: 900 }, portrait: { width: 900, height: 1200 }, square: { width: 1000, height: 1000 },
 };
@@ -32,16 +32,8 @@ function isFormat(value: unknown): value is Format { return value === "landscape
 function isBackground(value: unknown): value is Background { return value === "paper" || value === "white"; }
 function isGuide(value: unknown): value is Guide { return value === "none" || value === "thirds" || value === "center"; }
 function sanitizeReviewIntent(value: unknown, expectedVersion: number): ReviewIntent | null {
-  if (!value || typeof value !== "object") return null;
-  const raw = value as Record<string, unknown>;
-  const preserve = typeof raw.preserve === "string" ? raw.preserve.trim().slice(0, MAX_INTENT) : "";
-  const transform = typeof raw.transform === "string" ? raw.transform.trim().slice(0, MAX_INTENT) : "";
-  const baseVersionNumber = typeof raw.baseVersionNumber === "number" ? raw.baseVersionNumber : NaN;
-  if (!preserve || !transform || !Number.isInteger(baseVersionNumber) || baseVersionNumber !== expectedVersion) return null;
-  return { preserve, transform, baseVersionNumber };
-}
-function intentNotes(intent: ReviewIntent, fallback: string): string {
-  return intent ? `Preservar: ${intent.preserve}\nTransformar: ${intent.transform}` : fallback;
+  const intent = normalizeArtworkReviewPlan(value);
+  return intent && intent.baseVersionNumber === expectedVersion ? intent : null;
 }
 
 function canvasHasVisibleMark(canvas: HTMLCanvasElement, background: Background): boolean {
@@ -107,7 +99,7 @@ export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: Initial
   const [background, setBackground] = useState<Background>("paper");
   const [guide, setGuide] = useState<Guide>("none");
   const [title, setTitle] = useState(initialArtwork?.title ?? "");
-  const [notes, setNotes] = useState(initialArtwork?.notes ?? "");
+  const [notes, setNotes] = useState("");
   const [reviewIntent, setReviewIntent] = useState<ReviewIntent | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -244,10 +236,7 @@ export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: Initial
           window.sessionStorage.removeItem(reviewIntentKey);
           if (!recoveredDraft) {
             const privateIntent = sanitizeReviewIntent(JSON.parse(rawIntent), initialArtwork.versionNumber);
-            if (privateIntent) {
-              setReviewIntent(privateIntent);
-              setNotes(intentNotes(privateIntent, initialArtwork.notes ?? ""));
-            }
+            if (privateIntent) setReviewIntent(privateIntent);
           }
         }
       } catch {
@@ -304,7 +293,7 @@ export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: Initial
       } else if (!canvasHasVisibleMark(exportCanvas, background)) throw new Error("Torne visível ao menos uma camada com marca antes de registrar a obra.");
       const blob = await canvasBlob(exportCanvas); const fileAssetId = await uploadCanvas(blob);
       const response = initialArtwork
-        ? await fetch(`/api/artworks/${encodeURIComponent(initialArtwork.id)}/versions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fileAssetId, notes: notes.trim() || null, source: "CANVAS" }) })
+        ? await fetch(`/api/artworks/${encodeURIComponent(initialArtwork.id)}/versions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fileAssetId, notes: notes.trim() || null, source: "CANVAS", reviewPlan: reviewIntent }) })
         : await fetch("/api/artworks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fileAssetId, type: "ARTWORK", title: title.trim(), notes: notes.trim() || null, source: "CANVAS" }) });
       const payload = await response.json(); if (!response.ok) throw new Error(payload.code ?? "Não foi possível registrar a obra.");
       try { window.localStorage.removeItem(storageKey); } catch {}
@@ -334,9 +323,9 @@ export function WorkChamberCanvas({ initialArtwork }: { initialArtwork?: Initial
       <aside className="work-chamber-record">
         <div className="work-croma-seal"><span>C</span><div><small>CROMA · CÂMARA DA OBRA</small><strong>{initialArtwork ? "Continue sem apagar o passado." : "Combine, não demonstre."}</strong></div></div>
         <p>{initialArtwork ? `A versão ${initialArtwork.versionNumber} é uma base raster imutável. Construção, tinta e borracha desta sessão pertencem à próxima versão.` : "Você já treinou partes separadas. Aqui a pergunta muda: o que essas habilidades conseguem construir juntas?"}</p>
-        {reviewIntent ? <section className="work-review-intent"><span>DECISÃO TRAZIDA DA MESA</span><div><p><b>Preservar</b>{reviewIntent.preserve}</p><p><b>Transformar</b>{reviewIntent.transform}</p></div><small>Passagem privada consumida nesta aba para a base V{reviewIntent.baseVersionNumber}. Se já existia draft local desta obra, a nova intenção foi descartada para não sobrescrever trabalho em andamento.</small></section> : null}
-        <section className="work-record-fields"><label>Nome da obra<input value={title} readOnly={Boolean(initialArtwork)} maxLength={200} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: Guardião do Jardim" /></label><label>Nota de processo<textarea rows={5} maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="O que você combinou, decidiu ou descobriu?" /></label></section>
-        <section className="work-save-summary"><span>REGISTRO PRIVADO</span><strong>{initialArtwork ? `Nova versão CANVAS · V${initialArtwork.versionNumber + 1}` : "Artwork · Canvas"}</strong><p>{initialArtwork ? "A nova composição entra no histórico da mesma obra. A versão anterior permanece intacta e pode ser comparada no arquivo." : "O PNG composto entra no Arquivo do Atelier e no Atlas. Guias nunca são incorporadas à obra; o draft permanece apenas neste dispositivo até o registro."}</p></section>
+        {reviewIntent ? <section className="work-review-intent"><span>DECISÃO TRAZIDA DA MESA</span><div><p><b>Preservar</b>{reviewIntent.preserve}</p><p><b>Transformar</b>{reviewIntent.transform}</p></div><small>Plano privado para a base V{reviewIntent.baseVersionNumber}. Ele será registrado separadamente da reflexão somente quando esta nova versão for materializada.</small></section> : null}
+        <section className="work-record-fields"><label>Nome da obra<input value={title} readOnly={Boolean(initialArtwork)} maxLength={200} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: Guardião do Jardim" /></label><label>Reflexão da passagem<textarea rows={5} maxLength={2000} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="O que aconteceu enquanto você executava esta passagem? O que percebeu depois de desenhar?" /></label></section>
+        <section className="work-save-summary"><span>REGISTRO PRIVADO</span><strong>{initialArtwork ? `Nova versão CANVAS · V${initialArtwork.versionNumber + 1}` : "Artwork · Canvas"}</strong><p>{initialArtwork ? "A composição, a reflexão livre e o plano de revisão — quando existir — são preservados sem misturar seus significados. A versão anterior permanece intacta." : "O PNG composto entra no Arquivo do Atelier e no Atlas. Guias nunca são incorporadas à obra; o draft permanece apenas neste dispositivo até o registro."}</p></section>
         {error ? <p className="flow-error" role="alert">{error}</p> : null}
         <button className="primary work-save-button" type="button" disabled={saveState === "saving" || baseState === "loading"} onClick={saveArtwork}>{saveState === "saving" ? "Materializando obra…" : initialArtwork ? `Registrar versão ${initialArtwork.versionNumber + 1}` : "Registrar obra no Atlas"}</button>
       </aside>

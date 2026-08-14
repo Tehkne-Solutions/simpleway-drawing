@@ -1,5 +1,6 @@
 "use client";
 
+import { REVIEW_PLAN_DECISION_MAX_LENGTH, type ArtworkReviewPlan } from "@swd/domain";
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
@@ -11,11 +12,11 @@ type VersionForComparison = {
   readUrl: string;
   source: string;
   notes: string | null;
+  reviewPlan: ArtworkReviewPlan | null;
   createdAt: string;
 };
 
 const sourceLabel: Record<string, string> = { CANVAS: "Câmara", UPLOAD: "Upload", PHOTO: "Foto" };
-const MAX_INTENT = 280;
 const REVIEW_INTENT_PREFIX = "swd.create.review-intent.v1";
 
 export function VersionComparison({ versions, artworkTitle, artworkId }: { versions: VersionForComparison[]; artworkTitle: string; artworkId: string }) {
@@ -31,7 +32,14 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
 
   if (!current || !selected || versions.length < 2) return null;
 
-  const currentPlan = current.source === "CANVAS" ? parseReviewCyclePlan(current.notes) : null;
+  const legacyCurrentPlan = current.source === "CANVAS" && !current.reviewPlan ? parseReviewCyclePlan(current.notes) : null;
+  const currentPlan = current.source === "CANVAS" ? current.reviewPlan ?? legacyCurrentPlan : null;
+  const reviewBaseVersion = current.reviewPlan?.baseVersionNumber ?? Math.max(1, current.versionNumber - 1);
+  const currentProcessText = current.reviewPlan
+    ? current.notes || "Sem reflexão livre registrada nesta passagem."
+    : legacyCurrentPlan
+      ? "Plano legado de revisão preservado abaixo para leitura junto da evidência visual."
+      : current.notes || "Sem nota de processo nesta versão.";
   const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(value));
   const preserveIntent = preserve.trim();
   const transformIntent = transform.trim();
@@ -39,9 +47,9 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
 
   const continueWithIntent = () => {
     if (!intentReady) return;
-    const intent = {
-      preserve: preserveIntent.slice(0, MAX_INTENT),
-      transform: transformIntent.slice(0, MAX_INTENT),
+    const intent: ArtworkReviewPlan = {
+      preserve: preserveIntent.slice(0, REVIEW_PLAN_DECISION_MAX_LENGTH),
+      transform: transformIntent.slice(0, REVIEW_PLAN_DECISION_MAX_LENGTH),
       baseVersionNumber: current.versionNumber,
     };
     try {
@@ -75,14 +83,14 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
         </article>
         <article className="version-compare-card is-current">
           <div className="version-compare-image"><img src={current.readUrl} alt={`${artworkTitle} · versão atual ${current.versionNumber}`} /></div>
-          <div className="version-compare-meta"><span>ATUAL · V{current.versionNumber}</span><strong>{sourceLabel[current.source] ?? current.source}</strong><small>{formatDate(current.createdAt)}</small><p>{currentPlan ? "Plano de revisão preservado abaixo para leitura junto da evidência visual." : current.notes || "Sem nota de processo nesta versão."}</p></div>
+          <div className="version-compare-meta"><span>ATUAL · V{current.versionNumber}</span><strong>{sourceLabel[current.source] ?? current.source}</strong><small>{formatDate(current.createdAt)}</small><p>{currentProcessText}</p></div>
         </article>
       </div>
 
       {currentPlan ? (
         <aside className="review-cycle-ledger" aria-label={`Plano que antecedeu a versão ${current.versionNumber}`}>
           <header>
-            <span>CICLO DE REVISÃO · V{Math.max(1, current.versionNumber - 1)} → V{current.versionNumber}</span>
+            <span>CICLO DE REVISÃO · V{reviewBaseVersion} → V{current.versionNumber}</span>
             <strong>O plano que antecedeu esta versão continua visível ao lado do resultado.</strong>
             <p>A Mesa não decide se a intenção foi cumprida. Compare o plano com a evidência atual e use sua própria leitura para definir a próxima passagem.</p>
           </header>
@@ -110,8 +118,8 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
         <span>CROMA · DECISÃO DE REVISÃO</span>
         <strong>Antes de criar V{current.versionNumber + 1}, transforme observação em intenção.</strong>
         <div className="version-intent-grid">
-          <label><b>Preservar</b><span>Qual decisão da versão atual deve continuar viva?</span><textarea rows={3} maxLength={MAX_INTENT} value={preserve} onChange={(event) => setPreserve(event.target.value)} placeholder="Ex.: preservar a silhueta simples e legível" /><small>{preserve.length}/{MAX_INTENT}</small></label>
-          <label><b>Transformar</b><span>Qual decisão precisa mudar na próxima passagem?</span><textarea rows={3} maxLength={MAX_INTENT} value={transform} onChange={(event) => setTransform(event.target.value)} placeholder="Ex.: transformar o peso das linhas nas áreas de sombra" /><small>{transform.length}/{MAX_INTENT}</small></label>
+          <label><b>Preservar</b><span>Qual decisão da versão atual deve continuar viva?</span><textarea rows={3} maxLength={REVIEW_PLAN_DECISION_MAX_LENGTH} value={preserve} onChange={(event) => setPreserve(event.target.value)} placeholder="Ex.: preservar a silhueta simples e legível" /><small>{preserve.length}/{REVIEW_PLAN_DECISION_MAX_LENGTH}</small></label>
+          <label><b>Transformar</b><span>Qual decisão precisa mudar na próxima passagem?</span><textarea rows={3} maxLength={REVIEW_PLAN_DECISION_MAX_LENGTH} value={transform} onChange={(event) => setTransform(event.target.value)} placeholder="Ex.: transformar o peso das linhas nas áreas de sombra" /><small>{transform.length}/{REVIEW_PLAN_DECISION_MAX_LENGTH}</small></label>
         </div>
         <button className="primary version-intent-action" type="button" disabled={!intentReady} onClick={continueWithIntent}>Levar decisão para a Câmara →</button>
         <p className="version-intent-note">A decisão fica somente nesta aba, escopada a esta obra e à versão atual. O texto não é colocado na URL e não cria Evidence até uma nova versão ser realmente registrada.</p>

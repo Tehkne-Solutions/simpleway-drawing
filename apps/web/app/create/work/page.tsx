@@ -8,7 +8,7 @@ import "./work-chamber-v19.css";
 
 export default async function WorkChamberPage({ searchParams }: { searchParams: Promise<{ artworkId?: string }> }) {
   const { artworkId } = await searchParams;
-  let initialArtwork: { id: string; title: string; notes: string; versionNumber: number; imageSrc: string } | undefined;
+  let initialArtwork: { id: string; title: string; versionNumber: number; imageSrc: string } | undefined;
 
   if (artworkId) {
     const userId = await getSessionUserId();
@@ -19,7 +19,6 @@ export default async function WorkChamberPage({ searchParams }: { searchParams: 
     initialArtwork = {
       id: record.artwork.id,
       title: record.artwork.title ?? "Sem título",
-      notes: current.notes ?? "",
       versionNumber: current.versionNumber,
       imageSrc: `/api/artworks/${encodeURIComponent(record.artwork.id)}/current-image`,
     };
@@ -31,7 +30,7 @@ export default async function WorkChamberPage({ searchParams }: { searchParams: 
         <div>
           <p className="eyebrow">Câmara da Obra · Atelier Autoral</p>
           <h1>{initialArtwork ? `Continue ${initialArtwork.title}.` : "Construa algo que não seja apenas um exercício."}</h1>
-          <p>{initialArtwork ? `A versão ${initialArtwork.versionNumber} virou a base raster desta sessão. Uma decisão trazida da Mesa, quando existir nesta aba e pertencer a esta versão-base, é consumida localmente sem trafegar na URL.` : "Use construção e tinta como camadas de pensamento. O resultado é salvo como obra privada no mesmo arquivo e Atlas que preservam sua jornada."}</p>
+          <p>{initialArtwork ? `A versão ${initialArtwork.versionNumber} virou a base raster desta sessão. O plano da Mesa permanece estruturado e a reflexão desta nova passagem começa limpa, sem copiar a nota anterior.` : "Use construção e tinta como camadas de pensamento. O resultado é salvo como obra privada no mesmo arquivo e Atlas que preservam sua jornada."}</p>
         </div>
         <Link className="secondary link-button" href={initialArtwork ? `/create/${initialArtwork.id}` : "/create"}>{initialArtwork ? "Voltar à obra" : "Sair da Câmara"}</Link>
       </header>

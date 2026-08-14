@@ -18,6 +18,7 @@ export async function GET(_request: Request, context: { params: Promise<{ artwor
       mimeType: version.mimeType,
       source: version.source,
       notes: version.notes,
+      reviewPlan: version.reviewPlan,
       createdAt: version.createdAt,
       readUrl: await getStorage().createPrivateReadUrl(version.storageKey, 300),
     })));
