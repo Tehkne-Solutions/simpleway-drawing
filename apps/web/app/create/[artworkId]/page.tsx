@@ -23,6 +23,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
     ...version,
     readUrl: await getStorage().createPrivateReadUrl(version.storageKey, 600),
   })));
+  const chamberEligible = record.artwork.type === "ARTWORK";
 
   return (
     <main className="flow-shell">
@@ -35,6 +36,16 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
           </div>
           <Link className="secondary link-button" href="/create">Voltar à biblioteca</Link>
         </header>
+
+        {chamberEligible ? (
+          <aside className="lesson-checkpoint">
+            <div>
+              <strong>Esta obra pode continuar dentro da Câmara.</strong>
+              <span>A versão atual vira uma base raster imutável. Novas decisões são desenhadas por cima e entram como uma nova versão, sem apagar o histórico.</span>
+            </div>
+            <Link className="primary link-button" href={`/create/work?artworkId=${record.artwork.id}`}>Continuar na Câmara</Link>
+          </aside>
+        ) : null}
 
         <section className="version-history">
           {versions.map((version, index) => (
@@ -55,7 +66,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
 
         <div className="flow-actions split-actions">
           <Link className="secondary link-button" href="/journey">Ver no Journey</Link>
-          <Link className="primary link-button" href="/gym">Treinar antes da próxima versão</Link>
+          {chamberEligible ? <Link className="primary link-button" href={`/create/work?artworkId=${record.artwork.id}`}>Abrir Câmara da Obra</Link> : <Link className="primary link-button" href="/gym">Treinar antes da próxima versão</Link>}
         </div>
       </section>
     </main>
