@@ -7,7 +7,6 @@ const png2 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQV
 async function assertHttp(response, expected, label) {
   if (response.status !== expected) throw new Error(`${label} failed: ${response.status} ${await response.text()}`);
 }
-
 async function createSession() {
   const response = await fetch(`${baseUrl}/api/session/guest`, { method: "POST" });
   await assertHttp(response, 201, "guest session");
@@ -16,26 +15,13 @@ async function createSession() {
   assert.ok(setCookie);
   return { userId: payload.userId, cookie: setCookie.split(";", 1)[0] };
 }
-
 async function uploadPrivate(cookie, body) {
-  const prepare = await fetch(`${baseUrl}/api/files/private-upload`, {
-    method: "POST",
-    headers: { cookie, "content-type": "application/json" },
-    body: JSON.stringify({ mimeType: "image/png", byteSize: body.byteLength }),
-  });
+  const prepare = await fetch(`${baseUrl}/api/files/private-upload`, { method: "POST", headers: { cookie, "content-type": "application/json" }, body: JSON.stringify({ mimeType: "image/png", byteSize: body.byteLength }) });
   await assertHttp(prepare, 201, "prepare artwork upload");
   const intent = await prepare.json();
-  const put = await fetch(intent.uploadUrl, {
-    method: "PUT",
-    headers: { "content-type": "image/png", "content-length": String(body.byteLength) },
-    body,
-  });
+  const put = await fetch(intent.uploadUrl, { method: "PUT", headers: { "content-type": "image/png", "content-length": String(body.byteLength) }, body });
   await assertHttp(put, 200, "put artwork object");
-  const confirm = await fetch(`${baseUrl}/api/files/confirm`, {
-    method: "POST",
-    headers: { cookie, "content-type": "application/json" },
-    body: JSON.stringify({ fileAssetId: intent.fileAssetId }),
-  });
+  const confirm = await fetch(`${baseUrl}/api/files/confirm`, { method: "POST", headers: { cookie, "content-type": "application/json" }, body: JSON.stringify({ fileAssetId: intent.fileAssetId }) });
   await assertHttp(confirm, 200, "confirm artwork upload");
   assert.equal((await confirm.json()).ready, true);
   return intent;
@@ -46,16 +32,14 @@ const firstUpload = await uploadPrivate(owner.cookie, png1);
 assert.match(firstUpload.storageKey, new RegExp(`^private/${owner.userId}/artwork/`));
 
 const crossOriginCreate = await fetch(`${baseUrl}/api/artworks`, {
-  method: "POST",
-  headers: { cookie: owner.cookie, "content-type": "application/json", origin: "https://malicious.example" },
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json", origin: "https://malicious.example" },
   body: JSON.stringify({ fileAssetId: firstUpload.fileAssetId, title: "Estudo E2E", type: "STUDY", source: "UPLOAD" }),
 });
 assert.equal(crossOriginCreate.status, 403);
 assert.equal((await crossOriginCreate.json()).code, "CROSS_ORIGIN_REQUEST_BLOCKED");
 
 const create = await fetch(`${baseUrl}/api/artworks`, {
-  method: "POST",
-  headers: { cookie: owner.cookie, "content-type": "application/json" },
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json" },
   body: JSON.stringify({ fileAssetId: firstUpload.fileAssetId, title: "Estudo E2E", type: "STUDY", source: "UPLOAD", notes: "Primeira versão E2E" }),
 });
 await assertHttp(create, 201, "create artwork");
@@ -87,6 +71,31 @@ const ownerPage = await fetch(`${baseUrl}/create/${created.id}`, { headers: { co
 await assertHttp(ownerPage, 200, "owner artwork page");
 assert.match(await ownerPage.text(), /Estudo E2E/);
 
+const chamberPage = await fetch(`${baseUrl}/create/work`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(chamberPage, 200, "Work Chamber page");
+const chamberHtml = await chamberPage.text();
+assert.match(chamberHtml, /Câmara da Obra/);
+assert.match(chamberHtml, /Canvas livre da Câmara da Obra/);
+
+const canvasUpload = await uploadPrivate(owner.cookie, png2);
+const canvasCreate = await fetch(`${baseUrl}/api/artworks`, {
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: canvasUpload.fileAssetId, title: "Câmara E2E", type: "ARTWORK", source: "CANVAS", notes: "Materializada dentro da Câmara da Obra" }),
+});
+await assertHttp(canvasCreate, 201, "create Work Chamber canvas artwork");
+const canvasArtwork = (await canvasCreate.json()).artwork;
+assert.equal(canvasArtwork.title, "Câmara E2E");
+assert.equal(canvasArtwork.type, "ARTWORK");
+assert.equal(canvasArtwork.visibility, "PRIVATE");
+const canvasDetail = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasDetail, 200, "Work Chamber artwork detail");
+const canvasDetailPayload = await canvasDetail.json();
+assert.equal(canvasDetailPayload.versions[0].source, "CANVAS");
+assert.equal(canvasDetailPayload.versions[0].notes, "Materializada dentro da Câmara da Obra");
+const canvasOwnerPage = await fetch(`${baseUrl}/create/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasOwnerPage, 200, "Work Chamber artwork page");
+assert.match(await canvasOwnerPage.text(), /Câmara E2E/);
+
 const outsider = await createSession();
 const outsiderApi = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
 assert.equal(outsiderApi.status, 404);
@@ -96,15 +105,13 @@ assert.match(await outsiderDetail.text(), /Esta etapa não foi encontrada/);
 
 const secondUpload = await uploadPrivate(owner.cookie, png2);
 const crossOriginVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`, {
-  method: "POST",
-  headers: { cookie: owner.cookie, "content-type": "application/json", origin: "https://malicious.example" },
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json", origin: "https://malicious.example" },
   body: JSON.stringify({ fileAssetId: secondUpload.fileAssetId, source: "UPLOAD", notes: "Segunda versão E2E" }),
 });
 assert.equal(crossOriginVersion.status, 403);
 
 const addVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`, {
-  method: "POST",
-  headers: { cookie: owner.cookie, "content-type": "application/json" },
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json" },
   body: JSON.stringify({ fileAssetId: secondUpload.fileAssetId, source: "UPLOAD", notes: "Segunda versão E2E" }),
 });
 await assertHttp(addVersion, 201, "add artwork version");
@@ -127,4 +134,4 @@ const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Nova criação registrada/);
 assert.match(journeyHtml, /Versão 2 registrada/);
 
-console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read ownership_isolation version_csrf immutable_version_history journey_projection");
+console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canvas_source_contract ownership_isolation version_csrf immutable_version_history journey_projection");

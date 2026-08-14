@@ -6,27 +6,18 @@ const state = (skillKey: string, evidenceCount: number, masteryScore: number | n
 
 test("creative territories are derived only from authoritative evidence snapshots", () => {
   const territories = deriveCreativeTerritories({
-    completedMissionIds: ["pixel", "sprite"],
-    completedCount: 2,
-    complete: false,
+    completedMissionIds: ["pixel", "sprite"], completedCount: 2, complete: false,
     evidence: [
-      state("skill.drawing.creative.pixel_synthesis", 1, .82),
-      state("skill.drawing.creative.sprite_motion", 1, .74),
-      state("skill.drawing.creative.pattern_continuity", 0, null, null),
-      state("skill.drawing.creative.animation_timing", 0, null, null),
+      state("skill.drawing.creative.pixel_synthesis", 1, .82), state("skill.drawing.creative.sprite_motion", 1, .74),
+      state("skill.drawing.creative.pattern_continuity", 0, null, null), state("skill.drawing.creative.animation_timing", 0, null, null),
     ],
   }, {
     completedMissionIds: ["manga"],
-    evidence: [
-      state("skill.drawing.creative.manga_head_construction", 1, .88),
-      state("skill.drawing.creative.isometric_construction", 0, null, null),
-    ],
+    evidence: [state("skill.drawing.creative.manga_head_construction", 1, .88), state("skill.drawing.creative.isometric_construction", 0, null, null)],
   });
-
   const synthesis = territories.find((territory) => territory.key === "synthesis")!;
   const narrative = territories.find((territory) => territory.key === "narrative")!;
   const structure = territories.find((territory) => territory.key === "structure")!;
-
   assert.equal(synthesis.complete, false);
   assert.equal(synthesis.completedSteps, 2);
   assert.equal(synthesis.totalSteps, 4);
@@ -46,24 +37,14 @@ test("world summary counts creative territories without inventing progress", () 
 });
 
 test("Atlas recommendation follows an active creative thread before returning to Foundation", () => {
-  const territories = deriveCreativeTerritories({
-    completedMissionIds: ["pixel"],
-    completedCount: 1,
-    complete: false,
-    evidence: [state("skill.drawing.creative.pixel_synthesis", 1, .8)],
-  }, { completedMissionIds: [], evidence: [] });
+  const territories = deriveCreativeTerritories({ completedMissionIds: ["pixel"], completedCount: 1, complete: false, evidence: [state("skill.drawing.creative.pixel_synthesis", 1, .8)] }, { completedMissionIds: [], evidence: [] });
   const recommendation = nextAtlasMission(false, { title: "Continue a Foundation", description: "C0–C4", href: "/learn" }, territories);
   assert.equal(recommendation.kind, "creative");
   assert.equal(recommendation.href, "/create/pixel/quest");
 });
 
 test("Atlas continues the territory actually started instead of the first incomplete territory", () => {
-  const territories = deriveCreativeTerritories({
-    completedMissionIds: [], completedCount: 0, complete: false, evidence: [],
-  }, {
-    completedMissionIds: [],
-    evidence: [state("skill.drawing.creative.manga_head_construction", 1, .72)],
-  });
+  const territories = deriveCreativeTerritories({ completedMissionIds: [], completedCount: 0, complete: false, evidence: [] }, { completedMissionIds: [], evidence: [state("skill.drawing.creative.manga_head_construction", 1, .72)] });
   const recommendation = nextAtlasMission(true, { title: "Foundation", description: "done", href: "/learn" }, territories);
   assert.equal(recommendation.kind, "creative");
   assert.equal(recommendation.href, "/create/manga");
@@ -83,5 +64,5 @@ test("Atlas opens Câmara da Obra only after Foundation and all creative territo
   });
   const recommendation = nextAtlasMission(true, { title: "Foundation", description: "done", href: "/learn" }, territories);
   assert.equal(recommendation.kind, "capstone");
-  assert.equal(recommendation.href, "/create");
+  assert.equal(recommendation.href, "/create/work");
 });
