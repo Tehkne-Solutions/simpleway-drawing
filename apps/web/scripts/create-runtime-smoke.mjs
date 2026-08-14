@@ -87,14 +87,32 @@ const canvasArtwork = (await canvasCreate.json()).artwork;
 assert.equal(canvasArtwork.title, "Câmara E2E");
 assert.equal(canvasArtwork.type, "ARTWORK");
 assert.equal(canvasArtwork.visibility, "PRIVATE");
-const canvasDetail = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
-await assertHttp(canvasDetail, 200, "Work Chamber artwork detail");
-const canvasDetailPayload = await canvasDetail.json();
-assert.equal(canvasDetailPayload.versions[0].source, "CANVAS");
-assert.equal(canvasDetailPayload.versions[0].notes, "Materializada dentro da Câmara da Obra");
+
+const canvasDetailV1 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasDetailV1, 200, "Work Chamber artwork detail v1");
+const canvasDetailV1Payload = await canvasDetailV1.json();
+assert.equal(canvasDetailV1Payload.versions.length, 1);
+assert.equal(canvasDetailV1Payload.versions[0].source, "CANVAS");
+assert.equal(canvasDetailV1Payload.versions[0].notes, "Materializada dentro da Câmara da Obra");
+
+const canvasCurrentV1 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasCurrentV1, 200, "Work Chamber same-origin current image v1");
+assert.equal(canvasCurrentV1.headers.get("content-type"), "image/png");
+assert.deepEqual(Buffer.from(await canvasCurrentV1.arrayBuffer()), png2);
+
 const canvasOwnerPage = await fetch(`${baseUrl}/create/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
 await assertHttp(canvasOwnerPage, 200, "Work Chamber artwork page");
-assert.match(await canvasOwnerPage.text(), /Câmara E2E/);
+const canvasOwnerHtml = await canvasOwnerPage.text();
+assert.match(canvasOwnerHtml, /Câmara E2E/);
+assert.match(canvasOwnerHtml, /Continuar na Câmara/);
+assert.match(canvasOwnerHtml, new RegExp(`/create/work\\?artworkId=${canvasArtwork.id}`));
+
+const reopenChamber = await fetch(`${baseUrl}/create/work?artworkId=${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(reopenChamber, 200, "reopen Work Chamber from existing artwork");
+const reopenHtml = await reopenChamber.text();
+assert.match(reopenHtml, /Continue Câmara E2E/);
+assert.match(reopenHtml, /base raster/i);
+assert.match(reopenHtml, /Nova versão CANVAS/);
 
 const outsider = await createSession();
 const outsiderApi = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
@@ -102,6 +120,32 @@ assert.equal(outsiderApi.status, 404);
 const outsiderDetail = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: outsider.cookie }, redirect: "manual" });
 assert.equal(outsiderDetail.status, 200);
 assert.match(await outsiderDetail.text(), /Esta etapa não foi encontrada/);
+const outsiderCanvasImage = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
+assert.equal(outsiderCanvasImage.status, 404);
+const outsiderReopen = await fetch(`${baseUrl}/create/work?artworkId=${canvasArtwork.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
+assert.equal(outsiderReopen.status, 200);
+assert.match(await outsiderReopen.text(), /Esta etapa não foi encontrada/);
+
+const canvasRoundtripUpload = await uploadPrivate(owner.cookie, png1);
+const canvasRoundtrip = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions`, {
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: canvasRoundtripUpload.fileAssetId, source: "CANVAS", notes: "Segunda passagem dentro da Câmara" }),
+});
+await assertHttp(canvasRoundtrip, 201, "add Work Chamber CANVAS round-trip version");
+assert.equal((await canvasRoundtrip.json()).version.versionNumber, 2);
+
+const canvasDetailV2 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasDetailV2, 200, "Work Chamber artwork detail v2");
+const canvasDetailV2Payload = await canvasDetailV2.json();
+assert.equal(canvasDetailV2Payload.artwork.id, canvasArtwork.id);
+assert.equal(canvasDetailV2Payload.versions.length, 2);
+assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.versionNumber), [2, 1]);
+assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.source), ["CANVAS", "CANVAS"]);
+assert.equal(canvasDetailV2Payload.versions[0].notes, "Segunda passagem dentro da Câmara");
+assert.equal(canvasDetailV2Payload.versions[1].notes, "Materializada dentro da Câmara da Obra");
+const canvasCurrentV2 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasCurrentV2, 200, "Work Chamber same-origin current image v2");
+assert.deepEqual(Buffer.from(await canvasCurrentV2.arrayBuffer()), png1);
 
 const secondUpload = await uploadPrivate(owner.cookie, png2);
 const crossOriginVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`, {
@@ -134,4 +178,4 @@ const journeyHtml = await journey.text();
 assert.match(journeyHtml, /Nova criação registrada/);
 assert.match(journeyHtml, /Versão 2 registrada/);
 
-console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canvas_source_contract ownership_isolation version_csrf immutable_version_history journey_projection");
+console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canvas_same_origin_read canvas_roundtrip_owner_isolation canvas_same_artwork_versioning canvas_current_image_switch version_csrf immutable_version_history journey_projection");
