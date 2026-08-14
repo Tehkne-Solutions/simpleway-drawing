@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getArtworkRepository, getStorage } from "../../../server/runtime";
 import { getSessionUserId } from "../../../server/session";
+import "../historical-comparison-v128.css";
 import "../review-cycle-v125.css";
 import "../review-intent-v123.css";
 import "../review-notebook-v127.css";
@@ -17,10 +18,12 @@ const typeLabel: Record<string, string> = {
   ARTWORK: "Artwork",
 };
 
-export default async function ArtworkDetailPage({ params }: { params: Promise<{ artworkId: string }> }) {
+type ArtworkDetailSearchParams = { cycle?: string | string[] };
+
+export default async function ArtworkDetailPage({ params, searchParams }: { params: Promise<{ artworkId: string }>; searchParams: Promise<ArtworkDetailSearchParams> }) {
   const userId = await getSessionUserId();
   if (!userId) redirect("/create");
-  const { artworkId } = await params;
+  const [{ artworkId }, query] = await Promise.all([params, searchParams]);
   const record = await getArtworkRepository().getOwned(userId, artworkId);
   if (!record) notFound();
 
@@ -41,6 +44,15 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
   }));
   const historyVersions = versions.map((version) => ({ ...version, reviewCycle: resolveReviewCycle(version) }));
   const reviewCycleCount = historyVersions.filter((version) => Boolean(version.reviewCycle)).length;
+  const latestVersionNumber = historyVersions[0]?.versionNumber ?? 0;
+  const cycleParam = Array.isArray(query.cycle) ? query.cycle[0] : query.cycle;
+  const requestedCycleVersion = cycleParam ? Number(cycleParam) : NaN;
+  const focusCycleVersion = Number.isInteger(requestedCycleVersion)
+    && requestedCycleVersion >= 2
+    && requestedCycleVersion < latestVersionNumber
+    && historyVersions.some((version) => version.versionNumber === requestedCycleVersion && Boolean(version.reviewCycle))
+      ? requestedCycleVersion
+      : null;
 
   return (
     <main className="flow-shell">
@@ -64,7 +76,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
           </aside>
         ) : null}
 
-        {comparisonVersions.length >= 2 ? <VersionComparison versions={comparisonVersions} artworkTitle={artworkTitle} artworkId={record.artwork.id} /> : (
+        {comparisonVersions.length >= 2 ? <VersionComparison key={focusCycleVersion ? `historical-${focusCycleVersion}` : "latest"} versions={comparisonVersions} artworkTitle={artworkTitle} artworkId={record.artwork.id} focusCycleVersion={focusCycleVersion} /> : (
           <aside className="version-compare-empty"><span>MESA DE COMPARAÇÃO</span><strong>A segunda versão abrirá a comparação visual.</strong><p>Preserve a primeira versão e registre uma nova passagem para enxergar mudanças reais lado a lado.</p></aside>
         )}
 
@@ -84,6 +96,7 @@ export default async function ArtworkDetailPage({ params }: { params: Promise<{ 
                       <header><span>CICLO V{cycle.baseVersionNumber} → V{version.versionNumber}</span><small>{cycle.provenance === "STRUCTURED" ? "ESTRUTURADO" : "LEGADO"}</small></header>
                       <div className="version-cycle-pair"><div><b>PRESERVAR</b><p>{cycle.plan.preserve}</p></div><div><b>TRANSFORMAR</b><p>{cycle.plan.transform}</p></div></div>
                       <p className={`version-cycle-reflection ${cycle.provenance === "LEGACY" ? "version-cycle-legacy" : ""}`}><b>REFLEXÃO DA PASSAGEM</b>{cycle.provenance === "LEGACY" ? "Esta versão antiga guardava plano e nota no mesmo texto; não existe reflexão livre separada para recuperar." : reflection || "Sem reflexão livre registrada nesta passagem."}</p>
+                      {index === 0 ? <a className="version-cycle-replay" href="#version-comparison">Rever ciclo atual na Mesa ↑</a> : <Link className="version-cycle-replay" href={`/create/${record.artwork.id}?cycle=${version.versionNumber}#version-comparison`}>Rever este ciclo na Mesa →</Link>}
                     </aside>
                   ) : version.notes ? <blockquote>{version.notes}</blockquote> : <p>Sem reflexão livre registrada.</p>}
                 </div>

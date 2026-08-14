@@ -14,13 +14,15 @@ test("artwork detail opens comparison only when at least two preserved versions 
   assert.match(page, /createdAt: version\.createdAt\.toISOString\(\)/);
 });
 
-test("comparison keeps current version fixed and only chooses from historical versions", () => {
+test("current comparison keeps latest fixed while historical mode can target only an exact preserved cycle", () => {
   const component = source("app/create/[artworkId]/version-comparison.tsx");
-  assert.match(component, /const current = versions\[0\] \?\? null/);
-  assert.match(component, /const historical = versions\.slice\(1\)/);
-  assert.match(component, /historical\.find\(\(version\) => version\.versionNumber === selectedVersion\)/);
+  assert.match(component, /const latest = versions\[0\] \?\? null/);
+  assert.match(component, /const target = historicalContext\?\.target \?\? latest/);
+  assert.match(component, /const referenceCandidates = target \? versions\.filter\(\(version\) => version\.versionNumber < target\.versionNumber\) : \[\]/);
+  assert.match(component, /const selected = historicalContext\?\.base \?\?/);
   assert.match(component, /Versão de referência/);
-  assert.match(component, /ATUAL · V\{current\.versionNumber\}/);
+  assert.match(component, /ATUAL · V\$\{target\.versionNumber\}/);
+  assert.match(component, /RESULTADO · V\$\{target\.versionNumber\}/);
   assert.match(component, /REFERÊNCIA · V\{selected\.versionNumber\}/);
 });
 
@@ -35,13 +37,14 @@ test("comparison provides a visual wipe ruler without inventing automated art sc
   assert.doesNotMatch(component, /fetch\(|method:\s*"POST"|method:\s*"PUT"|method:\s*"PATCH"/);
 });
 
-test("comparison preserves notes and keeps the next authoring action in Work Chamber", () => {
+test("comparison preserves process text and keeps authoring only on the latest path", () => {
   const component = source("app/create/[artworkId]/version-comparison.tsx");
   const page = source("app/create/[artworkId]/page.tsx");
   assert.match(component, /selected\.notes/);
-  assert.match(component, /current\.notes/);
+  assert.match(component, /target\.notes/);
   assert.match(component, /Preservar/);
   assert.match(component, /Transformar/);
+  assert.match(component, /historicalContext \? \([\s\S]*version-historical-readonly[\s\S]*\) : \([\s\S]*version-compare-prompt/);
   assert.match(page, /Criar próxima versão na Câmara/);
   assert.match(page, /\/create\/work\?artworkId=/);
 });

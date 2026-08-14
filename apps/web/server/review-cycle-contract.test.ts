@@ -57,7 +57,8 @@ test("shared resolver falls back to legacy note only when structured data cannot
 test("Mesa and historical notebook use the same resolver instead of parallel review-cycle logic", () => {
   const component = source("app/create/[artworkId]/version-comparison.tsx");
   const page = source("app/create/[artworkId]/page.tsx");
-  assert.match(component, /const currentCycle = resolveReviewCycle\(current\)/);
+  assert.match(component, /const requestedCycle = requestedTarget \? resolveReviewCycle\(requestedTarget\) : null/);
+  assert.match(component, /const targetCycle = historicalContext\?\.cycle \?\? resolveReviewCycle\(target\)/);
   assert.match(component, /const selectedCycle = resolveReviewCycle\(selected\)/);
   assert.doesNotMatch(component, /parseReviewCyclePlan/);
   assert.match(page, /reviewCycle: resolveReviewCycle\(version\)/);

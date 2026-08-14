@@ -4,6 +4,8 @@ const baseUrl = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3100";
 const png1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZxkAAAAASUVORK5CYII=", "base64");
 const png2 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR42mP8z8BQDwAFgwJ/l2GfWQAAAABJRU5ErkJggg==", "base64");
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 async function assertHttp(response, expected, label) {
   if (response.status !== expected) throw new Error(`${label} failed: ${response.status} ${await response.text()}`);
 }
@@ -120,17 +122,53 @@ assert.match(html, /Cada passagem preserva resultado, intenção e reflexão/);
 assert.ok((html.match(/version-cycle-record/g) ?? []).length >= 2, "historical notebook must render both V1→V2 and V2→V3 cycle records");
 assert.ok((html.match(/ESTRUTURADO/g) ?? []).length >= 2, "both historical review cycles must remain structured");
 for (const text of [reflectionV2, reflectionV3, preservedV2, transformedV2, preservedV3, transformedV3]) {
-  assert.match(html, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(html, new RegExp(escapeRegex(text)));
 }
 assert.match(html, /CICLO DE REVISÃO/);
 assert.match(html, /RESULTADO VISÍVEL/);
 assert.match(html, /A Mesa não decide se a intenção foi cumprida/);
 assert.match(html, /não existe nota automática de qualidade/);
 assert.match(html, /version-reference-cycle/);
+assert.match(html, /Rever este ciclo na Mesa/);
 assert.match(html, /CROMA · DECISÃO DE REVISÃO/);
 assert.match(html, /Levar decisão para a Câmara/);
 assert.match(html, /Criar próxima versão na Câmara/);
 assert.match(html, new RegExp(`/create/work\\?artworkId=${artwork.id}`));
+
+const historicalPage = await fetch(`${baseUrl}/create/${artwork.id}?cycle=2`, { headers: { cookie: ownerCookie }, cache: "no-store" });
+await assertHttp(historicalPage, 200, "historical comparison v1 to v2");
+const historicalHtml = await historicalPage.text();
+assert.match(historicalHtml, /Mesa Histórica/);
+assert.match(historicalHtml, /MODO SOMENTE LEITURA/);
+assert.match(historicalHtml, /O passado não vira uma nova branch da obra/);
+assert.match(historicalHtml, /Base V1/);
+assert.match(historicalHtml, /Sobreposição V2/);
+assert.match(historicalHtml, /RESULTADO/);
+assert.match(historicalHtml, /CICLO HISTÓRICO/);
+assert.match(historicalHtml, new RegExp(escapeRegex(preservedV2)));
+assert.match(historicalHtml, new RegExp(escapeRegex(transformedV2)));
+assert.match(historicalHtml, new RegExp(escapeRegex(reflectionV2)));
+assert.match(historicalHtml, /Voltar à versão atual/);
+assert.doesNotMatch(historicalHtml, /Levar decisão para a Câmara/);
+assert.doesNotMatch(historicalHtml, /CROMA · DECISÃO DE REVISÃO/);
+assert.doesNotMatch(historicalHtml, /Criar V3/);
+
+const invalidHistorical = await fetch(`${baseUrl}/create/${artwork.id}?cycle=999`, { headers: { cookie: ownerCookie }, cache: "no-store" });
+await assertHttp(invalidHistorical, 200, "invalid historical focus falls back latest");
+const invalidHtml = await invalidHistorical.text();
+assert.match(invalidHtml, /Mesa de Comparação/);
+assert.doesNotMatch(invalidHtml, /Mesa Histórica/);
+assert.match(invalidHtml, /Base V2/);
+assert.match(invalidHtml, /Sobreposição V3/);
+assert.match(invalidHtml, /Levar decisão para a Câmara/);
+
+const currentCycleIgnored = await fetch(`${baseUrl}/create/${artwork.id}?cycle=3`, { headers: { cookie: ownerCookie }, cache: "no-store" });
+await assertHttp(currentCycleIgnored, 200, "current cycle query remains latest mode");
+const currentCycleHtml = await currentCycleIgnored.text();
+assert.match(currentCycleHtml, /Mesa de Comparação/);
+assert.doesNotMatch(currentCycleHtml, /Mesa Histórica/);
+assert.match(currentCycleHtml, /Base V2/);
+assert.match(currentCycleHtml, /Sobreposição V3/);
 
 const preserveIntent = "Preservar a silhueta simples";
 const transformIntent = "Transformar o peso das linhas";
@@ -156,7 +194,7 @@ assert.match(chamberHtml, /reflexão desta nova passagem começa limpa/);
 assert.doesNotMatch(chamberHtml, /Preservar a silhueta simples/);
 assert.doesNotMatch(chamberHtml, /Transformar o peso das linhas/);
 assert.doesNotMatch(chamberHtml, /DECISÃO TRAZIDA DA MESA/);
-assert.doesNotMatch(chamberHtml, new RegExp(reflectionV3.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.doesNotMatch(chamberHtml, new RegExp(escapeRegex(reflectionV3)));
 
 const incompleteHandoff = new URLSearchParams({ artworkId: artwork.id, preserve: preserveIntent });
 const incompleteResponse = await fetch(`${baseUrl}/create/work?${incompleteHandoff.toString()}`, {
@@ -176,8 +214,11 @@ const outsiderCookie = await createSession();
 const outsider = await fetch(`${baseUrl}/create/${artwork.id}`, { headers: { cookie: outsiderCookie }, cache: "no-store" });
 await assertHttp(outsider, 200, "comparison outsider detail page");
 assert.match(await outsider.text(), /Esta etapa não foi encontrada/);
+const outsiderHistorical = await fetch(`${baseUrl}/create/${artwork.id}?cycle=2`, { headers: { cookie: outsiderCookie }, cache: "no-store" });
+await assertHttp(outsiderHistorical, 200, "historical comparison outsider detail page");
+assert.match(await outsiderHistorical.text(), /Esta etapa não foi encontrada/);
 const outsiderHandoff = await fetch(`${baseUrl}/create/work?artworkId=${encodeURIComponent(artwork.id)}`, { headers: { cookie: outsiderCookie }, cache: "no-store" });
 await assertHttp(outsiderHandoff, 200, "private review outsider Chamber page");
 assert.match(await outsiderHandoff.text(), /Esta etapa não foi encontrada/);
 
-console.log("VERSION_COMPARISON_E2E=PASS three_version_truth structured_review_ledger historical_review_notebook two_preserved_cycles free_process_reflection invalid_base_rejected shared_cycle_resolver no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
+console.log("VERSION_COMPARISON_E2E=PASS three_version_truth structured_review_ledger historical_review_notebook two_preserved_cycles historical_exact_cycle readonly_historical_no_branch invalid_cycle_falls_back_latest current_cycle_stays_latest free_process_reflection invalid_base_rejected shared_cycle_resolver no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
