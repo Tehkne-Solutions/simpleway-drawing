@@ -5,7 +5,7 @@ import test from "node:test";
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
-test("comparison captures both review decisions locally without putting creative text in the URL", () => {
+test("comparison captures both review decisions locally without putting creative text in the authoring URL", () => {
   const component = source("app/create/[artworkId]/version-comparison.tsx");
   assert.match(component, /REVIEW_PLAN_DECISION_MAX_LENGTH/);
   assert.match(component, /const REVIEW_INTENT_PREFIX = "swd\.create\.review-intent\.v1"/);
@@ -13,12 +13,15 @@ test("comparison captures both review decisions locally without putting creative
   assert.match(component, /const \[transform, setTransform\] = useState\(""\)/);
   assert.match(component, /maxLength=\{REVIEW_PLAN_DECISION_MAX_LENGTH\}/);
   assert.match(component, /const intentReady = !historicalContext && Boolean\(preserveIntent && transformIntent\)/);
-  assert.match(component, /if \(!intentReady \|\| historicalContext\) return/);
-  assert.match(component, /baseVersionNumber: target\.versionNumber/);
-  assert.match(component, /window\.sessionStorage\.setItem\(`/);
-  assert.match(component, /router\.push\(`\/create\/work\?artworkId=\$\{encodeURIComponent\(artworkId\)\}`\)/);
-  assert.doesNotMatch(component, /new URLSearchParams/);
-  const routerTarget = component.match(/router\.push\(([^;]+)\);/)?.[1] ?? "";
+  const start = component.indexOf("const continueWithIntent");
+  const end = component.indexOf("\n\n  return (", start);
+  const handoff = component.slice(start, end);
+  assert.match(handoff, /if \(!intentReady \|\| historicalContext\) return/);
+  assert.match(handoff, /baseVersionNumber: target\.versionNumber/);
+  assert.match(handoff, /window\.sessionStorage\.setItem\(`/);
+  assert.match(handoff, /router\.push\(`\/create\/work\?artworkId=\$\{encodeURIComponent\(artworkId\)\}`\)/);
+  assert.doesNotMatch(handoff, /new URLSearchParams/);
+  const routerTarget = handoff.match(/router\.push\(([^;]+)\);/)?.[1] ?? "";
   assert.match(routerTarget, /artworkId/);
   assert.doesNotMatch(routerTarget, /preserve|transform/);
   assert.doesNotMatch(component, /fetch\(|method:\s*"POST"|method:\s*"PUT"|method:\s*"PATCH"/);
