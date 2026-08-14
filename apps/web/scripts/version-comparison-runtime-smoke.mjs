@@ -55,24 +55,35 @@ const create = await fetch(`${baseUrl}/api/artworks`, {
 await assertHttp(create, 201, "comparison create artwork v1");
 const artwork = (await create.json()).artwork;
 
-const preservedDecision = "silhueta simples e legível";
-const transformedDecision = "peso das linhas nas áreas de sombra";
-const reviewPlan = {
-  preserve: preservedDecision,
-  transform: transformedDecision,
-  baseVersionNumber: 1,
-};
-const processReflection = "A sombra ganhou mais hierarquia sem perder a leitura da silhueta.";
+const preservedV2 = "silhueta simples e legível";
+const transformedV2 = "peso das linhas nas áreas de sombra";
+const reviewPlanV2 = { preserve: preservedV2, transform: transformedV2, baseVersionNumber: 1 };
+const reflectionV2 = "A sombra ganhou mais hierarquia sem perder a leitura da silhueta.";
 const secondFile = await uploadPrivate(ownerCookie, png2);
-const addVersion = await fetch(`${baseUrl}/api/artworks/${artwork.id}/versions`, {
+const addV2 = await fetch(`${baseUrl}/api/artworks/${artwork.id}/versions`, {
   method: "POST",
   headers: { cookie: ownerCookie, "content-type": "application/json" },
-  body: JSON.stringify({ fileAssetId: secondFile, source: "CANVAS", notes: processReflection, reviewPlan }),
+  body: JSON.stringify({ fileAssetId: secondFile, source: "CANVAS", notes: reflectionV2, reviewPlan: reviewPlanV2 }),
 });
-await assertHttp(addVersion, 201, "comparison create artwork v2 with structured plan");
-const addedVersion = (await addVersion.json()).version;
-assert.equal(addedVersion.versionNumber, 2);
-assert.deepEqual(addedVersion.reviewPlan, reviewPlan);
+await assertHttp(addV2, 201, "comparison create artwork v2 with structured plan");
+const version2 = (await addV2.json()).version;
+assert.equal(version2.versionNumber, 2);
+assert.deepEqual(version2.reviewPlan, reviewPlanV2);
+
+const preservedV3 = "hierarquia das sombras já estabelecida";
+const transformedV3 = "ritmo dos contornos secundários";
+const reviewPlanV3 = { preserve: preservedV3, transform: transformedV3, baseVersionNumber: 2 };
+const reflectionV3 = "Os contornos secundários ficaram menos uniformes e a leitura ganhou ritmo.";
+const thirdFile = await uploadPrivate(ownerCookie, png1);
+const addV3 = await fetch(`${baseUrl}/api/artworks/${artwork.id}/versions`, {
+  method: "POST",
+  headers: { cookie: ownerCookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: thirdFile, source: "CANVAS", notes: reflectionV3, reviewPlan: reviewPlanV3 }),
+});
+await assertHttp(addV3, 201, "comparison create artwork v3 with structured plan");
+const version3 = (await addV3.json()).version;
+assert.equal(version3.versionNumber, 3);
+assert.deepEqual(version3.reviewPlan, reviewPlanV3);
 
 const staleVersion = await fetch(`${baseUrl}/api/artworks/${artwork.id}/versions`, {
   method: "POST",
@@ -81,19 +92,20 @@ const staleVersion = await fetch(`${baseUrl}/api/artworks/${artwork.id}/versions
     fileAssetId: secondFile,
     source: "CANVAS",
     notes: "Esta reflexão não pode persistir.",
-    reviewPlan: { ...reviewPlan, baseVersionNumber: 1 },
+    reviewPlan: { ...reviewPlanV2, baseVersionNumber: 1 },
   }),
 });
-await assertHttp(staleVersion, 400, "stale review plan rejected by current-version authority");
+await assertHttp(staleVersion, 400, "stale review plan rejected after v3");
 assert.equal((await staleVersion.json()).code, "INVALID_REVIEW_PLAN");
 
 const apiDetail = await fetch(`${baseUrl}/api/artworks/${artwork.id}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
 await assertHttp(apiDetail, 200, "comparison artwork detail api");
 const detailPayload = await apiDetail.json();
-assert.deepEqual(detailPayload.versions.map((version) => version.versionNumber), [2, 1]);
-assert.deepEqual(detailPayload.versions.map((version) => version.notes), [processReflection, "Primeiro passe preservado"]);
-assert.deepEqual(detailPayload.versions[0].reviewPlan, reviewPlan);
-assert.equal(detailPayload.versions[1].reviewPlan, null);
+assert.deepEqual(detailPayload.versions.map((version) => version.versionNumber), [3, 2, 1]);
+assert.deepEqual(detailPayload.versions.map((version) => version.notes), [reflectionV3, reflectionV2, "Primeiro passe preservado"]);
+assert.deepEqual(detailPayload.versions[0].reviewPlan, reviewPlanV3);
+assert.deepEqual(detailPayload.versions[1].reviewPlan, reviewPlanV2);
+assert.equal(detailPayload.versions[2].reviewPlan, null);
 
 const page = await fetch(`${baseUrl}/create/${artwork.id}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
 await assertHttp(page, 200, "comparison artwork detail page");
@@ -101,18 +113,20 @@ const html = await page.text();
 assert.match(html, /Mesa E2E/);
 assert.match(html, /Mesa de Comparação/);
 assert.match(html, /RÉGUA DE SOBREPOSIÇÃO/);
-assert.match(html, /Base V1/);
-assert.match(html, /Sobreposição V2/);
-assert.match(html, /Primeiro passe preservado/);
-assert.match(html, new RegExp(processReflection.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.match(html, /Base V2/);
+assert.match(html, /Sobreposição V3/);
+assert.match(html, /Caderno de Revisões/);
+assert.match(html, /Cada passagem preserva resultado, intenção e reflexão/);
+assert.ok((html.match(/version-cycle-record/g) ?? []).length >= 2, "historical notebook must render both V1→V2 and V2→V3 cycle records");
+assert.ok((html.match(/ESTRUTURADO/g) ?? []).length >= 2, "both historical review cycles must remain structured");
+for (const text of [reflectionV2, reflectionV3, preservedV2, transformedV2, preservedV3, transformedV3]) {
+  assert.match(html, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+}
 assert.match(html, /CICLO DE REVISÃO/);
-assert.match(html, /V1/);
-assert.match(html, /V2/);
 assert.match(html, /RESULTADO VISÍVEL/);
-assert.match(html, new RegExp(preservedDecision));
-assert.match(html, new RegExp(transformedDecision));
 assert.match(html, /A Mesa não decide se a intenção foi cumprida/);
 assert.match(html, /não existe nota automática de qualidade/);
+assert.match(html, /version-reference-cycle/);
 assert.match(html, /CROMA · DECISÃO DE REVISÃO/);
 assert.match(html, /Levar decisão para a Câmara/);
 assert.match(html, /Criar próxima versão na Câmara/);
@@ -142,7 +156,7 @@ assert.match(chamberHtml, /reflexão desta nova passagem começa limpa/);
 assert.doesNotMatch(chamberHtml, /Preservar a silhueta simples/);
 assert.doesNotMatch(chamberHtml, /Transformar o peso das linhas/);
 assert.doesNotMatch(chamberHtml, /DECISÃO TRAZIDA DA MESA/);
-assert.doesNotMatch(chamberHtml, new RegExp(processReflection.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.doesNotMatch(chamberHtml, new RegExp(reflectionV3.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 
 const incompleteHandoff = new URLSearchParams({ artworkId: artwork.id, preserve: preserveIntent });
 const incompleteResponse = await fetch(`${baseUrl}/create/work?${incompleteHandoff.toString()}`, {
@@ -166,4 +180,4 @@ const outsiderHandoff = await fetch(`${baseUrl}/create/work?artworkId=${encodeUR
 await assertHttp(outsiderHandoff, 200, "private review outsider Chamber page");
 assert.match(await outsiderHandoff.text(), /Esta etapa não foi encontrada/);
 
-console.log("VERSION_COMPARISON_E2E=PASS two_version_truth structured_review_ledger free_process_reflection invalid_base_rejected legacy_fallback_contract no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
+console.log("VERSION_COMPARISON_E2E=PASS three_version_truth structured_review_ledger historical_review_notebook two_preserved_cycles free_process_reflection invalid_base_rejected shared_cycle_resolver no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
