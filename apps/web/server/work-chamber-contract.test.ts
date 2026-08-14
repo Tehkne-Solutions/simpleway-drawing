@@ -64,7 +64,7 @@ test("existing ARTWORK records reopen through an owner-scoped same-origin raster
   const imageRoute = source("app/api/artworks/[artworkId]/current-image/route.ts");
   const storage = source("../../packages/storage/src/index.ts");
   const detail = source("app/create/[artworkId]/page.tsx");
-  assert.match(page, /searchParams: Promise<\{ artworkId\?: string; preserve\?: string; transform\?: string \}>/);
+  assert.match(page, /searchParams: Promise<\{ artworkId\?: string \}>/);
   assert.match(page, /getArtworkRepository\(\)\.getOwned\(userId, artworkId\)/);
   assert.match(page, /imageSrc: `\/api\/artworks\/\$\{encodeURIComponent\(record\.artwork\.id\)\}\/current-image`/);
   assert.match(canvas, /baseImageRef/);

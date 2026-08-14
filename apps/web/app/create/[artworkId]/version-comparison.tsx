@@ -15,6 +15,7 @@ type VersionForComparison = {
 
 const sourceLabel: Record<string, string> = { CANVAS: "Câmara", UPLOAD: "Upload", PHOTO: "Foto" };
 const MAX_INTENT = 280;
+const REVIEW_INTENT_PREFIX = "swd.create.review-intent.v1";
 
 export function VersionComparison({ versions, artworkTitle, artworkId }: { versions: VersionForComparison[]; artworkTitle: string; artworkId: string }) {
   const router = useRouter();
@@ -24,6 +25,7 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
   const [reveal, setReveal] = useState(50);
   const [preserve, setPreserve] = useState("");
   const [transform, setTransform] = useState("");
+  const [handoffError, setHandoffError] = useState<string | null>(null);
   const selected = useMemo(() => historical.find((version) => version.versionNumber === selectedVersion) ?? historical[0] ?? current, [current, historical, selectedVersion]);
 
   if (!current || !selected || versions.length < 2) return null;
@@ -35,12 +37,18 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
 
   const continueWithIntent = () => {
     if (!intentReady) return;
-    const params = new URLSearchParams({
-      artworkId,
+    const intent = {
       preserve: preserveIntent.slice(0, MAX_INTENT),
       transform: transformIntent.slice(0, MAX_INTENT),
-    });
-    router.push(`/create/work?${params.toString()}`);
+      baseVersionNumber: current.versionNumber,
+    };
+    try {
+      window.sessionStorage.setItem(`${REVIEW_INTENT_PREFIX}.${artworkId}`, JSON.stringify(intent));
+      setHandoffError(null);
+      router.push(`/create/work?artworkId=${encodeURIComponent(artworkId)}`);
+    } catch {
+      setHandoffError("Não foi possível preparar a passagem privada nesta aba. Tente novamente antes de sair da Mesa.");
+    }
   };
 
   return (
@@ -89,7 +97,8 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
           <label><b>Transformar</b><span>Qual decisão precisa mudar na próxima passagem?</span><textarea rows={3} maxLength={MAX_INTENT} value={transform} onChange={(event) => setTransform(event.target.value)} placeholder="Ex.: transformar o peso das linhas nas áreas de sombra" /><small>{transform.length}/{MAX_INTENT}</small></label>
         </div>
         <button className="primary version-intent-action" type="button" disabled={!intentReady} onClick={continueWithIntent}>Levar decisão para a Câmara →</button>
-        <p className="version-intent-note">A decisão viaja somente para a próxima sessão. Ela não altera a obra nem cria Evidence até uma nova versão ser realmente registrada.</p>
+        <p className="version-intent-note">A decisão fica somente nesta aba, escopada a esta obra e à versão atual. O texto não é colocado na URL e não cria Evidence até uma nova versão ser realmente registrada.</p>
+        {handoffError ? <p className="flow-error" role="alert">{handoffError}</p> : null}
       </aside>
     </section>
   );

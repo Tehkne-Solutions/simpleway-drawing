@@ -87,27 +87,49 @@ assert.match(html, new RegExp(`/create/work\\?artworkId=${artwork.id}`));
 
 const preserveIntent = "Preservar a silhueta simples";
 const transformIntent = "Transformar o peso das linhas";
-const handoff = new URLSearchParams({ artworkId: artwork.id, preserve: preserveIntent, transform: transformIntent });
-const chamberWithIntent = await fetch(`${baseUrl}/create/work?${handoff.toString()}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
-await assertHttp(chamberWithIntent, 200, "review intent Work Chamber handoff");
-const chamberIntentHtml = await chamberWithIntent.text();
-assert.match(chamberIntentHtml, /decisão da Mesa chegou como intenção da próxima passagem/);
-assert.match(chamberIntentHtml, /DECISÃO TRAZIDA DA MESA/);
-assert.match(chamberIntentHtml, /Preservar a silhueta simples/);
-assert.match(chamberIntentHtml, /Transformar o peso das linhas/);
-assert.match(chamberIntentHtml, /o draft continua tendo prioridade e não é sobrescrito/);
+const leakedHandoff = new URLSearchParams({ artworkId: artwork.id, preserve: preserveIntent, transform: transformIntent });
+const leakedResponse = await fetch(`${baseUrl}/create/work?${leakedHandoff.toString()}`, {
+  headers: { cookie: ownerCookie },
+  redirect: "manual",
+  cache: "no-store",
+});
+await assertHttp(leakedResponse, 307, "private review intent canonical redirect");
+assert.ok(leakedResponse.headers.get("x-request-id"));
+const leakedLocation = leakedResponse.headers.get("location");
+assert.ok(leakedLocation);
+const canonicalUrl = new URL(leakedLocation, baseUrl);
+assert.equal(canonicalUrl.pathname, "/create/work");
+assert.equal(canonicalUrl.searchParams.get("artworkId"), artwork.id);
+assert.equal(canonicalUrl.searchParams.has("preserve"), false);
+assert.equal(canonicalUrl.searchParams.has("transform"), false);
+const chamberFromCanonicalUrl = await fetch(canonicalUrl, { headers: { cookie: ownerCookie }, cache: "no-store" });
+await assertHttp(chamberFromCanonicalUrl, 200, "private review canonical Chamber render");
+const chamberHtml = await chamberFromCanonicalUrl.text();
+assert.match(chamberHtml, /sem trafegar na URL/);
+assert.doesNotMatch(chamberHtml, /Preservar a silhueta simples/);
+assert.doesNotMatch(chamberHtml, /Transformar o peso das linhas/);
+assert.doesNotMatch(chamberHtml, /DECISÃO TRAZIDA DA MESA/);
 
 const incompleteHandoff = new URLSearchParams({ artworkId: artwork.id, preserve: preserveIntent });
-const chamberWithoutCompleteIntent = await fetch(`${baseUrl}/create/work?${incompleteHandoff.toString()}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
-await assertHttp(chamberWithoutCompleteIntent, 200, "incomplete review intent ignored");
-assert.doesNotMatch(await chamberWithoutCompleteIntent.text(), /DECISÃO TRAZIDA DA MESA/);
+const incompleteResponse = await fetch(`${baseUrl}/create/work?${incompleteHandoff.toString()}`, {
+  headers: { cookie: ownerCookie },
+  redirect: "manual",
+  cache: "no-store",
+});
+await assertHttp(incompleteResponse, 307, "incomplete legacy intent canonical redirect");
+const incompleteLocation = incompleteResponse.headers.get("location");
+assert.ok(incompleteLocation);
+const incompleteCanonical = new URL(incompleteLocation, baseUrl);
+assert.equal(incompleteCanonical.searchParams.get("artworkId"), artwork.id);
+assert.equal(incompleteCanonical.searchParams.has("preserve"), false);
+assert.equal(incompleteCanonical.searchParams.has("transform"), false);
 
 const outsiderCookie = await createSession();
 const outsider = await fetch(`${baseUrl}/create/${artwork.id}`, { headers: { cookie: outsiderCookie }, cache: "no-store" });
 await assertHttp(outsider, 200, "comparison outsider detail page");
 assert.match(await outsider.text(), /Esta etapa não foi encontrada/);
-const outsiderHandoff = await fetch(`${baseUrl}/create/work?${handoff.toString()}`, { headers: { cookie: outsiderCookie }, cache: "no-store" });
-await assertHttp(outsiderHandoff, 200, "review intent outsider Chamber page");
+const outsiderHandoff = await fetch(`${baseUrl}/create/work?artworkId=${encodeURIComponent(artwork.id)}`, { headers: { cookie: outsiderCookie }, cache: "no-store" });
+await assertHttp(outsiderHandoff, 200, "private review outsider Chamber page");
 assert.match(await outsiderHandoff.text(), /Esta etapa não foi encontrada/);
 
-console.log("VERSION_COMPARISON_E2E=PASS two_version_truth reference_v1 current_v2 side_by_side wipe_ruler process_notes review_intent_handoff incomplete_intent_fail_closed chamber_return owner_isolation");
+console.log("VERSION_COMPARISON_E2E=PASS two_version_truth reference_v1 current_v2 side_by_side wipe_ruler process_notes private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
