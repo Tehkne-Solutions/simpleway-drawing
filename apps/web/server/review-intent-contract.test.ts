@@ -23,6 +23,15 @@ test("comparison captures both review decisions locally without putting creative
   assert.doesNotMatch(component, /fetch\(|method:\s*"POST"|method:\s*"PUT"|method:\s*"PATCH"/);
 });
 
+test("legacy review intent query params are removed before Work Chamber rendering", () => {
+  const middleware = source("middleware.ts");
+  assert.match(middleware, /legacyReviewIntentParams = \["preserve", "transform"\]/);
+  assert.match(middleware, /request\.nextUrl\.pathname === "\/create\/work"/);
+  assert.match(middleware, /canonical\.searchParams\.delete\(param\)/);
+  assert.match(middleware, /NextResponse\.redirect\(canonical, 307\)/);
+  assert.match(middleware, /matcher: \["\/api\/:path\*", "\/create\/work"\]/);
+});
+
 test("Work Chamber HTTP boundary receives only artworkId and resolves ownership before client hydration", () => {
   const page = source("app/create/work/page.tsx");
   assert.match(page, /searchParams: Promise<\{ artworkId\?: string \}>/);
