@@ -55,11 +55,14 @@ const create = await fetch(`${baseUrl}/api/artworks`, {
 await assertHttp(create, 201, "comparison create artwork v1");
 const artwork = (await create.json()).artwork;
 
+const preservedDecision = "silhueta simples e legível";
+const transformedDecision = "peso das linhas nas áreas de sombra";
+const reviewPlanNotes = `Preservar: ${preservedDecision}\nTransformar: ${transformedDecision}`;
 const secondFile = await uploadPrivate(ownerCookie, png2);
 const addVersion = await fetch(`${baseUrl}/api/artworks/${artwork.id}/versions`, {
   method: "POST",
   headers: { cookie: ownerCookie, "content-type": "application/json" },
-  body: JSON.stringify({ fileAssetId: secondFile, source: "CANVAS", notes: "Segundo passe atual" }),
+  body: JSON.stringify({ fileAssetId: secondFile, source: "CANVAS", notes: reviewPlanNotes }),
 });
 await assertHttp(addVersion, 201, "comparison create artwork v2");
 assert.equal((await addVersion.json()).version.versionNumber, 2);
@@ -68,7 +71,7 @@ const apiDetail = await fetch(`${baseUrl}/api/artworks/${artwork.id}`, { headers
 await assertHttp(apiDetail, 200, "comparison artwork detail api");
 const detailPayload = await apiDetail.json();
 assert.deepEqual(detailPayload.versions.map((version) => version.versionNumber), [2, 1]);
-assert.deepEqual(detailPayload.versions.map((version) => version.notes), ["Segundo passe atual", "Primeiro passe preservado"]);
+assert.deepEqual(detailPayload.versions.map((version) => version.notes), [reviewPlanNotes, "Primeiro passe preservado"]);
 
 const page = await fetch(`${baseUrl}/create/${artwork.id}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
 await assertHttp(page, 200, "comparison artwork detail page");
@@ -79,7 +82,12 @@ assert.match(html, /RÉGUA DE SOBREPOSIÇÃO/);
 assert.match(html, /Base V1/);
 assert.match(html, /Sobreposição V2/);
 assert.match(html, /Primeiro passe preservado/);
-assert.match(html, /Segundo passe atual/);
+assert.match(html, /CICLO DE REVISÃO/);
+assert.match(html, /RESULTADO VISÍVEL/);
+assert.match(html, new RegExp(preservedDecision));
+assert.match(html, new RegExp(transformedDecision));
+assert.match(html, /A Mesa não decide se a intenção foi cumprida/);
+assert.match(html, /não existe nota automática de qualidade/);
 assert.match(html, /CROMA · DECISÃO DE REVISÃO/);
 assert.match(html, /Levar decisão para a Câmara/);
 assert.match(html, /Criar próxima versão na Câmara/);
@@ -132,4 +140,4 @@ const outsiderHandoff = await fetch(`${baseUrl}/create/work?artworkId=${encodeUR
 await assertHttp(outsiderHandoff, 200, "private review outsider Chamber page");
 assert.match(await outsiderHandoff.text(), /Esta etapa não foi encontrada/);
 
-console.log("VERSION_COMPARISON_E2E=PASS two_version_truth reference_v1 current_v2 side_by_side wipe_ruler process_notes private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
+console.log("VERSION_COMPARISON_E2E=PASS two_version_truth reference_v1 current_v2 side_by_side wipe_ruler durable_review_cycle no_art_score private_session_handoff legacy_url_canonicalization chamber_return owner_isolation");
