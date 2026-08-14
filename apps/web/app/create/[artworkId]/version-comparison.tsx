@@ -4,7 +4,7 @@ import { REVIEW_PLAN_DECISION_MAX_LENGTH, type ArtworkReviewPlan } from "@swd/do
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
-import { parseReviewCyclePlan } from "../review-cycle";
+import { resolveReviewCycle } from "../review-cycle";
 
 type VersionForComparison = {
   id: string;
@@ -32,14 +32,16 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
 
   if (!current || !selected || versions.length < 2) return null;
 
-  const legacyCurrentPlan = current.source === "CANVAS" && !current.reviewPlan ? parseReviewCyclePlan(current.notes) : null;
-  const currentPlan = current.source === "CANVAS" ? current.reviewPlan ?? legacyCurrentPlan : null;
-  const reviewBaseVersion = current.reviewPlan?.baseVersionNumber ?? Math.max(1, current.versionNumber - 1);
-  const currentProcessText = current.reviewPlan
-    ? current.notes || "Sem reflexão livre registrada nesta passagem."
-    : legacyCurrentPlan
-      ? "Plano legado de revisão preservado abaixo para leitura junto da evidência visual."
-      : current.notes || "Sem nota de processo nesta versão.";
+  const currentCycle = resolveReviewCycle(current);
+  const selectedCycle = resolveReviewCycle(selected);
+  const currentPlan = currentCycle?.plan ?? null;
+  const reviewBaseVersion = currentCycle?.baseVersionNumber ?? Math.max(1, current.versionNumber - 1);
+  const currentProcessText = currentCycle?.provenance === "LEGACY"
+    ? "Plano legado de revisão preservado abaixo para leitura junto da evidência visual."
+    : current.notes || "Sem reflexão livre registrada nesta passagem.";
+  const selectedProcessText = selectedCycle?.provenance === "LEGACY"
+    ? "Plano legado preservado no Caderno de Revisões."
+    : selected.notes || "Sem reflexão livre registrada nesta versão.";
   const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(new Date(value));
   const preserveIntent = preserve.trim();
   const transformIntent = transform.trim();
@@ -79,7 +81,7 @@ export function VersionComparison({ versions, artworkTitle, artworkId }: { versi
       <div className="version-compare-grid">
         <article className="version-compare-card is-reference">
           <div className="version-compare-image"><img src={selected.readUrl} alt={`${artworkTitle} · versão ${selected.versionNumber}`} /></div>
-          <div className="version-compare-meta"><span>REFERÊNCIA · V{selected.versionNumber}</span><strong>{sourceLabel[selected.source] ?? selected.source}</strong><small>{formatDate(selected.createdAt)}</small><p>{selected.notes || "Sem nota de processo nesta versão."}</p></div>
+          <div className="version-compare-meta"><span>REFERÊNCIA · V{selected.versionNumber}</span><strong>{sourceLabel[selected.source] ?? selected.source}</strong><small>{formatDate(selected.createdAt)}</small>{selectedCycle ? <small className="version-reference-cycle">CICLO V{selectedCycle.baseVersionNumber} → V{selected.versionNumber}</small> : null}<p>{selectedProcessText}</p></div>
         </article>
         <article className="version-compare-card is-current">
           <div className="version-compare-image"><img src={current.readUrl} alt={`${artworkTitle} · versão atual ${current.versionNumber}`} /></div>

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
-import { parseReviewCyclePlan } from "../app/create/review-cycle";
+import { parseReviewCyclePlan, resolveReviewCycle } from "../app/create/review-cycle";
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
@@ -26,18 +26,45 @@ test("legacy parser fails closed for partial, reordered, expanded or oversized n
   assert.equal(parseReviewCyclePlan(`Preservar: ${"a".repeat(281)}\nTransformar: linhas`), null);
 });
 
-test("Mesa prefers structured reviewPlan and only parses notes when structured data is absent", () => {
+test("shared resolver prefers a valid structured plan and preserves its base version", () => {
+  assert.deepEqual(resolveReviewCycle({
+    versionNumber: 3,
+    source: "CANVAS",
+    notes: "reflexão livre",
+    reviewPlan: { preserve: "silhueta", transform: "contraste", baseVersionNumber: 2 },
+  }), {
+    plan: { preserve: "silhueta", transform: "contraste" },
+    baseVersionNumber: 2,
+    provenance: "STRUCTURED",
+  });
+});
+
+test("shared resolver falls back to legacy note only when structured data cannot describe the transition", () => {
+  assert.deepEqual(resolveReviewCycle({
+    versionNumber: 2,
+    source: "CANVAS",
+    notes: "Preservar: gesto\nTransformar: peso",
+    reviewPlan: { preserve: "inválido para esta versão", transform: "ignorar", baseVersionNumber: 9 },
+  }), {
+    plan: { preserve: "gesto", transform: "peso" },
+    baseVersionNumber: 1,
+    provenance: "LEGACY",
+  });
+  assert.equal(resolveReviewCycle({ versionNumber: 1, source: "CANVAS", notes: "Preservar: a\nTransformar: b", reviewPlan: null }), null);
+  assert.equal(resolveReviewCycle({ versionNumber: 2, source: "UPLOAD", notes: "Preservar: a\nTransformar: b", reviewPlan: null }), null);
+});
+
+test("Mesa and historical notebook use the same resolver instead of parallel review-cycle logic", () => {
   const component = source("app/create/[artworkId]/version-comparison.tsx");
-  assert.match(component, /current\.source === "CANVAS" && !current\.reviewPlan \? parseReviewCyclePlan\(current\.notes\) : null/);
-  assert.match(component, /current\.reviewPlan \?\? legacyCurrentPlan/);
-  assert.match(component, /current\.reviewPlan\?\.baseVersionNumber \?\? Math\.max\(1, current\.versionNumber - 1\)/);
-  assert.match(component, /current\.reviewPlan[\s\S]*current\.notes \|\| "Sem reflexão livre registrada nesta passagem\."/);
+  const page = source("app/create/[artworkId]/page.tsx");
+  assert.match(component, /const currentCycle = resolveReviewCycle\(current\)/);
+  assert.match(component, /const selectedCycle = resolveReviewCycle\(selected\)/);
+  assert.doesNotMatch(component, /parseReviewCyclePlan/);
+  assert.match(page, /reviewCycle: resolveReviewCycle\(version\)/);
   assert.match(component, /CICLO DE REVISÃO · V/);
   assert.match(component, /RESULTADO VISÍVEL/);
   assert.match(component, /A Mesa não decide se a intenção foi cumprida/);
   assert.match(component, /não existe nota automática de qualidade/);
-  assert.match(component, /currentPlan\.preserve/);
-  assert.match(component, /currentPlan\.transform/);
 });
 
 test("review-cycle ledger remains visual evidence reading rather than automated grading", () => {
