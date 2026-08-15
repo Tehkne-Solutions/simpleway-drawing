@@ -23,6 +23,8 @@ jobs:
     env:
       VERCEL_ORG_ID: team_GAFmMllTKaWx5iGEa8sTZJ0T
       VERCEL_PROJECT_ID: prj_EIWJ22DTPqH3Of0Jg8WMQ4mGrpqC
+      SWD_RELEASE_SHA: ${{ github.sha }}
+      SWD_RELEASE_REF: main
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -70,6 +72,7 @@ jobs:
           echo "## SimpleWay Drawing · Prebuilt Production Fallback" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Source: \`main\` / \`${GITHUB_SHA}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Embedded release identity: \`$SWD_RELEASE_SHA\` / \`$SWD_RELEASE_REF\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build location: GitHub Actions runner" >> "$GITHUB_STEP_SUMMARY"
           echo "- Deployment mode: Vercel prebuilt production" >> "$GITHUB_STEP_SUMMARY"
           echo "- URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
