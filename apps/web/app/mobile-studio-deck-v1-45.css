@@ -1,0 +1,575 @@
+/* V1.45 Mobile Studio Deck — canvas first, controls second. Desktop remains untouched. */
+@media (max-width: 760px) {
+  .app-shell-v12.is-game-workspace {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .is-game-workspace .app-stage-v12,
+  .is-game-workspace.is-collapsed .app-stage-v12 {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .is-game-workspace #main-content {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .game-studio-page {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    overflow: hidden !important;
+  }
+  .game-studio-body {
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  .game-studio-head {
+    position: static !important;
+    z-index: 6;
+    min-height: 62px !important;
+    max-height: 88px !important;
+    padding: 6px 8px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(118px, 58vw) !important;
+    gap: 7px !important;
+    overflow: hidden !important;
+  }
+  .game-studio-head > div:first-child {
+    display: block !important;
+    min-width: 0 !important;
+  }
+  .game-studio-head .eyebrow {
+    margin: 0 0 3px !important;
+    font-size: 7px !important;
+    letter-spacing: .08em !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .game-studio-head h1,
+  .manga-page-head h1,
+  .iso-page-head h1,
+  .pixel-page-head h1,
+  .work-chamber-head h1,
+  .tile-head h1,
+  .animation-head h1 {
+    margin: 0 !important;
+    max-width: 100% !important;
+    font: 600 15px/1.05 var(--swd-font-editorial) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .game-studio-head .secondary.link-button,
+  .game-studio-head > .secondary.link-button {
+    min-height: 34px !important;
+  }
+  .pixel-mode-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+  }
+  .pixel-mode-nav::-webkit-scrollbar { display: none; }
+  .pixel-mode-nav .link-button {
+    flex: 0 0 auto;
+    min-height: 30px !important;
+    padding: 6px 7px !important;
+    white-space: nowrap;
+    font-size: 8px !important;
+  }
+  .sprite-head-actions,
+  .tile-head-actions,
+  .animation-head-actions {
+    min-width: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+  }
+  .sprite-head-actions .pixel-mode-nav,
+  .tile-head-actions .pixel-mode-nav,
+  .animation-head-actions .pixel-mode-nav {
+    flex: 1 1 auto;
+  }
+  .sprite-head-actions > .link-button:last-child,
+  .tile-head-actions > .link-button:last-child,
+  .animation-head-actions > .link-button:last-child,
+  .manga-page-head > .link-button,
+  .iso-page-head > .link-button,
+  .work-chamber-head > .link-button {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    padding: 6px 0 !important;
+    overflow: hidden;
+    color: transparent !important;
+    position: relative;
+  }
+  .sprite-head-actions > .link-button:last-child::after,
+  .tile-head-actions > .link-button:last-child::after,
+  .animation-head-actions > .link-button:last-child::after,
+  .manga-page-head > .link-button::after,
+  .iso-page-head > .link-button::after,
+  .work-chamber-head > .link-button::after {
+    content: "×";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #27231e;
+    font: 700 20px/1 var(--swd-font-ui);
+  }
+
+  /* Manga — canvas occupies the playfield, controls become a horizontal deck. */
+  .is-game-workspace .manga-workbench {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 142px !important;
+    overflow: hidden !important;
+  }
+  .is-game-workspace .manga-canvas-panel {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: 38px minmax(0, 1fr) 22px !important;
+    order: -1;
+  }
+  .is-game-workspace .manga-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+  }
+  .is-game-workspace .manga-toolbar {
+    min-height: 38px !important;
+    padding: 4px 6px !important;
+  }
+  .is-game-workspace .manga-toolbar button { padding: 5px 6px !important; font-size: 8px !important; }
+  .is-game-workspace .manga-tools {
+    grid-row: 2 !important;
+    height: 142px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(178px, 68vw);
+    gap: 6px !important;
+    padding: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border-right: 0 !important;
+    border-top: 1px solid #4a4338 !important;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
+  }
+  .is-game-workspace .manga-tool-group {
+    height: 100%;
+    min-height: 0;
+    padding: 7px !important;
+    overflow-y: auto;
+    scroll-snap-align: start;
+  }
+  .is-game-workspace .manga-mission { margin: 0 !important; }
+
+  /* Isometric — drawing field first, mission becomes the lower briefing deck. */
+  .is-game-workspace .iso-game-shell {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 138px !important;
+    overflow: hidden !important;
+  }
+  .is-game-workspace .iso-workbench {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    order: -1;
+  }
+  .is-game-workspace .iso-canvas-frame {
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 5px !important;
+  }
+  .is-game-workspace .iso-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+  }
+  .is-game-workspace .iso-mission-panel {
+    grid-row: 2 !important;
+    height: 138px !important;
+    min-height: 0 !important;
+    padding: 9px 10px !important;
+    overflow-y: auto !important;
+    border-right: 0 !important;
+    border-top: 1px solid #4a4338 !important;
+  }
+  .is-game-workspace .iso-mission-panel h2 { font-size: 18px !important; margin: 4px 0 !important; }
+  .is-game-workspace .iso-mission-panel > p,
+  .is-game-workspace .iso-mission-panel blockquote { font-size: 9px !important; line-height: 1.35 !important; }
+
+  /* Pixel Studio — editor first, tool groups become swipeable cartridges. */
+  .pixel-workbench {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 150px !important;
+    overflow: hidden !important;
+  }
+  .pixel-stage {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    order: -1;
+  }
+  .pixel-canvas-area { min-height: 0 !important; height: 100% !important; }
+  .pixel-canvas-wrap { min-height: 0 !important; height: 100% !important; padding: 6px !important; }
+  .pixel-canvas { height: 100% !important; width: auto !important; max-width: 100% !important; max-height: 100% !important; }
+  .pixel-toolbar { min-height: 38px !important; padding: 4px 6px !important; flex-direction: row !important; align-items: center !important; }
+  .pixel-toolbar-actions { flex-wrap: nowrap !important; overflow-x: auto; }
+  .pixel-tools {
+    grid-row: 2 !important;
+    height: 150px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(178px, 68vw);
+    gap: 6px !important;
+    padding: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border-right: 0 !important;
+    border-top: 1px solid #4a4338;
+    scroll-snap-type: inline mandatory;
+  }
+  .pixel-tool-group,
+  .pixel-mission {
+    height: 100%;
+    min-height: 0;
+    padding: 7px !important;
+    overflow-y: auto;
+    scroll-snap-align: start;
+    margin: 0 !important;
+  }
+
+  /* Sprite Lab — animation canvas and frames first, controls live in cartridges. */
+  .sprite-workbench {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 150px !important;
+    overflow: hidden !important;
+  }
+  .sprite-stage {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    order: -1;
+  }
+  .sprite-canvas-area { min-height: 0 !important; height: 100% !important; }
+  .sprite-canvas-wrap { min-height: 0 !important; height: 100% !important; padding: 6px !important; }
+  .sprite-canvas { height: 100% !important; width: auto !important; max-width: 100% !important; max-height: 100% !important; }
+  .sprite-tools {
+    grid-row: 2 !important;
+    height: 150px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(178px, 68vw);
+    gap: 6px !important;
+    padding: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border-right: 0 !important;
+    border-top: 1px solid #4a4338;
+    scroll-snap-type: inline mandatory;
+  }
+  .sprite-tool-group,
+  .sprite-mission {
+    height: 100%;
+    min-height: 0;
+    padding: 7px !important;
+    overflow-y: auto;
+    scroll-snap-align: start;
+    margin: 0 !important;
+  }
+  .sprite-toolbar { flex-direction: row !important; align-items: center !important; min-height: 36px !important; overflow-x: auto; }
+
+  /* Tile Lab — tile editor first; preview is deferred to the control deck on small screens. */
+  .tile-page { min-height: 0 !important; }
+  .tile-shell {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 150px !important;
+    gap: 5px !important;
+    padding: 5px !important;
+    overflow: hidden !important;
+  }
+  .tile-workbench {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 6px !important;
+    order: -1;
+    overflow: hidden;
+  }
+  .tile-editor-bar { flex: 0 0 auto; margin-bottom: 4px !important; }
+  .tile-editor {
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    width: auto !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin: 0 auto;
+  }
+  .tile-tools {
+    grid-row: 2 !important;
+    height: 150px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(178px, 68vw);
+    gap: 6px;
+    padding: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: inline mandatory;
+  }
+  .tile-tools section {
+    height: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 7px !important;
+    overflow-y: auto;
+    border: 1px solid #413a30 !important;
+    scroll-snap-align: start;
+  }
+  .tile-preview-panel { display: none !important; }
+
+  /* Animation Lab — editor/timeline first, timing controls in lower cartridges. */
+  .animation-page { min-height: 0 !important; }
+  .animation-shell {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 150px !important;
+    gap: 5px !important;
+    padding: 5px !important;
+    overflow: hidden !important;
+  }
+  .animation-workbench {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 6px !important;
+    order: -1;
+    overflow: hidden;
+  }
+  .animation-editor {
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    width: auto !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin: 0 auto;
+  }
+  .animation-bar,
+  .animation-timeline,
+  .animation-duration { flex: 0 0 auto; }
+  .animation-timeline { padding: 4px 0 !important; }
+  .animation-tools {
+    grid-row: 2 !important;
+    height: 150px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(178px, 68vw);
+    gap: 6px;
+    padding: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: inline mandatory;
+  }
+  .animation-tools section {
+    height: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 7px !important;
+    overflow-y: auto;
+    border: 1px solid #413a30 !important;
+    scroll-snap-align: start;
+  }
+  .animation-preview-panel { display: none !important; }
+
+  /* Câmara da Obra — canvas first, creation tools and save strip remain reachable below. */
+  .work-chamber-page { width: 100% !important; height: 100% !important; min-height: 0 !important; padding: 0 !important; }
+  .work-chamber-shell {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 126px 86px !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+  }
+  .work-canvas-station {
+    grid-row: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    order: -1;
+  }
+  .work-canvas-frame { min-height: 0 !important; height: 100% !important; padding: 5px !important; }
+  .work-chamber-tools {
+    grid-row: 2 !important;
+    height: 126px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(178px, 68vw);
+    gap: 6px !important;
+    padding: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: inline mandatory;
+  }
+  .work-tool-group {
+    height: 100%;
+    min-height: 0;
+    padding: 7px !important;
+    overflow-y: auto;
+    scroll-snap-align: start;
+  }
+  .work-chamber-record {
+    grid-row: 3 !important;
+    height: 86px !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 96px !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    overflow: hidden !important;
+  }
+  .work-croma-seal,
+  .work-chamber-record > p,
+  .work-save-summary { display: none !important; }
+  .work-record-fields {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    min-width: 0;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px !important;
+  }
+  .work-record-fields label { min-width: 0; font-size: 7px !important; }
+  .work-record-fields input,
+  .work-record-fields textarea { min-height: 30px; padding: 5px !important; font-size: 8px !important; }
+  .work-record-fields textarea { height: 34px; min-height: 34px; resize: none; }
+  .work-save-button {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 6px !important;
+  }
+
+  /* Expedição — map first; dossier becomes a compact briefing strip. */
+  .synthesis-quest-board {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) 132px !important;
+    gap: 5px !important;
+    padding: 5px !important;
+    overflow: hidden !important;
+  }
+  .quest-map {
+    grid-row: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+    gap: 5px !important;
+    padding: 9px !important;
+    order: -1;
+    overflow: hidden !important;
+  }
+  .quest-node {
+    min-height: 0 !important;
+    padding: 7px !important;
+    overflow: hidden;
+  }
+  .quest-node-core {
+    grid-template-columns: 32px minmax(0, 1fr) !important;
+    gap: 6px !important;
+    padding: 6px 0 !important;
+  }
+  .quest-node-glyph { width: 32px !important; height: 32px !important; font-size: 14px !important; }
+  .quest-node-core strong { font-size: 14px !important; }
+  .quest-node-core p,
+  .quest-node-reward { display: none !important; }
+  .quest-node > a { margin-top: auto !important; font-size: 8px !important; }
+  .quest-dossier {
+    grid-row: 2 !important;
+    height: 132px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    overflow-y: auto !important;
+  }
+  .quest-seal { float: left; width: 38px !important; height: 38px !important; margin: 0 9px 5px 0 !important; font-size: 18px !important; }
+  .quest-dossier h2 { margin: 3px 0 4px !important; font-size: 18px !important; }
+  .quest-dossier > p:not(.eyebrow) { font-size: 9px !important; line-height: 1.35 !important; }
+  .quest-rank { clear: both; margin-top: 6px !important; padding: 5px 0 !important; }
+  .quest-reward-vault { display: none !important; }
+}
+
+@media (max-width: 430px) {
+  .game-studio-head { grid-template-columns: minmax(0, 1fr) minmax(112px, 55vw) !important; }
+  .is-game-workspace .manga-workbench,
+  .is-game-workspace .iso-game-shell,
+  .pixel-workbench,
+  .sprite-workbench,
+  .tile-shell,
+  .animation-shell { grid-template-rows: minmax(0, 1fr) 136px !important; }
+  .pixel-tools,
+  .sprite-tools,
+  .tile-tools,
+  .animation-tools { height: 136px !important; }
+  .work-chamber-shell { grid-template-rows: minmax(0, 1fr) 112px 78px !important; }
+  .work-chamber-tools { height: 112px !important; }
+  .work-chamber-record { height: 78px !important; }
+}
