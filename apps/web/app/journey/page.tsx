@@ -7,6 +7,7 @@ import { derivePlayerRank } from "../../game/progression";
 import { getJourneyArtworkPreview } from "../../server/artwork-archive";
 import { getAlphaRepository, getDatabase, getPixelExpeditionRepository, getStudioEvidenceRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
+import { CromaMark } from "../components/croma-mark";
 import "./journey-v13.css";
 import "./atlas-v17.css";
 import "./atlas-creative-v15.css";
@@ -104,7 +105,7 @@ export default async function JourneyPage() {
       <section className="atlas-world-board atlas-world-board-v15" aria-label="Mapa vivo do Atlas do Olhar">
         <div className="atlas-map-ink" aria-hidden="true"><i /><i /><i /><i /></div>
         <div className="atlas-croma-center">
-          <span className="atlas-croma-avatar" aria-hidden="true">C</span>
+          <span className="atlas-croma-avatar" aria-hidden="true"><CromaMark /></span>
           <small>CROMA OBSERVA</small>
           <strong>{rank.title}</strong>
           <p>{rank.description}</p>
@@ -160,7 +161,7 @@ export default async function JourneyPage() {
           {baseline && revisit ? <article className="atlas-milestone before-after"><span>ANTES / DEPOIS</span><div><img src={baseline.imageUrl} alt="Drawing Zero original" /><img src={revisit.imageUrl} alt="Drawing Zero revisitado" /></div><strong>Drawing Zero</strong><p>Compare processo, proporção, simplificação e volume.</p></article> : null}
           {graduation ? <article className="atlas-milestone graduation"><span>ARCO CONCLUÍDO</span><div className="milestone-seal">✦</div><strong>Foundation Alpha</strong><p>Primeiro arco integrado demonstrado com Evidence real.</p></article> : null}
           {items.slice(0, baseline && revisit ? 2 : 3).map((item) => <article className="atlas-milestone" key={item.id}>{item.imageUrl ? <div className="milestone-preview-wrap"><img className="milestone-preview" src={item.imageUrl} alt={`Evidência privada${item.imageVersionNumber ? ` v${item.imageVersionNumber}` : ""}`} />{item.imageVersionNumber ? <span>{`VISUAL V${item.imageVersionNumber}`}</span> : null}</div> : <div className="milestone-seal">{item.type === "ARTWORK_CREATED" ? "✎" : item.type === "STUDIO_MISSION_COMPLETED" ? "◆" : "◇"}</div>}<span>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(item.occurredAt)}</span><strong>{item.title}</strong><p>{describe(item)}</p>{item.artworkId ? <Link href={`/create/${item.artworkId}`}>Abrir criação →</Link> : null}</article>)}
-          {items.length === 0 && !graduation && !(baseline && revisit) ? <article className="atlas-milestone empty"><div className="milestone-seal">C</div><strong>O mapa espera sua primeira marca.</strong><p>Entre em um Atelier e produza uma evidência.</p><Link href="/create">Abrir Atelier Livre →</Link></article> : null}
+          {items.length === 0 && !graduation && !(baseline && revisit) ? <article className="atlas-milestone empty"><div className="atlas-empty-croma" aria-hidden="true"><CromaMark /></div><strong>O mapa espera sua primeira marca.</strong><p>Entre em um Atelier e produza uma evidência.</p><Link href="/create">Abrir Atelier Livre →</Link></article> : null}
         </div>
       </section>
 

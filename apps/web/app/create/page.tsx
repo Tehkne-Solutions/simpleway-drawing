@@ -64,33 +64,38 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
           </div>
         </section>
 
-        <section className="create-external-register" id="registro-externo">
-          <div className="section-heading"><div><p className="eyebrow">{alphaMode ? "Registro da Prova" : "Registro externo"}</p><h2>{alphaMode ? preset.title : "Traga estudos feitos fora do app."}</h2></div></div>
-          <p className="compact">{alphaMode ? "Envie a evidência visual da prova. Notas do processo continuam livres; tipo e título permanecem canônicos para o Rito reconhecê-la." : "Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar aos Studios e à Câmara."}</p>
-          <ArtworkForm initialType={preset.type} initialTitle={preset.title} initialNotes={preset.notes} lockPreset={alphaMode} {...(alphaMode ? { returnTo: "/alpha" } : {})} />
-        </section>
+        <details className="create-secondary-drawer" open={alphaMode}>
+          <summary><div><span>{alphaMode ? "Registro da Prova" : "Registro externo"}</span><strong>{alphaMode ? preset.title : "Trazer estudo feito fora do app"}</strong></div></summary>
+          <div className="create-secondary-drawer-body create-external-register" id="registro-externo">
+            <p className="compact">{alphaMode ? "Envie a evidência visual da prova. Notas do processo continuam livres; tipo e título permanecem canônicos para o Rito reconhecê-la." : "Fotografou um sketchbook ou desenhou em outro software? Registre aqui para preservar a evolução no Atlas. Esse fluxo é complementar aos Studios e à Câmara."}</p>
+            <ArtworkForm initialType={preset.type} initialTitle={preset.title} initialNotes={preset.notes} lockPreset={alphaMode} {...(alphaMode ? { returnTo: "/alpha" } : {})} />
+          </div>
+        </details>
 
-        <section className="create-library">
-          <div className="section-heading"><div><p className="eyebrow">Arquivo Vivo do Atelier</p><h2>Suas obras são visuais antes de serem registros.</h2></div><Link href="/journey" className="secondary link-button">Ver Atlas</Link></div>
-          {artworks.length === 0 ? <div className="empty-create"><strong>Ainda não há registros no arquivo.</strong><span>Seu primeiro estudo salvo aparecerá aqui e no Atlas do Olhar.</span></div> : (
-            <div className="artwork-grid artwork-grid-visual">
-              {artworks.map((artwork) => (
-                <Link key={artwork.id} href={`/create/${artwork.id}`} className="artwork-tile artwork-tile-visual">
-                  <div className="artwork-tile-preview">
-                    <img src={artwork.imageUrl} alt={`Versão atual de ${artwork.title ?? "obra"}`} />
-                    <span className="artwork-version-badge">VERSÃO ATUAL · V{artwork.versionNumber}</span>
-                  </div>
-                  <div className="artwork-tile-copy">
-                    <span className="artwork-type">{typeLabel[artwork.type] ?? artwork.type}</span>
-                    <h3>{artwork.title ?? "Sem título"}</h3>
-                    <p>{sourceLabel[artwork.source] ?? artwork.source} · {artwork.visibility === "PRIVATE" ? "Privado" : artwork.visibility}</p>
-                    <small>Atualizado {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(artwork.updatedAt)}</small>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+        <details className="create-secondary-drawer">
+          <summary><div><span>Arquivo Vivo do Atelier</span><strong>{artworks.length ? `${artworks.length} obra(s) preservada(s)` : "Suas obras aparecem aqui"}</strong></div></summary>
+          <div className="create-secondary-drawer-body create-library">
+            <div className="section-heading"><div><p className="eyebrow">Arquivo Vivo do Atelier</p><h2>Suas obras são visuais antes de serem registros.</h2></div><Link href="/journey" className="secondary link-button">Ver Atlas</Link></div>
+            {artworks.length === 0 ? <div className="empty-create"><strong>Ainda não há registros no arquivo.</strong><span>Seu primeiro estudo salvo aparecerá aqui e no Atlas do Olhar.</span></div> : (
+              <div className="artwork-grid artwork-grid-visual">
+                {artworks.map((artwork) => (
+                  <Link key={artwork.id} href={`/create/${artwork.id}`} className="artwork-tile artwork-tile-visual">
+                    <div className="artwork-tile-preview">
+                      <img src={artwork.imageUrl} alt={`Versão atual de ${artwork.title ?? "obra"}`} />
+                      <span className="artwork-version-badge">VERSÃO ATUAL · V{artwork.versionNumber}</span>
+                    </div>
+                    <div className="artwork-tile-copy">
+                      <span className="artwork-type">{typeLabel[artwork.type] ?? artwork.type}</span>
+                      <h3>{artwork.title ?? "Sem título"}</h3>
+                      <p>{sourceLabel[artwork.source] ?? artwork.source} · {artwork.visibility === "PRIVATE" ? "Privado" : artwork.visibility}</p>
+                      <small>Atualizado {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(artwork.updatedAt)}</small>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </details>
         <div className="flow-actions"><Link className="secondary link-button" href={alphaMode ? "/alpha" : "/"}>{alphaMode ? "Voltar ao Rito Alpha" : "Voltar à Home"}</Link></div>
       </section>
     </main>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CromaMark } from "./croma-mark";
 
 type CromaCoachProps = {
   eyebrow?: string;
@@ -20,8 +21,7 @@ export function CromaCoach({
   return (
     <aside className={`croma-coach croma-tone-${tone}`}>
       <div className="croma-coach-avatar" aria-hidden="true">
-        <span className="croma-eye">◉</span>
-        <span className="croma-tail">↻</span>
+        <CromaMark />
       </div>
       <div className="croma-coach-copy">
         <p className="croma-coach-eyebrow">{eyebrow}</p>
