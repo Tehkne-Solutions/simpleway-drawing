@@ -21,6 +21,7 @@ jobs:
     timeout-minutes: 10
     env:
       DEPLOY_BASE_URL: ${{ inputs.deploy_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - name: Checkout production gate
         uses: actions/checkout@v4
@@ -40,7 +41,7 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Decision: **GO**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Gate: health, database readiness, security headers, public identity, privacy, Ops guard, secure session, learning runtime, diagnostics, privacy export and CSRF" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Gate: deployment protection, health, database readiness, security headers, public identity, privacy, Ops guard, secure session, learning runtime, diagnostics, privacy export and CSRF" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"
 
@@ -51,6 +52,6 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Decision: **NO-GO**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Action: correct the failing production contract before inviting testers." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Action: correct Vercel Deployment Protection or the failing production contract before inviting testers." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"
