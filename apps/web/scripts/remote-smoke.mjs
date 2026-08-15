@@ -1,3 +1,9 @@
+import {
+  assertDeploymentAccessible,
+  protectionBypassStatus,
+  vercelProtectionHeaders,
+} from "./vercel-protection.mjs";
+
 const rawBaseUrl = process.env.DEPLOY_BASE_URL ?? process.argv[2];
 if (!rawBaseUrl) {
   console.error("REMOTE_SMOKE requires DEPLOY_BASE_URL or a URL argument");
@@ -8,6 +14,7 @@ const baseUrl = rawBaseUrl.replace(/\/$/, "");
 const target = new URL(baseUrl);
 const expectedOrigin = target.origin;
 const allowHttp = process.env.REMOTE_SMOKE_ALLOW_HTTP === "1";
+const protectionHeaders = vercelProtectionHeaders();
 
 if (!allowHttp && target.protocol !== "https:") {
   console.error("REMOTE_SMOKE requires HTTPS unless REMOTE_SMOKE_ALLOW_HTTP=1");
@@ -15,15 +22,18 @@ if (!allowHttp && target.protocol !== "https:") {
 }
 
 async function request(path, init = {}) {
-  return fetch(`${baseUrl}${path}`, {
+  const response = await fetch(`${baseUrl}${path}`, {
     redirect: "manual",
     cache: "no-store",
     ...init,
     headers: {
+      ...protectionHeaders,
       ...(init.headers ?? {}),
-      "user-agent": "simpleway-drawing-release-gate/3",
+      "user-agent": "simpleway-drawing-release-gate/4",
     },
   });
+  assertDeploymentAccessible(response, path);
+  return response;
 }
 
 function assert(condition, message) {
@@ -115,4 +125,5 @@ const blockedFeedback = await request("/api/feedback", {
 assert(blockedFeedback.status === 403, `cross-origin mutation was not blocked: ${blockedFeedback.status}`);
 assert((await blockedFeedback.json()).code === "CROSS_ORIGIN_REQUEST_BLOCKED", "unexpected cross-origin rejection code");
 
+console.log(`VERCEL_AUTOMATION_BYPASS=${protectionBypassStatus()}`);
 console.log(`REMOTE_RELEASE_GATE=PASS url=${baseUrl} health ready database storage headers home signature privacy ops_guard secure_cookie resume diagnostics privacy_export csrf`);
