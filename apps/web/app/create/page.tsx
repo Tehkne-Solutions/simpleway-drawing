@@ -26,6 +26,7 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
     : continuity?.phase === "CREATIVE_WORLD"
       ? { title: "Continue o território que já respondeu.", message: continuity.nextAction.description, label: "Seguir a Bússola", href: continuity.nextAction.href }
       : { title: "Hoje há uma expedição completa esperando por você.", message: "A Expedição da Síntese conecta quatro oficinas em uma campanha: forma, movimento, continuidade e tempo. O progresso é lido do que você realmente produz nos canvases.", label: "Jogar Expedição da Síntese", href: "/create/pixel/quest" };
+  const cromaState = alphaMode ? "challenge" as const : continuity?.phase === "FOUNDATION" || !continuity ? "teach" as const : "guide" as const;
 
   return (
     <main className="flow-shell">
@@ -46,6 +47,7 @@ export default async function CreatePage({ searchParams }: { searchParams: Promi
           actionLabel={alphaMode ? "Voltar ao Rito Alpha" : normalAction.label}
           actionHref={alphaMode ? "/alpha" : normalAction.href}
           tone="veronese"
+          state={cromaState}
         />
 
         <section className="studio-launchpad" aria-labelledby="studio-title">
