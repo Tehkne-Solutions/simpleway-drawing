@@ -1,8 +1,6 @@
-type VisualStudy = {
-  src: string;
-  alt: string;
-  caption: string;
-};
+import { C1_VISUAL_STUDIES, type FoundationVisualStudyDefinition } from "./foundation-visual-study-c1";
+
+type VisualStudy = FoundationVisualStudyDefinition;
 
 const FOUNDATION_VISUAL_STUDIES: Record<string, VisualStudy> = {
   "lesson.swd.c0.what_drawing_is": {
@@ -25,6 +23,7 @@ const FOUNDATION_VISUAL_STUDIES: Record<string, VisualStudy> = {
     alt: "Natureza-morta de garrafa e maçã passando de erro proporcional para medição, correção e refinamento.",
     caption: "Corrija proporção, posição e ângulo antes de investir em acabamento.",
   },
+  ...C1_VISUAL_STUDIES,
 };
 
 export function FoundationVisualStudy({ lessonKey }: { lessonKey: string }) {
