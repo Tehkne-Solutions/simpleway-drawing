@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Rails paralelos mantêm direção e espaçamento</title>
+  <desc id="desc">Quatro estágios mostram uma direção guia, pares paralelos, erros de convergência e um conjunto final de rails consistentes.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="23" font-weight="700"><text x="62" y="84">01 · DIREÇÃO</text><text x="362" y="84">02 · DUPLIQUE</text><text x="662" y="84">03 · DETECTE O DRIFT</text><text x="962" y="84">04 · MANTENHA O RITMO</text></g>
+  <g fill="none" stroke-linecap="round">
+    <path d="M73 338L244 171" stroke="#29251f" stroke-width="9"/>
+    <path d="M62 349L255 160" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+    <path d="M357 338L528 171M397 338L568 171" stroke="#29251f" stroke-width="8"/>
+    <path d="M377 354L548 187" stroke="#7f8a60" stroke-width="3" stroke-dasharray="7 7"/>
+    <path d="M662 342L836 172M705 342L812 172" stroke="#29251f" stroke-width="8"/>
+    <path d="M665 342L815 342M836 172L812 172" stroke="#a85b36" stroke-width="3"/>
+    <path d="M959 353L1110 205M980 332L1131 184M938 374L1089 226" stroke="#29251f" stroke-width="7"/>
+    <path d="M954 384L1138 204" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+  </g>
+  <g fill="#6f604b" font-family="Arial,sans-serif" font-size="14" text-anchor="middle"><text x="150" y="420">ESCOLHA UM EIXO</text><text x="450" y="420">COMPARE O ESPAÇO ENTRE LINHAS</text><text x="750" y="420">CONVERGÊNCIA ACIDENTAL = DRIFT</text><text x="1050" y="420">MESMA DIREÇÃO · MESMO INTERVALO</text></g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">PARALELISMO É DIREÇÃO + DISTÂNCIA — NÃO APENAS ÂNGULO</text>
+</svg>
