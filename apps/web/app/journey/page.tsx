@@ -1,11 +1,11 @@
-import { artworkVersions, artworks, fileAssets, journeyEntries } from "@swd/database";
+import { artworkVersions, artworks, journeyEntries } from "@swd/database";
 import { and, desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 import { CROMA_CANON } from "../../game/croma-canon";
 import { creativeWorldSummary, deriveCreativeTerritories, nextAtlasMission } from "../../game/atlas-world";
 import { derivePlayerRank } from "../../game/progression";
 import { getJourneyArtworkPreview } from "../../server/artwork-archive";
-import { getAlphaRepository, getDatabase, getPixelExpeditionRepository, getStorage, getStudioEvidenceRepository } from "../../server/runtime";
+import { getAlphaRepository, getDatabase, getPixelExpeditionRepository, getStudioEvidenceRepository } from "../../server/runtime";
 import { getSessionUserId } from "../../server/session";
 import "./journey-v13.css";
 import "./atlas-v17.css";
@@ -18,13 +18,12 @@ async function artworkPreview(userId: string, mode: "BASELINE" | "REVISIT") {
   const condition = mode === "BASELINE"
     ? and(eq(artworks.ownerUserId, userId), eq(artworks.type, "BASELINE"))
     : and(eq(artworks.ownerUserId, userId), eq(sql`lower(${artworks.title})`, "drawing zero revisited"));
-  const [row] = await db.select({ id: artworks.id, title: artworks.title, storageKey: fileAssets.storageKey })
+  const [row] = await db.select({ id: artworks.id, title: artworks.title, versionNumber: artworkVersions.versionNumber })
     .from(artworks)
     .innerJoin(artworkVersions, eq(artworkVersions.id, artworks.currentVersionId))
-    .innerJoin(fileAssets, eq(fileAssets.id, artworkVersions.fileAssetId))
     .where(condition)
     .limit(1);
-  return row ? { ...row, imageUrl: await getStorage().createPrivateReadUrl(row.storageKey) } : null;
+  return row ? { ...row, imageUrl: `/api/artworks/${encodeURIComponent(row.id)}/versions/${row.versionNumber}/image` } : null;
 }
 
 export default async function JourneyPage() {
