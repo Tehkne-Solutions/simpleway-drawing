@@ -4,6 +4,11 @@ import {
   protectionBypassStatus,
   vercelProtectionHeaders,
 } from "./vercel-protection.mjs";
+import {
+  assertReleaseIdentity,
+  expectedReleaseIdentity,
+  releaseExpectationStatus,
+} from "./release-identity.mjs";
 
 const rawBaseUrl = process.env.DEPLOY_BASE_URL ?? process.argv[2];
 if (!rawBaseUrl) {
@@ -22,6 +27,7 @@ const origin = target.origin;
 const results = [];
 const record = (name, ok, detail) => results.push({ name, ok, detail });
 const protectionHeaders = vercelProtectionHeaders();
+const expectedRelease = expectedReleaseIdentity();
 const request = (path, init = {}) => fetch(`${baseUrl}${path}`, {
   redirect: "manual",
   cache: "no-store",
@@ -29,7 +35,7 @@ const request = (path, init = {}) => fetch(`${baseUrl}${path}`, {
   headers: {
     ...protectionHeaders,
     ...(init.headers ?? {}),
-    "user-agent": "simpleway-drawing-production-launch-gate/2",
+    "user-agent": "simpleway-drawing-production-launch-gate/3",
   },
 });
 
@@ -45,6 +51,7 @@ async function check(name, fn) {
 const expect = (condition, message) => { if (!condition) throw new Error(message); };
 let sessionCookie = null;
 let platformAccessible = true;
+let healthPayload = null;
 
 await check("platform-access", async () => {
   const response = await request("/api/health");
@@ -60,12 +67,18 @@ if (platformAccessible) {
   await check("health", async () => {
     const response = await request("/api/health");
     expect(response.ok, `HTTP ${response.status}`);
-    const body = await response.json();
-    expect(body.status === "ok" && body.service === "simpleway-drawing-web", "invalid health payload");
+    healthPayload = await response.json();
+    expect(healthPayload.status === "ok" && healthPayload.service === "simpleway-drawing-web", "invalid health payload");
     expect((response.headers.get("cache-control") ?? "").includes("no-store"), "health cache policy is not no-store");
     expect(response.headers.get("x-content-type-options") === "nosniff", "security headers missing");
     expect(Boolean(response.headers.get("x-request-id")), "request id missing");
     return "service ok, security headers present";
+  });
+
+  await check("release-identity", async () => {
+    expect(healthPayload, "health payload unavailable");
+    const actual = assertReleaseIdentity(healthPayload, expectedRelease);
+    return `sha=${actual.sha} ref=${actual.ref}`;
   });
 
   await check("infrastructure-readiness", async () => {
@@ -156,8 +169,11 @@ if (platformAccessible) {
 }
 
 const failed = results.filter((item) => !item.ok);
+const expectation = releaseExpectationStatus(expectedRelease);
 console.log("\nSimpleWay Drawing · Production Launch Gate");
 console.log(`VERCEL_AUTOMATION_BYPASS=${protectionBypassStatus()}`);
+console.log(`EXPECTED_RELEASE_SHA=${expectation.sha}`);
+console.log(`EXPECTED_RELEASE_REF=${expectation.ref}`);
 for (const item of results) console.log(`${item.ok ? "PASS" : "FAIL"} ${item.name}: ${item.detail}`);
 console.log(`\nPRODUCTION_LAUNCH_GATE=${failed.length === 0 ? "GO" : "NO_GO"} url=${baseUrl} passed=${results.length - failed.length}/${results.length}`);
 console.log("Tehkné Solutions");
