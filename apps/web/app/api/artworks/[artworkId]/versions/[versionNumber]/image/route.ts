@@ -7,6 +7,8 @@ import { getSessionUserId } from "../../../../../../../server/session";
 
 export const dynamic = "force-dynamic";
 
+const supportedImageMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 export async function GET(request: Request, context: { params: Promise<{ artworkId: string; versionNumber: string }> }) {
   try {
     const userId = await getSessionUserId();
@@ -32,8 +34,13 @@ export async function GET(request: Request, context: { params: Promise<{ artwork
       .limit(1);
 
     if (!row) return NextResponse.json({ code: "ARTWORK_VERSION_NOT_FOUND" }, { status: 404, headers: { "cache-control": "no-store" } });
+    if (!supportedImageMimeTypes.has(row.mimeType)) {
+      return NextResponse.json({ code: "ARTWORK_IMAGE_NOT_AVAILABLE" }, { status: 415, headers: { "cache-control": "no-store" } });
+    }
 
     const file = await getStorage().readPrivateFile(row.storageKey);
+    if (file.mimeType !== row.mimeType) throw new Error("ARTWORK_IMAGE_METADATA_MISMATCH");
+
     const body = new ArrayBuffer(file.body.byteLength);
     new Uint8Array(body).set(file.body);
     return new Response(body, {
