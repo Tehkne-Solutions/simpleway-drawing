@@ -39,7 +39,7 @@ async function preflight() {
   const marker = await fetch(`${baseUrl}/studies/c4-form-check.svg`, { cache: "no-store" });
   await assertHttp(marker, 200, "V1.41 visual marker");
   const svg = await marker.text();
-  assert.match(svg, /<title id="title">HNK Form Check<\/title>/);
+  assert.match(svg, /<title id="title">HNK Form Check testa coerência espacial<\/title>/);
 
   const lesson = await fetch(`${baseUrl}/learn/c4/lesson.swd.c4.self_check`, { cache: "no-store" });
   await assertHttp(lesson, 200, "V1.41 lesson marker");
@@ -94,6 +94,17 @@ async function uploadPrivate(cookieHeader, bytes) {
 
 async function createArtwork(cookieHeader, { bytes, title, type, source = "UPLOAD", notes }) {
   const fileAssetId = await uploadPrivate(cookieHeader, bytes);
+  if (type === "BASELINE") {
+    const response = await fetch(`${baseUrl}/api/drawing-zero`, {
+      method: "POST",
+      headers: { cookie: cookieHeader, "content-type": "application/json" },
+      body: JSON.stringify({ fileAssetId, source }),
+    });
+    await assertHttp(response, 201, "create Drawing Zero");
+    const baseline = await response.json();
+    return { id: baseline.artworkId };
+  }
+
   const response = await fetch(`${baseUrl}/api/artworks`, {
     method: "POST",
     headers: { cookie: cookieHeader, "content-type": "application/json" },
@@ -399,10 +410,8 @@ async function main() {
       await cdp.send("Network.enable");
       await cdp.send("Runtime.enable");
       await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
-      await cdp.send("Network.setCookie", {
-        name: guest.cookieName,
-        value: guest.cookieValue,
-        url: baseUrl,
+      await cdp.send("Network.setExtraHTTPHeaders", {
+        headers: { Cookie: guest.cookieHeader },
       });
 
       const results = [];
