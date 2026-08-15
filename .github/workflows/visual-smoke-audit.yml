@@ -123,16 +123,7 @@ jobs:
           source = source.replace(baseline_old, baseline_new, 1)
 
           cookie_old = '      await cdp.send("Network.setCookie", { name: guest.cookieName, value: guest.cookieValue, url: baseUrl });'
-          cookie_new = '''      const cookieResult = await cdp.send("Network.setCookie", {
-        name: guest.cookieName,
-        value: guest.cookieValue,
-        url: baseUrl,
-        path: "/",
-        secure: true,
-        httpOnly: true,
-        sameSite: "Lax",
-      });
-      assert.notEqual(cookieResult.success, false, "Chrome rejected the production session cookie");'''
+          cookie_new = '      const cookieResult = await cdp.send("Network.setCookie", { name: guest.cookieName, value: guest.cookieValue, url: baseUrl, path: "/", secure: true, httpOnly: true, sameSite: "Lax" }); assert.notEqual(cookieResult.success, false, "Chrome rejected the production session cookie");'
           if cookie_old not in source:
               raise SystemExit("expected visual audit cookie injection not found")
           source = source.replace(cookie_old, cookie_new, 1)
