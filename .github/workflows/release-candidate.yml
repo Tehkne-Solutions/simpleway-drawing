@@ -17,10 +17,13 @@ concurrency:
 
 jobs:
   production-launch-gate:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       DEPLOY_BASE_URL: ${{ inputs.deploy_url }}
+      EXPECTED_RELEASE_SHA: ${{ github.sha }}
+      EXPECTED_RELEASE_REF: main
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - name: Checkout production gate
@@ -40,8 +43,9 @@ jobs:
           echo "## SimpleWay Drawing · Production Launch Gate" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Expected release: \`$EXPECTED_RELEASE_SHA\` (\`$EXPECTED_RELEASE_REF\`)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Decision: **GO**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Gate: deployment protection, health, database readiness, security headers, public identity, privacy, Ops guard, secure session, learning runtime, diagnostics, privacy export and CSRF" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Gate: deployment protection, release identity, health, database readiness, security headers, public identity, privacy, Ops guard, secure session, learning runtime, diagnostics, privacy export and CSRF" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"
 
@@ -51,7 +55,8 @@ jobs:
           echo "## SimpleWay Drawing · Production Launch Gate" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Target: \`$DEPLOY_BASE_URL\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Expected release: \`$EXPECTED_RELEASE_SHA\` (\`$EXPECTED_RELEASE_REF\`)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Decision: **NO-GO**" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Action: correct Vercel Deployment Protection or the failing production contract before inviting testers." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Action: correct Deployment Protection, stale release identity or the failing production contract before inviting testers." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tehkné Solutions" >> "$GITHUB_STEP_SUMMARY"

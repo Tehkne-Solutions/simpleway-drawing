@@ -3,6 +3,11 @@ import {
   protectionBypassStatus,
   vercelProtectionHeaders,
 } from "./vercel-protection.mjs";
+import {
+  assertReleaseIdentity,
+  expectedReleaseIdentity,
+  releaseExpectationStatus,
+} from "./release-identity.mjs";
 
 const rawBaseUrl = process.env.DEPLOY_BASE_URL ?? process.argv[2];
 if (!rawBaseUrl) {
@@ -15,6 +20,7 @@ const target = new URL(baseUrl);
 const expectedOrigin = target.origin;
 const allowHttp = process.env.REMOTE_SMOKE_ALLOW_HTTP === "1";
 const protectionHeaders = vercelProtectionHeaders();
+const expectedRelease = expectedReleaseIdentity();
 
 if (!allowHttp && target.protocol !== "https:") {
   console.error("REMOTE_SMOKE requires HTTPS unless REMOTE_SMOKE_ALLOW_HTTP=1");
@@ -29,7 +35,7 @@ async function request(path, init = {}) {
     headers: {
       ...protectionHeaders,
       ...(init.headers ?? {}),
-      "user-agent": "simpleway-drawing-release-gate/4",
+      "user-agent": "simpleway-drawing-release-gate/5",
     },
   });
   assertDeploymentAccessible(response, path);
@@ -52,6 +58,7 @@ assert(Boolean(health.headers.get("x-request-id")), "request id missing");
 const healthPayload = await health.json();
 assert(healthPayload.status === "ok", "health status is not ok");
 assert(healthPayload.service === "simpleway-drawing-web", "unexpected health service");
+const actualRelease = assertReleaseIdentity(healthPayload, expectedRelease);
 
 const ready = await request("/api/ready");
 assert(ready.ok, `readiness failed: ${ready.status}`);
@@ -125,5 +132,10 @@ const blockedFeedback = await request("/api/feedback", {
 assert(blockedFeedback.status === 403, `cross-origin mutation was not blocked: ${blockedFeedback.status}`);
 assert((await blockedFeedback.json()).code === "CROSS_ORIGIN_REQUEST_BLOCKED", "unexpected cross-origin rejection code");
 
+const expectation = releaseExpectationStatus(expectedRelease);
 console.log(`VERCEL_AUTOMATION_BYPASS=${protectionBypassStatus()}`);
-console.log(`REMOTE_RELEASE_GATE=PASS url=${baseUrl} health ready database storage headers home signature privacy ops_guard secure_cookie resume diagnostics privacy_export csrf`);
+console.log(`EXPECTED_RELEASE_SHA=${expectation.sha}`);
+console.log(`EXPECTED_RELEASE_REF=${expectation.ref}`);
+console.log(`ACTUAL_RELEASE_SHA=${actualRelease.sha}`);
+console.log(`ACTUAL_RELEASE_REF=${actualRelease.ref}`);
+console.log(`REMOTE_RELEASE_GATE=PASS url=${baseUrl} release health ready database storage headers home signature privacy ops_guard secure_cookie resume diagnostics privacy_export csrf`);
