@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Landmarks e envelope antes do contorno</title>
+  <desc id="desc">Quatro estágios mostram os extremos de uma cadeira, o envelope que os conecta, landmarks internos e o contorno final apoiado nessas âncoras.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="22" font-weight="700"><text x="62" y="84">01 · EXTREMOS</text><text x="362" y="84">02 · ENVELOPE</text><text x="662" y="84">03 · LANDMARKS</text><text x="962" y="84">04 · CONTORNO</text></g>
+  <g transform="translate(68 120)" fill="none" stroke-linecap="round">
+    <circle cx="130" cy="52" r="8" fill="#a85b36"/><circle cx="118" cy="334" r="8" fill="#a85b36"/><circle cx="32" cy="238" r="8" fill="#a85b36"/><circle cx="236" cy="224" r="8" fill="#a85b36"/>
+    <path d="M130 52V334M32 238H236" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+  </g>
+  <g transform="translate(368 120)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M130 52L236 224L118 334L32 238Z" stroke="#29251f" stroke-width="6"/>
+    <circle cx="130" cy="52" r="6" fill="#a85b36"/><circle cx="118" cy="334" r="6" fill="#a85b36"/><circle cx="32" cy="238" r="6" fill="#a85b36"/><circle cx="236" cy="224" r="6" fill="#a85b36"/>
+  </g>
+  <g transform="translate(668 120)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M130 52L236 224L118 334L32 238Z" stroke="#756753" stroke-width="3" stroke-dasharray="7 7"/>
+    <circle cx="88" cy="143" r="7" fill="#c69631"/><circle cx="160" cy="146" r="7" fill="#c69631"/><circle cx="74" cy="230" r="7" fill="#c69631"/><circle cx="176" cy="229" r="7" fill="#c69631"/><circle cx="95" cy="300" r="7" fill="#c69631"/>
+    <path d="M88 143L160 146M74 230L176 229M88 143L74 230M160 146L176 229M74 230L95 300M176 229L118 334" stroke="#29251f" stroke-width="5"/>
+  </g>
+  <g transform="translate(968 120)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M90 68C88 121 86 170 75 228L176 229C165 176 158 120 157 69" stroke-width="7"/>
+    <path d="M76 229L97 296M174 229L117 334M97 296L118 334" stroke-width="7"/>
+    <path d="M75 228L176 229L208 257L104 263Z" stroke-width="7"/>
+    <path d="M104 263L90 334M208 257L222 315" stroke-width="7"/>
+    <path d="M90 68C105 54 143 53 157 69" stroke-width="5"/>
+    <path d="M69 222L182 222" stroke="#a85b36" stroke-width="3"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">ÂNCORAS PRIMEIRO · CONTORNO DEPOIS</text>
+</svg>

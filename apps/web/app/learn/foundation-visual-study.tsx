@@ -1,4 +1,5 @@
 import { C1_VISUAL_STUDIES, type FoundationVisualStudyDefinition } from "./foundation-visual-study-c1";
+import { C2_VISUAL_STUDIES } from "./foundation-visual-study-c2";
 
 type VisualStudy = FoundationVisualStudyDefinition;
 
@@ -24,6 +25,7 @@ const FOUNDATION_VISUAL_STUDIES: Record<string, VisualStudy> = {
     caption: "Corrija proporção, posição e ângulo antes de investir em acabamento.",
   },
   ...C1_VISUAL_STUDIES,
+  ...C2_VISUAL_STUDIES,
 };
 
 export function FoundationVisualStudy({ lessonKey }: { lessonKey: string }) {

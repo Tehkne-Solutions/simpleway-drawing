@@ -1,5 +1,6 @@
 import { C2_LESSONS, getC2Lesson } from "@swd/content/c2";
 import { notFound } from "next/navigation";
+import "../../foundation-visual-study-v137.css";
 import { FoundationLessonPlayer } from "../../lesson-player";
 
 export default async function C2LessonPage({ params }: { params: Promise<{ lessonKey: string }> }) {

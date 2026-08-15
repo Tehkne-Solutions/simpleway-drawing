@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">HNK Visual Check organiza a auto-checagem</title>
+  <desc id="desc">Quatro estágios aplicam uma rotina de checagem a uma chaleira: maior forma, largura e altura, ângulos e extremos, alinhamentos e espaços negativos.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="20" font-weight="700"><text x="58" y="84">01 · MAIOR FORMA</text><text x="358" y="84">02 · LARGURA / ALTURA</text><text x="658" y="84">03 · ÂNGULOS / EXTREMOS</text><text x="958" y="84">04 · ALINHAMENTO / VAZIOS</text></g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="151" cy="283" rx="89" ry="88" stroke="#29251f" stroke-width="7"/><path d="M211 232C263 206 276 294 226 315" stroke="#756753" stroke-width="7"/><path d="M113 196C118 166 130 148 151 148C172 148 185 166 190 196" stroke="#756753" stroke-width="6"/>
+    <ellipse cx="451" cy="283" rx="89" ry="88" stroke="#756753" stroke-width="5"/><path d="M511 232C563 206 576 294 526 315" stroke="#756753" stroke-width="5"/><path d="M413 196C418 166 430 148 451 148C472 148 485 166 490 196" stroke="#756753" stroke-width="5"/>
+    <path d="M352 283H540M451 184V372" stroke="#c69631" stroke-width="3"/><path d="M352 274L361 283L352 292M540 274L531 283L540 292M442 184L451 193L460 184M442 372L451 363L460 372" stroke="#c69631" stroke-width="2"/>
+    <ellipse cx="751" cy="283" rx="89" ry="88" stroke="#756753" stroke-width="5"/><path d="M811 232C863 206 876 294 826 315" stroke="#29251f" stroke-width="7"/><path d="M713 196C718 166 730 148 751 148C772 148 785 166 790 196" stroke="#756753" stroke-width="5"/>
+    <circle cx="751" cy="195" r="6" fill="#a85b36"/><circle cx="662" cy="283" r="6" fill="#a85b36"/><circle cx="840" cy="283" r="6" fill="#a85b36"/><circle cx="751" cy="371" r="6" fill="#a85b36"/><path d="M811 232L857 210" stroke="#c69631" stroke-width="3"/>
+    <ellipse cx="1051" cy="283" rx="89" ry="88" stroke="#29251f" stroke-width="7"/><path d="M1111 232C1163 206 1176 294 1126 315" stroke="#29251f" stroke-width="7"/><path d="M1013 196C1018 166 1030 148 1051 148C1072 148 1085 166 1090 196" stroke="#29251f" stroke-width="6"/>
+    <path d="M962 283H1140M1051 195V371" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/><path d="M1114 239C1148 227 1154 286 1121 301C1097 288 1094 256 1114 239Z" stroke="#7f8a60" stroke-width="4"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">FORMA → PROPORÇÃO → DIREÇÃO → EXTREMOS → ALINHAMENTO → ESPAÇO NEGATIVO</text>
+</svg>
