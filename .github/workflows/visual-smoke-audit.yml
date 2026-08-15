@@ -8,6 +8,7 @@ on:
       - "apps/web/app/**"
       - "apps/web/game/**"
       - "apps/web/scripts/visual-acceptance-audit.mjs"
+      - "apps/web/scripts/studio-composition-guard.mjs"
       - "content/**"
       - "packages/**"
   workflow_dispatch:
@@ -95,7 +96,7 @@ jobs:
           echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
           "$CHROME_BIN" --version
 
-      - name: Capture desktop and mobile visual acceptance evidence
+      - name: Capture visual evidence and enforce mobile Studio composition
         env:
           NODE_ENV: production
           AUTH_SECRET: visual-audit-secret-at-least-32-characters-long
@@ -141,6 +142,7 @@ jobs:
           done
 
           node apps/web/scripts/visual-acceptance-audit.mjs
+          node apps/web/scripts/studio-composition-guard.mjs
 
       - name: Upload visual acceptance artifact
         if: always()
