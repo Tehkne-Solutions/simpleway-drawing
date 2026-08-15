@@ -1,0 +1,10 @@
+.mission-visual-study{margin:0 0 12px;border:1px solid #76664d;background:#e8d8b8;box-shadow:5px 5px 0 rgba(69,53,31,.24)}
+.mission-visual-study-frame{height:min(30vh,285px);min-height:190px;overflow:hidden;border-bottom:1px solid #8d7958;background:#efe2c7}
+.mission-visual-study img{display:block;width:100%;height:100%;object-fit:contain}
+.mission-visual-study figcaption{display:flex;gap:10px;align-items:baseline;margin:0;padding:8px 11px;color:#5f523f;font-size:9px;line-height:1.45}
+.mission-visual-study figcaption span{flex:0 0 auto;color:#875d24;font-size:7px;font-weight:900;letter-spacing:.12em}
+.mission-demo:has(.mission-visual-study) h2{margin-bottom:10px;font-size:28px}
+.mission-demo:has(.mission-visual-study) .mission-demo-steps article{min-height:82px;padding:10px}
+.mission-demo:has(.mission-visual-study) .mission-demo-steps article b{font-size:19px}
+.mission-demo:has(.mission-visual-study) .mission-demo-steps article span{margin-top:9px;font-size:11px}
+@media(max-width:680px){.mission-visual-study-frame{height:210px;min-height:0}.mission-visual-study figcaption{display:block;font-size:9px}.mission-visual-study figcaption span{display:block;margin-bottom:3px}.mission-demo:has(.mission-visual-study) .mission-demo-steps{grid-template-columns:1fr 1fr}}
