@@ -10,7 +10,7 @@
     "test": "tsx --test server/**/*.test.ts",
     "e2e:smoke": "node scripts/e2e-smoke.mjs",
     "e2e:create": "node scripts/create-runtime-smoke.mjs && node scripts/version-comparison-runtime-smoke.mjs && node scripts/on-demand-version-images-runtime-smoke.mjs && node scripts/atlas-same-origin-runtime-smoke.mjs && node scripts/drawing-zero-same-origin-runtime-smoke.mjs",
-    "e2e:learning": "node scripts/learning-runtime-smoke.mjs && node scripts/foundation-visual-studies-runtime-smoke.mjs && node scripts/c1-motor-visual-studies-runtime-smoke.mjs && node scripts/c2-perceptual-visual-studies-runtime-smoke.mjs",
+    "e2e:learning": "node scripts/learning-runtime-smoke.mjs && node scripts/foundation-visual-studies-runtime-smoke.mjs && node scripts/c1-motor-visual-studies-runtime-smoke.mjs && node scripts/c2-perceptual-visual-studies-runtime-smoke.mjs && node scripts/c3-structural-visual-studies-runtime-smoke.mjs",
     "e2e:practice": "node scripts/practice-runtime-smoke.mjs",
     "e2e:visual-labs": "node scripts/visual-labs-runtime-smoke.mjs",
     "e2e:resume": "node scripts/resume-orchestration-smoke.mjs",

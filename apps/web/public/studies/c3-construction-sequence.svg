@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Construção aplicada do envelope ao detalhe</title>
+  <desc id="desc">Seis estágios compactos mostram envelope, massa principal, massa secundária, overlaps, silhueta e detalhes finais de um objeto semelhante a uma chaleira.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="18" font-weight="700"><text x="56" y="82">01 · ENVELOPE</text><text x="246" y="82">02 · MASSA 1</text><text x="436" y="82">03 · MASSA 2</text><text x="626" y="82">04 · OVERLAPS</text><text x="816" y="82">05 · SILHUETA</text><text x="1006" y="82">06 · DETALHE</text></g>
+  <path d="M215 70V455M405 70V455M595 70V455M785 70V455M975 70V455" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M63 315L98 171L176 148L200 277L145 356Z" stroke="#756753" stroke-width="4" stroke-dasharray="8 7"/><circle cx="98" cy="171" r="5" fill="#a85b36"/><circle cx="176" cy="148" r="5" fill="#a85b36"/><circle cx="200" cy="277" r="5" fill="#a85b36"/><circle cx="145" cy="356" r="5" fill="#a85b36"/><circle cx="63" cy="315" r="5" fill="#a85b36"/>
+    <ellipse cx="309" cy="273" rx="78" ry="93" stroke="#29251f" stroke-width="7"/><path d="M309 180V366M231 273H387" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+    <ellipse cx="499" cy="273" rx="76" ry="91" stroke="#29251f" stroke-width="7"/><path d="M547 224C594 204 606 288 558 310" stroke="#756753" stroke-width="7"/><path d="M470 188C478 157 489 142 500 142C516 142 527 159 531 188" stroke="#756753" stroke-width="6"/>
+    <ellipse cx="689" cy="273" rx="76" ry="91" stroke="#29251f" stroke-width="7"/><path d="M737 224C784 204 796 288 748 310" stroke="#29251f" stroke-width="7"/><path d="M660 188C668 157 679 142 690 142C706 142 717 159 721 188" stroke="#29251f" stroke-width="6"/><path d="M737 224L756 231M748 310L761 302" stroke="#a85b36" stroke-width="4"/>
+    <path d="M809 324C793 282 799 222 831 189C847 173 859 162 861 143C883 132 903 133 925 144C927 164 938 174 953 190C981 221 989 281 972 323C943 365 841 365 809 324Z" fill="#29251f" stroke="#29251f" stroke-width="5"/><path d="M946 227C985 211 998 288 958 306" stroke="#29251f" stroke-width="12"/>
+    <path d="M998 324C982 282 988 222 1020 189C1036 173 1048 162 1050 143C1072 132 1092 133 1114 144C1116 164 1127 174 1142 190C1170 221 1178 281 1161 323C1132 365 1030 365 998 324Z" stroke="#29251f" stroke-width="7"/><path d="M1135 227C1174 211 1187 288 1147 306" stroke="#29251f" stroke-width="8"/><path d="M1024 242C1058 252 1103 252 1135 241M1017 307C1052 319 1114 318 1148 304" stroke="#756753" stroke-width="3"/><path d="M1050 143C1063 154 1101 155 1114 144" stroke="#7f8a60" stroke-width="4"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">ESTRUTURA PRIMEIRO · SILHUETA DEPOIS · DETALHE POR ÚLTIMO</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Relações entre formas organizam a estrutura</title>
+  <desc id="desc">Quatro painéis com círculo, caixa e cápsula mostram comparação de tamanho, contato e invasão, eixos dominantes e centro de massa.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="21" font-weight="700"><text x="62" y="84">01 · TAMANHO</text><text x="362" y="84">02 · TOQUE / INVASÃO</text><text x="662" y="84">03 · EIXO DOMINANTE</text><text x="962" y="84">04 · CENTRO DE MASSA</text></g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="133" cy="260" r="91" stroke="#29251f" stroke-width="7"/><rect x="198" y="248" width="60" height="90" stroke="#756753" stroke-width="6"/><path d="M67 376H199M199 376H259" stroke="#c69631" stroke-width="3"/><text x="133" y="404" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="14">MASSA MAIOR</text><text x="229" y="404" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="14">MENOR</text>
+    <rect x="365" y="191" width="132" height="142" stroke="#29251f" stroke-width="7"/><ellipse cx="517" cy="268" rx="70" ry="51" stroke="#756753" stroke-width="7"/><path d="M489 227L489 307" stroke="#a85b36" stroke-width="5"/><circle cx="489" cy="268" r="6" fill="#a85b36"/>
+    <ellipse cx="744" cy="265" rx="88" ry="54" transform="rotate(-28 744 265)" stroke="#29251f" stroke-width="7"/><rect x="787" y="184" width="60" height="150" transform="rotate(16 817 259)" stroke="#756753" stroke-width="6"/><path d="M655 317L834 205M774 170L851 343" stroke="#c69631" stroke-width="3" stroke-dasharray="8 7"/>
+    <circle cx="1027" cy="236" r="74" stroke="#29251f" stroke-width="7"/><rect x="1082" y="277" width="63" height="90" stroke="#756753" stroke-width="6"/><ellipse cx="987" cy="332" rx="55" ry="32" stroke="#756753" stroke-width="6"/><circle cx="1041" cy="275" r="9" fill="#a85b36"/><path d="M1041 191V359M957 275H1125" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">TAMANHO · POSIÇÃO · DIREÇÃO · CONTATO · CENTRO</text>
+</svg>
