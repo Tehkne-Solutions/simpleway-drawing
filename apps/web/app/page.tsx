@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getLearnerProfile } from "../server/learner-profile";
 import { getPlayerContinuity } from "../server/player-continuity";
 import { getSessionUserId } from "../server/session";
-import { CromaMark, type CromaState } from "./components/croma-mark";
+import { CromaMark, type CromaPigment, type CromaState } from "./components/croma-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +35,7 @@ export default async function HomePage() {
   const structure = territoryByKey.get("structure");
   const phase = continuity?.phase ?? "FOUNDATION";
   const cromaState: CromaState = phase === "AUTHORING" ? "celebrate" : phase === "CREATIVE_WORLD" ? "guide" : "challenge";
+  const cromaPigment: CromaPigment = phase === "AUTHORING" ? "violet" : phase === "CREATIVE_WORLD" ? "ultramarine" : "terracotta";
   const cromaTitle = phase === "AUTHORING" ? "Junte o que você aprendeu." : phase === "CREATIVE_WORLD" ? "Continue o fio que já começou." : "Escolha um problema pequeno.";
   const cromaText = phase === "AUTHORING"
     ? "Os territórios medidos já responderam. Agora use as habilidades juntas e construa uma obra que não seja apenas um exercício."
@@ -62,8 +63,8 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <aside className="hub-croma-panel" data-croma-state={cromaState}>
-          <div className="hub-croma-avatar"><CromaMark state={cromaState} label={`Croma: ${cromaTitle}`} /></div>
+        <aside className="hub-croma-panel" data-croma-state={cromaState} data-croma-pigment={cromaPigment}>
+          <div className="hub-croma-avatar"><CromaMark state={cromaState} pigment={cromaPigment} label={`Croma: ${cromaTitle}`} /></div>
           <div><span>CROMA · BÚSSOLA</span><strong>{cromaTitle}</strong><p>{cromaText}</p></div>
           <Link href="/resume">Abrir minha rota →</Link>
         </aside>
