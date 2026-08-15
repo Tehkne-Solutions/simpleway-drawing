@@ -3,7 +3,8 @@
 import type { LessonBlock, LessonDefinition } from "@swd/content";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { CromaMark, type CromaPigment, type CromaState } from "../components/croma-mark";
 import { FoundationVisualStudy } from "./foundation-visual-study";
 
 type CycleSlug = "c0" | "c1" | "c2" | "c3" | "c4";
@@ -29,6 +30,14 @@ const sceneNames: Record<LessonBlock["type"], string> = {
 
 const sceneGlyphs: Record<LessonBlock["type"], string> = {
   HOOK: "◎", TEXT: "▤", DEMONSTRATION: "◇", CHECKPOINT: "C", DRAWING_ZERO: "✦", PRACTICE: "⚔", REFLECTION: "◉",
+};
+
+const cyclePigments: Record<CycleSlug, CromaPigment> = {
+  c0: "gold",
+  c1: "terracotta",
+  c2: "ultramarine",
+  c3: "veronese",
+  c4: "violet",
 };
 
 function text(value: Record<string, string>): string {
@@ -59,6 +68,19 @@ function cromaCopy(block: LessonBlock, resolved: boolean): { title: string; text
   if (block.type === "CHECKPOINT") return { title: "Este é o sinal que vale levar adiante.", text: "Se você esquecer o restante da cena, preserve esta ideia como referência para a próxima tentativa." };
   if (block.type === "HOOK") return { title: "Entre pela pergunta.", text: "Não tente estudar tudo de uma vez. Descubra qual problema esta missão quer tornar visível." };
   return { title: "Leia como artista, não como prova.", text: "Procure uma decisão que você possa testar no papel ou no canvas. Informação só ganha valor quando muda seu processo." };
+}
+
+function cromaStateFor(block: LessonBlock, resolved: boolean, hasError: boolean): CromaState {
+  if (hasError) return "correct";
+  if ((block.type === "PRACTICE" || block.type === "DRAWING_ZERO") && resolved) return "celebrate";
+  if (block.type === "PRACTICE") return "challenge";
+  if (block.type === "DRAWING_ZERO") return "observe";
+  if (block.type === "DEMONSTRATION") return "teach";
+  if (block.type === "CHECKPOINT") return "guide";
+  if (block.type === "HOOK") return "curious";
+  if (block.type === "TEXT") return "focus";
+  if (block.type === "REFLECTION") return resolved ? "correct" : "focus";
+  return "observe";
 }
 
 export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey, lessonIndex, lessonCount }: { lesson: LessonDefinition; cycleSlug: CycleSlug; nextLessonKey: string | null; lessonIndex: number; lessonCount: number }) {
@@ -139,6 +161,8 @@ export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey, lesso
   const canComplete = Boolean(missionState?.ready) && allReflectionsResolved && lesson.blocks.every((_, index) => isResolved(index));
   const progress = Math.round((lesson.blocks.filter((_, index) => isResolved(index)).length / lesson.blocks.length) * 100);
   const coach = cromaCopy(block, sceneResolved);
+  const cromaState = cromaStateFor(block, sceneResolved, Boolean(error));
+  const cromaPigment = cyclePigments[cycleSlug];
 
   function goScene(index: number) {
     if (index < 0 || index >= lesson.blocks.length) return;
@@ -186,7 +210,7 @@ export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey, lesso
     if (block.type === "HOOK") return <div className="mission-hook"><span>“</span><p>{text(block.text)}</p></div>;
     if (block.type === "TEXT") return <div className="mission-codex">{block.title ? <h2>{text(block.title)}</h2> : null}<p>{text(block.text)}</p><div className="mission-codex-mark">SWD · {cycleSlug.toUpperCase()}</div></div>;
     if (block.type === "DEMONSTRATION") return <div className="mission-demo"><h2>{text(block.title)}</h2><FoundationVisualStudy lessonKey={lesson.key} /><div className="mission-demo-steps">{block.steps.map((step, index) => <article key={index}><b>{String(index + 1).padStart(2, "0")}</b><span>{text(step)}</span></article>)}</div></div>;
-    if (block.type === "CHECKPOINT") return <div className="mission-signal"><span className="mission-signal-seal">C</span><div><p className="eyebrow">Sinal de Croma</p><h2>{text(block.text)}</h2></div></div>;
+    if (block.type === "CHECKPOINT") return <div className="mission-signal"><span className="mission-signal-seal is-croma"><CromaMark state="guide" pigment={cromaPigment} label="Sinal de Croma" /></span><div><p className="eyebrow">Sinal de Croma</p><h2>{text(block.text)}</h2></div></div>;
     if (block.type === "DRAWING_ZERO") return <div className={`mission-portal ${sceneResolved ? "is-resolved" : ""}`}><span className="mission-portal-glyph">✦</span><p className="eyebrow">Prova sem nota</p><h2>{sceneResolved ? "Drawing Zero registrado." : "Preserve o seu ponto de partida."}</h2><p>O desenho fica privado. Ele não recebe nota e serve para tornar sua transformação visível mais tarde.</p><Link className="primary link-button" href={`/drawing-zero?returnTo=${encodeURIComponent(returnTo)}`}>{sceneResolved ? "Revisitar Drawing Zero" : "Fazer Drawing Zero"}</Link>{sceneResolved ? <strong className="mission-evidence-stamp">EVIDENCE ✓</strong> : null}</div>;
     if (block.type === "PRACTICE") {
       const practiceComplete = missionState?.practices.some((practice) => practice.exerciseKey === block.exerciseKey && practice.completed) === true;
@@ -218,8 +242,8 @@ export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey, lesso
         </footer>
       </article>
 
-      <aside className="mission-croma-brief">
-        <div className="mission-croma-mark" aria-hidden="true">C</div><p className="eyebrow">Croma · Mentor da cena</p><h2>{coach.title}</h2><p>{coach.text}</p>
+      <aside className="mission-croma-brief" data-croma-state={cromaState} data-croma-pigment={cromaPigment}>
+        <div className="mission-croma-mark"><CromaMark state={cromaState} pigment={cromaPigment} label={`Croma · ${coach.title}`} /></div><p className="eyebrow">Croma · Mentor da cena</p><h2>{coach.title}</h2><p>{coach.text}</p>
         <div className={`mission-runtime runtime-${missionStatus}`}><span>{missionStatus === "online" ? "●" : missionStatus === "loading" ? "◌" : "○"}</span><div><strong>{missionStatus === "online" ? "Evidence conectada" : missionStatus === "loading" ? "Lendo missão…" : "Modo local"}</strong><small>{missionStatus === "online" ? missionState?.ready ? "Portais autoritativos resolvidos." : "Aguardando os portais desta missão." : missionStatus === "offline" ? "Você pode ler e refletir, mas Practice não será liberada sem runtime." : ""}</small></div></div>
         <div className="mission-objective"><span>OBJETIVO</span><p>{text(lesson.objective)}</p></div>
       </aside>

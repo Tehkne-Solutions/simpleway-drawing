@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CromaMark } from "./croma-mark";
+import { CromaMark, type CromaState } from "./croma-mark";
 
 type CromaCoachProps = {
   eyebrow?: string;
@@ -8,6 +8,7 @@ type CromaCoachProps = {
   actionLabel?: string;
   actionHref?: string;
   tone?: "gold" | "terracotta" | "ultramarine" | "veronese" | "violet";
+  state?: CromaState;
 };
 
 export function CromaCoach({
@@ -17,11 +18,12 @@ export function CromaCoach({
   actionLabel,
   actionHref,
   tone = "gold",
+  state = "teach",
 }: CromaCoachProps) {
   return (
-    <aside className={`croma-coach croma-tone-${tone}`}>
-      <div className="croma-coach-avatar" aria-hidden="true">
-        <CromaMark />
+    <aside className={`croma-coach croma-tone-${tone} croma-coach-state-${state}`} data-croma-state={state} data-croma-pigment={tone}>
+      <div className="croma-coach-avatar">
+        <CromaMark state={state} pigment={tone} label={`${eyebrow}: ${title}`} />
       </div>
       <div className="croma-coach-copy">
         <p className="croma-coach-eyebrow">{eyebrow}</p>
