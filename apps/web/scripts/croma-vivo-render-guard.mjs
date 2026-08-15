@@ -135,6 +135,7 @@ async function main() {
           }).length;
           const marks = cards.filter((card) => card.querySelector('.croma-mark svg')).length;
           const sketch = document.querySelector('.codex-hero-croma .croma-mark[data-croma-variant="sketch"]');
+          const atlas = document.querySelector('.croma-expression-atlas');
           const root = document.documentElement;
           return {
             states,
@@ -143,6 +144,7 @@ async function main() {
             visibleCards,
             marks,
             sketchVisible: Boolean(sketch && sketch.getBoundingClientRect().width > 0 && sketch.getBoundingClientRect().height > 0),
+            expressionAtlasVisible: Boolean(atlas && atlas.getBoundingClientRect().width > 0 && atlas.getBoundingClientRect().height > 0),
             horizontalOverflowPx: Math.max(0, root.scrollWidth - innerWidth),
           };
         })()`);
@@ -152,9 +154,29 @@ async function main() {
         assert.equal(audit.marks, expectedStates.length, `${viewport.key}: every state needs authored SVG`);
         assert.deepEqual(audit.states, expectedStates, `${viewport.key}: state order/coverage changed`);
         assert.equal(audit.sketchVisible, true, `${viewport.key}: Croma Sketch missing`);
+        assert.equal(audit.expressionAtlasVisible, true, `${viewport.key}: Expression Pack missing`);
         assert.ok(audit.horizontalOverflowPx <= 2, `${viewport.key}: document overflow ${audit.horizontalOverflowPx}px`);
-        await capture(cdp, join(outputRoot, `croma-vivo-${viewport.key}.png`));
-        results.push({ viewport: viewport.key, ...audit });
+
+        await capture(cdp, join(outputRoot, `croma-vivo-sketch-${viewport.key}.png`));
+        await evaluate(cdp, `(() => {
+          const section = document.querySelector('.croma-expression-atlas')?.closest('.codex-sheet');
+          section?.scrollIntoView({ block: 'start', behavior: 'instant' });
+          return Math.round(scrollY);
+        })()`);
+        await sleep(180);
+        const expressionViewport = await evaluate(cdp, `(() => {
+          const atlas = document.querySelector('.croma-expression-atlas');
+          const rect = atlas?.getBoundingClientRect();
+          if (!rect) return null;
+          return {
+            top: Number(rect.top.toFixed(1)),
+            bottom: Number(rect.bottom.toFixed(1)),
+            intersectsViewport: rect.bottom > 0 && rect.top < innerHeight,
+          };
+        })()`);
+        assert.equal(expressionViewport?.intersectsViewport, true, `${viewport.key}: Expression Pack must be visible in evidence screenshot`);
+        await capture(cdp, join(outputRoot, `croma-vivo-expression-${viewport.key}.png`));
+        results.push({ viewport: viewport.key, ...audit, expressionViewport });
       }
 
       await writeFile(join(outputRoot, "croma-vivo-manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), expectedStates, results }, null, 2), "utf8");
