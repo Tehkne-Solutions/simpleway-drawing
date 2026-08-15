@@ -81,7 +81,7 @@ test("Croma Vivo rendered evidence is part of the fail-closed Visual Smoke", () 
   const guard = source("scripts/croma-vivo-render-guard.mjs");
   const workflow = source("../../.github/workflows/visual-smoke-audit.yml");
   for (const state of states) assert.match(guard, new RegExp(`"${state}"`));
-  assert.match(guard, /data-croma-variant=\\"sketch\\"/);
+  assert.match(guard, /data-croma-variant="sketch"/);
   assert.match(guard, /CROMA_VIVO_RENDER_GUARD=PASS/);
   assert.match(workflow, /node apps\/web\/scripts\/croma-vivo-render-guard\.mjs/);
 });
