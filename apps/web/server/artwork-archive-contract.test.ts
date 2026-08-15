@@ -5,14 +5,14 @@ import test from "node:test";
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
-test("Atelier library is visual and derives each preview from the current artwork version", () => {
+test("Atelier library is visual and pins each preview to its current version number", () => {
   const archive = source("server/artwork-archive.ts");
   const create = source("app/create/page.tsx");
   const css = source("app/visual-v1-create-journey.css");
 
   assert.match(archive, /innerJoin\(artworkVersions, eq\(artworkVersions\.id, artworks\.currentVersionId\)\)/);
   assert.match(archive, /versionNumber: artworkVersions\.versionNumber/);
-  assert.match(archive, /imageUrl: `\/api\/artworks\/\$\{encodeURIComponent\(row\.id\)\}\/current-image`/);
+  assert.match(archive, /imageUrl: `\/api\/artworks\/\$\{encodeURIComponent\(row\.id\)\}\/versions\/\$\{row\.versionNumber\}\/image`/);
   assert.match(create, /getArtworkLibrary\(userId\)/);
   assert.match(create, /Arquivo Vivo do Atelier/);
   assert.match(create, /artwork-tile-preview/);
