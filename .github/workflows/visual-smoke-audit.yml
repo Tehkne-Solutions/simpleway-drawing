@@ -14,15 +14,74 @@ permissions:
 jobs:
   capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: simpleway_drawing
+          POSTGRES_USER: simpleway
+          POSTGRES_PASSWORD: simpleway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U simpleway -d simpleway_drawing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://simpleway:simpleway@127.0.0.1:5432/simpleway_drawing
+      AUTH_SECRET: visual-audit-auth-secret-at-least-32-characters
+      ALPHA_OPS_TOKEN: visual-audit-alpha-ops-token-at-least-32-characters
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3100
+      STORAGE_ENDPOINT: http://127.0.0.1:9000
+      STORAGE_BUCKET: simpleway-drawing-visual-audit
+      STORAGE_REGION: us-east-1
+      STORAGE_ACCESS_KEY: simpleway
+      STORAGE_SECRET_KEY: simpleway-storage-secret
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Apply database migrations
+        run: pnpm db:migrate
+
+      - name: Start S3-compatible MinIO service
+        shell: bash
+        run: |
+          docker run -d --name swd-visual-minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=simpleway \
+            -e MINIO_ROOT_PASSWORD=simpleway-storage-secret \
+            minio/minio:latest server /data
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              echo "MINIO_READY=PASS"
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs swd-visual-minio || true
+          exit 1
+
+      - name: Prepare private storage bucket
+        env:
+          STORAGE_KEEP_BUCKET: "1"
+        run: pnpm --filter @swd/storage verify:ci
+
+      - name: Build production application
+        run: pnpm build
 
       - name: Locate Chrome
         shell: bash
@@ -51,10 +110,26 @@ jobs:
 
       - name: Capture desktop and mobile visual acceptance evidence
         env:
-          VISUAL_AUDIT_BASE_URL: https://simpleway-drawing.vercel.app
+          VISUAL_AUDIT_BASE_URL: http://127.0.0.1:3100
           VISUAL_AUDIT_EXPECTED_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
           VISUAL_AUDIT_OUTPUT: artifacts/visual-smoke-v1-42
-        run: node apps/web/scripts/visual-acceptance-audit.mjs
+        shell: bash
+        run: |
+          pnpm --filter @swd/web exec next start -p 3100 > /tmp/simpleway-drawing-visual.log 2>&1 &
+          SERVER_PID=$!
+          trap 'STATUS=$?; if [ $STATUS -ne 0 ]; then cat /tmp/simpleway-drawing-visual.log || true; fi; kill $SERVER_PID 2>/dev/null || true; exit $STATUS' EXIT
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3100/api/health >/dev/null; then
+              echo "VISUAL_APP_READY=PASS"
+              break
+            fi
+            if [ "$attempt" = "40" ]; then
+              cat /tmp/simpleway-drawing-visual.log || true
+              exit 1
+            fi
+            sleep 1
+          done
+          node apps/web/scripts/visual-acceptance-audit.mjs
 
       - name: Upload visual acceptance artifact
         if: always()
