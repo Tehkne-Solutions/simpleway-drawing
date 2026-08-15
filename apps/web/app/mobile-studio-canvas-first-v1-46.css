@@ -1,0 +1,55 @@
+/* V1.46 — Mobile Studio Canvas-First
+   Rendered evidence showed that tool docks consumed the first mobile viewport while the drawing surface stayed below it.
+   Mobile now enters through the artwork surface; controls remain immediately after it in document order. */
+
+@media(max-width:720px){
+  /* Shared Studio navigation becomes one compact horizontal instrument rail. */
+  .pixel-mode-nav{display:flex!important;flex-wrap:nowrap!important;width:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .pixel-mode-nav::-webkit-scrollbar{display:none}
+  .pixel-mode-nav .link-button{flex:0 0 auto;scroll-snap-align:start;white-space:nowrap}
+
+  /* Câmara da Obra */
+  .work-chamber-head p:last-child{display:none}
+  .work-chamber-shell{display:flex!important;flex-direction:column!important}
+  .work-canvas-station{order:-1;height:58dvh!important;min-height:390px!important}
+  .work-chamber-tools{order:1}
+  .work-chamber-record{order:2}
+
+  /* Manga — the drawing surface must precede guides/mission. */
+  .is-game-workspace .manga-workbench{display:flex!important;flex-direction:column!important}
+  .is-game-workspace .manga-canvas-panel{order:-1;height:58dvh!important;min-height:390px!important}
+  .is-game-workspace .manga-tools{order:1}
+
+  /* Isometric — spatial canvas precedes mission checklist. */
+  .is-game-workspace .iso-game-shell{display:flex!important;flex-direction:column!important}
+  .is-game-workspace .iso-workbench{order:-1;height:58dvh!important;min-height:390px!important}
+  .is-game-workspace .iso-mission-panel{order:1}
+
+  /* Pixel Studio */
+  .pixel-workbench{display:flex!important;flex-direction:column!important}
+  .pixel-stage{order:-1;height:60dvh!important;min-height:410px!important}
+  .pixel-tools{order:1}
+
+  /* Sprite Lab */
+  .sprite-workbench{display:flex!important;flex-direction:column!important}
+  .sprite-stage{order:-1;height:60dvh!important;min-height:410px!important}
+  .sprite-tools{order:1}
+
+  /* Tile Lab */
+  .tile-shell{display:flex!important;flex-direction:column!important}
+  .tile-workbench{order:-1;min-height:58dvh}
+  .tile-tools{order:1}
+  .tile-preview-panel{order:2}
+
+  /* Animation Lab */
+  .animation-shell{display:flex!important;flex-direction:column!important}
+  .animation-workbench{order:-1;min-height:58dvh}
+  .animation-tools{order:1}
+  .animation-preview-panel{order:2}
+}
+
+@media(max-width:480px){
+  .work-canvas-station,.is-game-workspace .manga-canvas-panel,.is-game-workspace .iso-workbench{height:54dvh!important;min-height:360px!important}
+  .pixel-stage,.sprite-stage{height:56dvh!important;min-height:380px!important}
+  .tile-workbench,.animation-workbench{min-height:54dvh}
+}
