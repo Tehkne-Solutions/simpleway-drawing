@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Estime, desenhe, meça e corrija</title>
+  <desc id="desc">Quatro painéis mostram uma relação estimada entre duas caixas, a primeira tentativa, a medição comparativa e a correção da proporção principal.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="22" font-weight="700"><text x="62" y="84">01 · ESTIME</text><text x="362" y="84">02 · DESENHE</text><text x="662" y="84">03 · MEÇA</text><text x="962" y="84">04 · CORRIJA</text></g>
+  <g fill="none" stroke-linejoin="round">
+    <path d="M76 308L76 185L190 185L190 308Z" stroke="#29251f" stroke-width="6"/><path d="M204 308L204 244L258 244L258 308Z" stroke="#756753" stroke-width="5"/>
+    <path d="M73 335H193M202 335H260" stroke="#c69631" stroke-width="3"/><text x="133" y="363" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="14">UNIDADE</text><text x="231" y="363" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="14">≈ 1/2</text>
+    <path d="M377 309V182H491V309Z" stroke="#29251f" stroke-width="6"/><path d="M504 309V225H574V309Z" stroke="#a85b36" stroke-width="6"/>
+    <path d="M673 310V184H786V310Z" stroke="#756753" stroke-width="5"/><path d="M800 310V224H870V310Z" stroke="#756753" stroke-width="5"/>
+    <path d="M670 337H789M797 337H873" stroke="#c69631" stroke-width="3"/><path d="M670 328L681 337L670 346M789 328L778 337L789 346M797 328L808 337L797 346M873 328L862 337L873 346" stroke="#c69631" stroke-width="2"/>
+    <text x="730" y="366" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="14">1.0</text><text x="835" y="366" text-anchor="middle" fill="#a85b36" font-family="Arial,sans-serif" font-size="14">0.62 → GRANDE DEMAIS</text>
+    <path d="M977 309V183H1091V309Z" stroke="#29251f" stroke-width="6"/><path d="M1104 309V245H1158V309Z" stroke="#29251f" stroke-width="6"/>
+    <path d="M1104 231L1131 244L1158 231" stroke="#7f8a60" stroke-width="3"/>
+  </g>
+  <path d="M517 206L548 190M516 190L548 206" stroke="#a85b36" stroke-width="4"/>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">MEDIR SERVE PARA VERIFICAR SUA PERCEPÇÃO — NÃO PARA SUBSTITUÍ-LA</text>
+</svg>
