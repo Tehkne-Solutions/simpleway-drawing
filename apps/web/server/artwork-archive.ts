@@ -1,6 +1,6 @@
 import { artworkVersions, artworks, fileAssets } from "@swd/database";
 import { and, desc, eq } from "drizzle-orm";
-import { getDatabase, getStorage } from "./runtime";
+import { getDatabase } from "./runtime";
 
 export type ArtworkLibraryItem = {
   id: string;
@@ -44,7 +44,6 @@ export async function getJourneyArtworkPreview(userId: string, artworkId: string
       versionNumber: artworkVersions.versionNumber,
       source: artworkVersions.source,
       mimeType: fileAssets.mimeType,
-      storageKey: fileAssets.storageKey,
     })
     .from(artworks)
     .innerJoin(artworkVersions, eq(artworkVersions.artworkId, artworks.id))
@@ -57,6 +56,6 @@ export async function getJourneyArtworkPreview(userId: string, artworkId: string
   return {
     versionNumber: row.versionNumber,
     source: row.source,
-    imageUrl: await getStorage().createPrivateReadUrl(row.storageKey),
+    imageUrl: `/api/artworks/${encodeURIComponent(artworkId)}/versions/${row.versionNumber}/image`,
   };
 }
