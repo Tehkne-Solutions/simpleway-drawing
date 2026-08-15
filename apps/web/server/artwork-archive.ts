@@ -31,7 +31,7 @@ export async function getArtworkLibrary(userId: string): Promise<ArtworkLibraryI
 
   return rows.map((row) => ({
     ...row,
-    imageUrl: `/api/artworks/${encodeURIComponent(row.id)}/current-image`,
+    imageUrl: `/api/artworks/${encodeURIComponent(row.id)}/versions/${row.versionNumber}/image`,
   }));
 }
 

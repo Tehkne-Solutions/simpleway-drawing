@@ -20,7 +20,7 @@ export default async function WorkChamberPage({ searchParams }: { searchParams: 
       id: record.artwork.id,
       title: record.artwork.title ?? "Sem título",
       versionNumber: current.versionNumber,
-      imageSrc: `/api/artworks/${encodeURIComponent(record.artwork.id)}/current-image`,
+      imageSrc: `/api/artworks/${encodeURIComponent(record.artwork.id)}/versions/${current.versionNumber}/image`,
     };
   }
 

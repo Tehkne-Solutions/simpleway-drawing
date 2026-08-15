@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
@@ -58,22 +58,24 @@ test("Work Chamber materializes new works through the existing private CANVAS ar
   assert.match(repository, /skill\.drawing\.meta\.creation_practice/);
 });
 
-test("existing ARTWORK records reopen through an owner-scoped same-origin raster base", () => {
+test("existing ARTWORK records reopen through an owner-scoped immutable version raster base", () => {
   const page = source("app/create/work/page.tsx");
   const canvas = source("app/create/work/work-chamber-canvas.tsx");
-  const imageRoute = source("app/api/artworks/[artworkId]/current-image/route.ts");
+  const imageRoute = source("app/api/artworks/[artworkId]/versions/[versionNumber]/image/route.ts");
   const storage = source("../../packages/storage/src/index.ts");
   const detail = source("app/create/[artworkId]/page.tsx");
   assert.match(page, /searchParams: Promise<\{ artworkId\?: string \}>/);
   assert.match(page, /getArtworkRepository\(\)\.getOwned\(userId, artworkId\)/);
-  assert.match(page, /imageSrc: `\/api\/artworks\/\$\{encodeURIComponent\(record\.artwork\.id\)\}\/current-image`/);
+  assert.match(page, /imageSrc: `\/api\/artworks\/\$\{encodeURIComponent\(record\.artwork\.id\)\}\/versions\/\$\{current\.versionNumber\}\/image`/);
   assert.match(canvas, /baseImageRef/);
   assert.match(canvas, /base raster imutável/i);
-  assert.match(imageRoute, /getArtworkRepository\(\)\.getOwned\(userId, artworkId\)/);
-  assert.match(imageRoute, /readPrivateFile\(current\.storageKey\)/);
+  assert.match(imageRoute, /eq\(artworkVersions\.versionNumber, parsedVersion\)/);
+  assert.match(imageRoute, /eq\(artworks\.ownerUserId, userId\)/);
+  assert.match(imageRoute, /readPrivateFile\(row\.storageKey\)/);
   assert.match(storage, /async readPrivateFile\(storageKey: string\)/);
   assert.match(detail, /Continuar na Câmara/);
   assert.match(detail, /\/create\/work\?artworkId=/);
+  assert.equal(existsSync(resolve(process.cwd(), "app/api/artworks/[artworkId]/current-image/route.ts")), false);
 });
 
 test("round-trip saves a visible change as a new CANVAS version of the same artwork", () => {

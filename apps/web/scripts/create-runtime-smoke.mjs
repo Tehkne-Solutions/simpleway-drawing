@@ -95,10 +95,10 @@ assert.equal(canvasDetailV1Payload.versions.length, 1);
 assert.equal(canvasDetailV1Payload.versions[0].source, "CANVAS");
 assert.equal(canvasDetailV1Payload.versions[0].notes, "Materializada dentro da Câmara da Obra");
 
-const canvasCurrentV1 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
-await assertHttp(canvasCurrentV1, 200, "Work Chamber same-origin current image v1");
-assert.equal(canvasCurrentV1.headers.get("content-type"), "image/png");
-assert.deepEqual(Buffer.from(await canvasCurrentV1.arrayBuffer()), png2);
+const canvasVersionV1 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/1/image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasVersionV1, 200, "Work Chamber canonical version image v1");
+assert.equal(canvasVersionV1.headers.get("content-type"), "image/png");
+assert.deepEqual(Buffer.from(await canvasVersionV1.arrayBuffer()), png2);
 
 const canvasOwnerPage = await fetch(`${baseUrl}/create/${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
 await assertHttp(canvasOwnerPage, 200, "Work Chamber artwork page");
@@ -107,12 +107,13 @@ assert.match(canvasOwnerHtml, /Câmara E2E/);
 assert.match(canvasOwnerHtml, /Continuar na Câmara/);
 assert.match(canvasOwnerHtml, new RegExp(`/create/work\\?artworkId=${canvasArtwork.id}`));
 
-const reopenChamber = await fetch(`${baseUrl}/create/work?artworkId=${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
-await assertHttp(reopenChamber, 200, "reopen Work Chamber from existing artwork");
-const reopenHtml = await reopenChamber.text();
-assert.match(reopenHtml, /Continue Câmara E2E/);
-assert.match(reopenHtml, /base raster/i);
-assert.match(reopenHtml, /Nova versão CANVAS/);
+const reopenChamberV1 = await fetch(`${baseUrl}/create/work?artworkId=${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(reopenChamberV1, 200, "reopen Work Chamber from existing artwork v1");
+const reopenV1Html = await reopenChamberV1.text();
+assert.match(reopenV1Html, /Continue Câmara E2E/);
+assert.match(reopenV1Html, /versão 1/i);
+assert.match(reopenV1Html, /base raster/i);
+assert.match(reopenV1Html, /Nova versão CANVAS/);
 
 const outsider = await createSession();
 const outsiderApi = await fetch(`${baseUrl}/api/artworks/${created.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
@@ -120,7 +121,7 @@ assert.equal(outsiderApi.status, 404);
 const outsiderDetail = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: outsider.cookie }, redirect: "manual" });
 assert.equal(outsiderDetail.status, 200);
 assert.match(await outsiderDetail.text(), /Esta etapa não foi encontrada/);
-const outsiderCanvasImage = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
+const outsiderCanvasImage = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/1/image`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
 assert.equal(outsiderCanvasImage.status, 404);
 const outsiderReopen = await fetch(`${baseUrl}/create/work?artworkId=${canvasArtwork.id}`, { headers: { cookie: outsider.cookie }, cache: "no-store" });
 assert.equal(outsiderReopen.status, 200);
@@ -143,9 +144,35 @@ assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.versionNumber
 assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.source), ["CANVAS", "CANVAS"]);
 assert.equal(canvasDetailV2Payload.versions[0].notes, "Segunda passagem dentro da Câmara");
 assert.equal(canvasDetailV2Payload.versions[1].notes, "Materializada dentro da Câmara da Obra");
-const canvasCurrentV2 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
-await assertHttp(canvasCurrentV2, 200, "Work Chamber same-origin current image v2");
-assert.deepEqual(Buffer.from(await canvasCurrentV2.arrayBuffer()), png1);
+
+const canvasVersionV1AfterV2 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/1/image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasVersionV1AfterV2, 200, "canonical v1 remains readable after v2");
+assert.deepEqual(Buffer.from(await canvasVersionV1AfterV2.arrayBuffer()), png2);
+const canvasVersionV2 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/2/image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasVersionV2, 200, "Work Chamber canonical version image v2");
+assert.deepEqual(Buffer.from(await canvasVersionV2.arrayBuffer()), png1);
+
+const reopenChamberV2 = await fetch(`${baseUrl}/create/work?artworkId=${canvasArtwork.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(reopenChamberV2, 200, "reopen Work Chamber pinned to v2");
+assert.match(await reopenChamberV2.text(), /versão 2/i);
+
+const canvasThirdUpload = await uploadPrivate(owner.cookie, png2);
+const canvasThird = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions`, {
+  method: "POST", headers: { cookie: owner.cookie, "content-type": "application/json" },
+  body: JSON.stringify({ fileAssetId: canvasThirdUpload.fileAssetId, source: "CANVAS", notes: "Terceira passagem dentro da Câmara" }),
+});
+await assertHttp(canvasThird, 201, "add Work Chamber CANVAS third version");
+assert.equal((await canvasThird.json()).version.versionNumber, 3);
+
+const canvasVersionV2AfterV3 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/2/image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasVersionV2AfterV3, 200, "Chamber v2 raster remains immutable after v3");
+assert.deepEqual(Buffer.from(await canvasVersionV2AfterV3.arrayBuffer()), png1);
+const canvasVersionV3 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/3/image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(canvasVersionV3, 200, "Work Chamber canonical version image v3");
+assert.deepEqual(Buffer.from(await canvasVersionV3.arrayBuffer()), png2);
+
+const retiredCurrentImage = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/current-image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+assert.equal(retiredCurrentImage.status, 404);
 
 const livingArchive = await fetch(`${baseUrl}/create`, { headers: { cookie: owner.cookie }, cache: "no-store" });
 await assertHttp(livingArchive, 200, "Atelier living visual archive");
@@ -153,8 +180,8 @@ const livingArchiveHtml = await livingArchive.text();
 assert.match(livingArchiveHtml, /Arquivo Vivo do Atelier/);
 assert.match(livingArchiveHtml, /Câmara E2E/);
 assert.match(livingArchiveHtml, /VERSÃO ATUAL/);
-assert.match(livingArchiveHtml, /VERSÃO ATUAL · V(?:<!-- -->)?2/);
-assert.match(livingArchiveHtml, new RegExp(`/api/artworks/${canvasArtwork.id}/current-image`));
+assert.match(livingArchiveHtml, /VERSÃO ATUAL · V(?:<!-- -->)?3/);
+assert.match(livingArchiveHtml, new RegExp(`/api/artworks/${canvasArtwork.id}/versions/3/image`));
 
 const secondUpload = await uploadPrivate(owner.cookie, png2);
 const crossOriginVersion = await fetch(`${baseUrl}/api/artworks/${created.id}/versions`, {
@@ -189,4 +216,4 @@ assert.match(journeyHtml, /Versão 2 registrada/);
 assert.match(journeyHtml, /VISUAL V1/);
 assert.match(journeyHtml, /VISUAL V2/);
 
-console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canvas_same_origin_read canvas_roundtrip_owner_isolation canvas_same_artwork_versioning canvas_current_image_switch living_visual_archive version_faithful_journey version_csrf immutable_version_history journey_projection");
+console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canonical_version_reads canvas_roundtrip_owner_isolation canvas_same_artwork_versioning chamber_exact_version_pinning chamber_version_immutability retired_current_image living_visual_archive version_faithful_journey version_csrf immutable_version_history journey_projection");
