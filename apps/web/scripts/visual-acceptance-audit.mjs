@@ -410,10 +410,8 @@ async function main() {
       await cdp.send("Network.enable");
       await cdp.send("Runtime.enable");
       await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
-      await cdp.send("Network.setCookie", {
-        name: guest.cookieName,
-        value: guest.cookieValue,
-        url: baseUrl,
+      await cdp.send("Network.setExtraHTTPHeaders", {
+        headers: { Cookie: guest.cookieHeader },
       });
 
       const results = [];
