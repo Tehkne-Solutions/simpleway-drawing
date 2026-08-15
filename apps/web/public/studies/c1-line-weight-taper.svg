@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Pressão e velocidade controlam line weight</title>
+  <desc id="desc">Quatro estudos com linhas de pressão constante, taper leve para forte, forte para leve e economia de peso em um contorno simples.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="22" font-weight="700"><text x="62" y="84">01 · CONSTANTE</text><text x="362" y="84">02 · LEVE → FORTE</text><text x="662" y="84">03 · FORTE → LEVE</text><text x="962" y="84">04 · PESO COM FUNÇÃO</text></g>
+  <g fill="none" stroke="#29251f" stroke-linecap="round">
+    <path d="M73 205C119 170 194 171 244 205" stroke-width="7"/><path d="M73 276C119 241 194 242 244 276" stroke-width="7"/><path d="M73 347C119 312 194 313 244 347" stroke-width="7"/>
+    <path d="M367 209C410 177 486 177 548 214" stroke-width="2"/><path d="M368 280C414 245 486 246 548 283" stroke-width="4"/><path d="M368 351C416 316 488 317 548 354" stroke-width="8"/>
+    <path d="M668 209C713 176 787 178 848 214" stroke-width="10"/><path d="M668 280C713 245 788 247 848 283" stroke-width="6"/><path d="M668 351C714 316 788 318 848 354" stroke-width="2"/>
+    <path d="M974 343C955 287 971 225 1021 190C1067 158 1127 181 1136 232C1144 278 1115 329 1066 351C1034 365 995 360 974 343Z" stroke-width="4"/>
+    <path d="M975 342C958 311 959 281 967 253" stroke-width="10"/>
+    <path d="M1067 351C1095 338 1117 314 1128 287" stroke-width="8"/>
+    <path d="M1020 190C1048 172 1080 171 1103 184" stroke-width="2"/>
+  </g>
+  <g fill="#6f604b" font-family="Arial,sans-serif" font-size="14" text-anchor="middle"><text x="150" y="411">MESMA PRESSÃO</text><text x="450" y="411">AUMENTE PRESSÃO AO LONGO DO GESTO</text><text x="750" y="411">LIBERE PRESSÃO SEM QUEBRAR O FLUXO</text><text x="1050" y="411">PESO ORGANIZA BORDA E SOBREPOSIÇÃO</text></g>
+  <path d="M372 385H542M672 385H842" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">VARIE PESO POR DECISÃO — NÃO POR TENSÃO ACIDENTAL</text>
+</svg>
