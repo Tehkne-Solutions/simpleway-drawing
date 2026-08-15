@@ -1,5 +1,6 @@
 import { C3_LESSONS, getC3Lesson } from "@swd/content/c3";
 import { notFound } from "next/navigation";
+import "../../foundation-visual-study-v137.css";
 import { FoundationLessonPlayer } from "../../lesson-player";
 
 export default async function C3LessonPage({ params }: { params: Promise<{ lessonKey: string }> }) {
