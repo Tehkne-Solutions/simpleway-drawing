@@ -1,13 +1,19 @@
-export type CromaState = "observe" | "teach" | "challenge" | "correct" | "celebrate" | "guide";
+export type CromaState = "observe" | "focus" | "curious" | "teach" | "challenge" | "correct" | "celebrate" | "guide";
+export type CromaPigment = "gold" | "terracotta" | "ultramarine" | "veronese" | "violet";
+export type CromaVariant = "core" | "sketch";
 
 type CromaMarkProps = {
   className?: string;
   label?: string;
   state?: CromaState;
+  pigment?: CromaPigment;
+  variant?: CromaVariant;
 };
 
 const stateLabels: Record<CromaState, string> = {
   observe: "Croma observando com atenção",
+  focus: "Croma concentrado no problema",
+  curious: "Croma curioso diante de uma descoberta",
   teach: "Croma ensinando uma técnica",
   challenge: "Croma propondo um desafio",
   correct: "Croma ajudando a corrigir",
@@ -17,6 +23,8 @@ const stateLabels: Record<CromaState, string> = {
 
 const mouthByState: Record<CromaState, string> = {
   observe: "M74 57c6 1 11 1 16-1",
+  focus: "M75 58c5-1 9-1 14 0",
+  curious: "M75 57c5 4 10 4 15 0",
   teach: "M73 56c6 5 12 5 18 0",
   challenge: "M74 58c6-2 11-2 16 0",
   correct: "M74 57c5 3 10 3 15 0",
@@ -26,6 +34,8 @@ const mouthByState: Record<CromaState, string> = {
 
 const pupilByState: Record<CromaState, { cx: number; cy: number }> = {
   observe: { cx: 73, cy: 40 },
+  focus: { cx: 68, cy: 43 },
+  curious: { cx: 73, cy: 38 },
   teach: { cx: 70, cy: 41 },
   challenge: { cx: 72, cy: 42 },
   correct: { cx: 69, cy: 43 },
@@ -33,13 +43,14 @@ const pupilByState: Record<CromaState, { cx: number; cy: number }> = {
   guide: { cx: 72, cy: 39 },
 };
 
-export function CromaMark({ className = "", label, state = "observe" }: CromaMarkProps) {
+export function CromaMark({ className = "", label, state = "observe", pigment = "gold", variant = "core" }: CromaMarkProps) {
   const pupil = pupilByState[state];
   const accessibleLabel = label ?? stateLabels[state];
 
   return (
-    <span className={`croma-mark croma-state-${state} ${className}`.trim()} role="img" aria-label={accessibleLabel} data-croma-state={state}>
+    <span className={`croma-mark croma-state-${state} croma-theme-${pigment} croma-variant-${variant} ${className}`.trim()} role="img" aria-label={accessibleLabel} data-croma-state={state} data-croma-pigment={pigment} data-croma-variant={variant}>
       <svg viewBox="0 0 120 120" focusable="false" aria-hidden="true">
+        {variant === "sketch" ? <g className="croma-sketch-construction"><circle cx="63" cy="53" r="36" /><path d="M19 88 104 20M22 95h77M27 13v92" /><path d="M14 28h13M20 22v13M96 93h11" /></g> : null}
         <path className="croma-tail-line" d="M78 77c22 0 31 16 24 29-5 10-20 11-26 2-5-7 0-16 8-16 7 0 10 8 5 12" />
         <path className="croma-body-fill" d="M38 79c-9-10-13-24-8-36 6-16 20-24 37-22 13 2 24 10 28 21 3 9 1 19-5 27-7 10-18 15-30 16-9 1-16-1-22-6Z" />
         <path className="croma-face-fill" d="M38 62c-1-13 5-25 16-31 10-6 24-5 32 3l9 9-6 5 8 7-9 6c-8 6-18 9-30 8-8 0-15-2-20-7Z" />
@@ -57,6 +68,8 @@ export function CromaMark({ className = "", label, state = "observe" }: CromaMar
         <circle className="croma-pigment croma-pigment-three" cx="31" cy="58" r="2.2" />
 
         {state === "observe" ? <g className="croma-expression croma-expression-observe"><path d="M91 27c8 4 12 10 13 18" /><path d="M96 21c10 5 16 13 18 23" /><circle cx="101" cy="49" r="2" /></g> : null}
+        {state === "focus" ? <g className="croma-expression croma-expression-focus"><path className="croma-brow" d="M57 31c7 2 14 2 21-1" /><circle cx="101" cy="30" r="11" /><path d="M101 23v14M94 30h14" /></g> : null}
+        {state === "curious" ? <g className="croma-expression croma-expression-curious"><path className="croma-brow" d="M58 30c6-4 13-4 19 0" /><path d="M99 22c1-7 13-7 14 1 1 7-8 7-8 13" /><circle cx="105" cy="43" r="2" /></g> : null}
         {state === "teach" ? <g className="croma-expression croma-expression-teach"><path d="M88 18h23v22H88z" /><path d="M93 24h12M93 29h8M93 34h10" /><path d="M79 48 91 38" /></g> : null}
         {state === "challenge" ? <g className="croma-expression croma-expression-challenge"><path className="croma-brow" d="M58 31c7-5 15-6 22-3" /><path d="M104 17v13" /><circle cx="104" cy="36" r="2.2" /></g> : null}
         {state === "correct" ? <g className="croma-expression croma-expression-correct"><path className="croma-brow" d="M58 31c6-2 12-2 18 1" /><path d="m92 28 6 6 12-15" /><path d="M91 43h18" /></g> : null}
