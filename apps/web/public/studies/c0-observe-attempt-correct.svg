@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Observar, tentar, comparar e corrigir</title>
+  <desc id="desc">Quatro estudos progressivos de uma caneca e uma pera: observação, primeira tentativa, comparação proporcional e correção.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V468M600 72V468M900 72V468" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="24" font-weight="700">
+    <text x="66" y="84">01 · OBSERVE</text><text x="366" y="84">02 · TENTE</text><text x="666" y="84">03 · COMPARE</text><text x="966" y="84">04 · CORRIJA</text>
+  </g>
+  <g transform="translate(55 118)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 278C42 236 46 171 55 123C65 78 86 58 124 58C166 58 188 80 197 124C207 174 211 238 203 278" stroke-width="7"/>
+    <ellipse cx="127" cy="282" rx="77" ry="18" stroke-width="7"/>
+    <ellipse cx="126" cy="122" rx="70" ry="15" stroke-width="5"/>
+    <path d="M198 157C250 153 258 238 204 245" stroke-width="8"/>
+    <path d="M211 326C221 288 249 266 280 277C318 291 321 343 292 378C260 416 205 389 211 326Z" stroke-width="7"/>
+    <path d="M248 276C243 256 254 241 270 232" stroke-width="5"/>
+    <path d="M275 234C290 232 301 239 307 249" stroke="#7f8a60" stroke-width="6"/>
+  </g>
+  <g transform="translate(354 118)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M65 282C44 238 48 155 67 105C83 63 159 63 183 111C203 154 209 244 190 282" stroke="#3d3529" stroke-width="8"/>
+    <ellipse cx="127" cy="284" rx="65" ry="16" stroke="#3d3529" stroke-width="8"/>
+    <path d="M189 149C244 126 268 230 194 253" stroke="#3d3529" stroke-width="8"/>
+    <path d="M218 338C224 300 246 284 280 292C316 301 325 353 293 384C262 413 216 385 218 338Z" stroke="#3d3529" stroke-width="8"/>
+    <path d="M54 109L201 109M55 284L196 284M218 291H318M218 390H318" stroke="#a85b36" stroke-width="2" stroke-dasharray="8 7"/>
+  </g>
+  <g transform="translate(654 118)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M51 286C43 239 48 165 59 119C69 78 91 61 127 61C164 61 187 80 197 121C208 169 211 240 203 286" stroke="#756753" stroke-width="5"/>
+    <ellipse cx="127" cy="287" rx="76" ry="17" stroke="#756753" stroke-width="5"/>
+    <path d="M202 154C251 150 260 239 204 247" stroke="#756753" stroke-width="5"/>
+    <path d="M211 326C218 290 245 268 279 279C318 291 320 347 292 379C262 414 205 389 211 326Z" stroke="#756753" stroke-width="5"/>
+    <path d="M61 117H196M51 286H203M211 279H319M211 389H319" stroke="#c69631" stroke-width="3"/>
+    <path d="M64 101L84 117L64 133M190 101L170 117L190 133M228 263L246 279L228 295M301 373L283 389L301 405" stroke="#c69631" stroke-width="3"/>
+    <circle cx="127" cy="117" r="5" fill="#a85b36" stroke="none"/><circle cx="264" cy="334" r="5" fill="#a85b36" stroke="none"/>
+  </g>
+  <g transform="translate(954 118)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M51 286C43 240 48 167 59 120C70 79 91 61 126 61C164 61 186 79 197 121C209 168 211 240 203 286" stroke-width="7"/>
+    <ellipse cx="127" cy="287" rx="76" ry="17" stroke-width="7"/>
+    <ellipse cx="127" cy="120" rx="68" ry="14" stroke-width="5"/>
+    <path d="M202 155C252 151 259 238 204 248" stroke-width="8"/>
+    <path d="M211 326C218 290 245 268 279 279C318 291 320 347 292 379C262 414 205 389 211 326Z" stroke-width="7"/>
+    <path d="M249 278C246 258 257 244 273 234" stroke-width="5"/>
+    <path d="M277 236C291 235 301 241 308 252" stroke="#7f8a60" stroke-width="6"/>
+    <path d="M44 318C110 334 174 331 216 319" stroke="#a85b36" stroke-width="3"/>
+  </g>
+  <text x="600" y="496" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">COMPARE RELAÇÕES GRANDES ANTES DE DETALHES</text>
+</svg>
