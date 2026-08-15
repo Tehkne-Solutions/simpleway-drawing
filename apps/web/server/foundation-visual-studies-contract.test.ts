@@ -24,7 +24,8 @@ test("four C0 demonstrations map to authored local visual study plates", () => {
 
 test("Foundation demonstration renders the visual study before the textual step ledger", () => {
   const player = source("app/learn/lesson-player.tsx");
-  const demo = player.slice(player.indexOf('if (block.type === "DEMONSTRATION")'), player.indexOf('if (block.type === "CHECKPOINT")'));
+  const renderScene = player.slice(player.indexOf("const renderScene = () => {"));
+  const demo = renderScene.slice(renderScene.indexOf('if (block.type === "DEMONSTRATION")'), renderScene.indexOf('if (block.type === "CHECKPOINT")'));
   assert.match(player, /import \{ FoundationVisualStudy \} from "\.\/foundation-visual-study"/);
   assert.match(demo, /<FoundationVisualStudy lessonKey=\{lesson\.key\} \/>/);
   assert.ok(demo.indexOf("FoundationVisualStudy") < demo.indexOf("mission-demo-steps"), "visual study must precede the numbered steps");
