@@ -25,6 +25,7 @@ import "./shell-v1-2.css";
 import "./art-system-v1-3.css";
 import "./game-workspace-v1.css";
 import "./player-hub-v1-6.css";
+import "./croma-v1-43.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
