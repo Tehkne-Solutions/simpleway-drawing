@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Corrija relações antes de detalhes</title>
+  <desc id="desc">Estudo de natureza-morta com garrafa e maçã, mostrando erro proporcional, medição, correção estrutural e acabamento.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="23" font-weight="700">
+    <text x="62" y="84">01 · ERRO GRANDE</text><text x="362" y="84">02 · MEÇA</text><text x="662" y="84">03 · CORRIJA</text><text x="962" y="84">04 · REFINE</text>
+  </g>
+  <g transform="translate(63 116)" fill="none" stroke="#3d3529" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M75 300C67 272 69 203 78 174C85 153 101 143 106 125L109 74H148L151 125C157 143 171 153 178 174C188 204 189 273 181 300C162 324 96 324 75 300Z" stroke-width="7"/>
+    <path d="M195 321C194 274 224 244 267 248C307 252 327 290 316 327C303 369 249 383 214 353C203 343 197 332 195 321Z" stroke-width="7"/>
+    <path d="M260 248C260 229 270 216 285 208" stroke-width="5"/>
+    <path d="M68 178H188M66 302H190M194 247H322M194 367H322" stroke="#a85b36" stroke-width="2" stroke-dasharray="8 7"/>
+  </g>
+  <g transform="translate(363 116)" fill="none" stroke-linecap="round">
+    <path d="M82 303C74 270 75 207 84 171C90 150 104 140 110 121L112 64H143L145 121C151 140 165 150 171 171C181 207 181 270 174 303" stroke="#756753" stroke-width="5"/>
+    <ellipse cx="128" cy="304" rx="47" ry="13" stroke="#756753" stroke-width="5"/>
+    <path d="M201 327C199 288 224 261 260 260C300 259 325 291 315 328C304 367 255 381 221 358C210 350 203 339 201 327Z" stroke="#756753" stroke-width="5"/>
+    <path d="M255 260C255 241 266 226 281 219" stroke="#756753" stroke-width="4"/>
+    <path d="M71 171H181M76 304H179M201 260H318M201 371H318" stroke="#c69631" stroke-width="3"/>
+    <path d="M62 155L78 171L62 187M190 155L174 171L190 187M214 244L230 260L214 276M302 355L286 371L302 387" stroke="#c69631" stroke-width="3"/>
+    <path d="M128 48V326M185 214H325" stroke="#a85b36" stroke-width="2" stroke-dasharray="6 7"/>
+  </g>
+  <g transform="translate(663 116)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M82 303C74 270 75 207 84 171C90 150 104 140 110 121L112 64H143L145 121C151 140 165 150 171 171C181 207 181 270 174 303" stroke="#29251f" stroke-width="7"/>
+    <ellipse cx="128" cy="304" rx="47" ry="13" stroke="#29251f" stroke-width="7"/>
+    <ellipse cx="128" cy="171" rx="44" ry="10" stroke="#29251f" stroke-width="4"/>
+    <path d="M201 327C199 288 224 261 260 260C300 259 325 291 315 328C304 367 255 381 221 358C210 350 203 339 201 327Z" stroke="#29251f" stroke-width="7"/>
+    <path d="M255 260C255 241 266 226 281 219" stroke="#29251f" stroke-width="5"/>
+    <path d="M283 220C296 219 306 224 312 234" stroke="#7f8a60" stroke-width="6"/>
+    <path d="M74 320C112 332 164 329 190 314M201 380C244 391 293 384 322 361" stroke="#a85b36" stroke-width="3"/>
+  </g>
+  <g transform="translate(963 116)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M83 304C74 271 76 206 84 171C90 150 104 140 110 121L112 64H143L145 121C151 140 165 150 171 171C180 207 181 271 174 304C155 326 101 326 83 304Z" stroke-width="7"/>
+    <ellipse cx="128" cy="171" rx="44" ry="10" stroke-width="4"/>
+    <path d="M202 327C199 287 224 260 260 260C300 259 325 291 315 328C304 367 255 381 221 358C210 350 204 339 202 327Z" stroke-width="7"/>
+    <path d="M255 260C255 241 266 226 281 219" stroke-width="5"/>
+    <path d="M283 220C296 219 307 224 313 234" stroke="#7f8a60" stroke-width="6"/>
+    <path d="M94 119C111 126 143 126 160 119M214 286C240 273 286 274 305 292" stroke="#6f604b" stroke-width="2"/>
+    <path d="M74 320C111 332 164 329 190 314M201 380C244 391 293 384 322 361" stroke="#a85b36" stroke-width="3"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">PROPORÇÃO → POSIÇÃO → ÂNGULO → DETALHE</text>
+</svg>

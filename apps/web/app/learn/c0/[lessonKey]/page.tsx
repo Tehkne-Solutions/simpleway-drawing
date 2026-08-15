@@ -1,5 +1,6 @@
 import { C0_LESSONS, getC0Lesson } from "@swd/content";
 import { notFound } from "next/navigation";
+import "../../foundation-visual-study-v137.css";
 import { FoundationLessonPlayer } from "../../lesson-player";
 
 export default async function LessonPage({ params }: { params: Promise<{ lessonKey: string }> }) {

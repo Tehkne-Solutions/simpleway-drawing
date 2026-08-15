@@ -4,6 +4,7 @@ import type { LessonBlock, LessonDefinition } from "@swd/content";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { FoundationVisualStudy } from "./foundation-visual-study";
 
 type CycleSlug = "c0" | "c1" | "c2" | "c3" | "c4";
 type MissionState = {
@@ -184,7 +185,7 @@ export function FoundationLessonPlayer({ lesson, cycleSlug, nextLessonKey, lesso
   const renderScene = () => {
     if (block.type === "HOOK") return <div className="mission-hook"><span>“</span><p>{text(block.text)}</p></div>;
     if (block.type === "TEXT") return <div className="mission-codex">{block.title ? <h2>{text(block.title)}</h2> : null}<p>{text(block.text)}</p><div className="mission-codex-mark">SWD · {cycleSlug.toUpperCase()}</div></div>;
-    if (block.type === "DEMONSTRATION") return <div className="mission-demo"><h2>{text(block.title)}</h2><div className="mission-demo-steps">{block.steps.map((step, index) => <article key={index}><b>{String(index + 1).padStart(2, "0")}</b><span>{text(step)}</span></article>)}</div></div>;
+    if (block.type === "DEMONSTRATION") return <div className="mission-demo"><h2>{text(block.title)}</h2><FoundationVisualStudy lessonKey={lesson.key} /><div className="mission-demo-steps">{block.steps.map((step, index) => <article key={index}><b>{String(index + 1).padStart(2, "0")}</b><span>{text(step)}</span></article>)}</div></div>;
     if (block.type === "CHECKPOINT") return <div className="mission-signal"><span className="mission-signal-seal">C</span><div><p className="eyebrow">Sinal de Croma</p><h2>{text(block.text)}</h2></div></div>;
     if (block.type === "DRAWING_ZERO") return <div className={`mission-portal ${sceneResolved ? "is-resolved" : ""}`}><span className="mission-portal-glyph">✦</span><p className="eyebrow">Prova sem nota</p><h2>{sceneResolved ? "Drawing Zero registrado." : "Preserve o seu ponto de partida."}</h2><p>O desenho fica privado. Ele não recebe nota e serve para tornar sua transformação visível mais tarde.</p><Link className="primary link-button" href={`/drawing-zero?returnTo=${encodeURIComponent(returnTo)}`}>{sceneResolved ? "Revisitar Drawing Zero" : "Fazer Drawing Zero"}</Link>{sceneResolved ? <strong className="mission-evidence-stamp">EVIDENCE ✓</strong> : null}</div>;
     if (block.type === "PRACTICE") {

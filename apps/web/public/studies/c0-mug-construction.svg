@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Construa do grande para o pequeno</title>
+  <desc id="desc">Quatro estágios de construção de uma caneca: volume principal, alça, comparação e contorno final.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="23" font-weight="700">
+    <text x="62" y="84">01 · VOLUME</text><text x="362" y="84">02 · FORMA SECUNDÁRIA</text><text x="662" y="84">03 · COMPARE</text><text x="962" y="84">04 · DEFINA</text>
+  </g>
+  <g transform="translate(65 118)" fill="none" stroke="#756753" stroke-linecap="round">
+    <ellipse cx="120" cy="90" rx="79" ry="19" stroke-width="4"/>
+    <ellipse cx="120" cy="310" rx="70" ry="17" stroke-width="4"/>
+    <path d="M41 90L50 310M199 90L190 310" stroke-width="4"/>
+    <path d="M120 70V330M31 200H210" stroke="#c69631" stroke-width="2" stroke-dasharray="8 7"/>
+    <path d="M46 72L58 90L46 108M194 72L182 90L194 108M103 305L120 322L137 305" stroke="#a85b36" stroke-width="3"/>
+  </g>
+  <g transform="translate(355 118)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="115" cy="90" rx="77" ry="18" stroke="#756753" stroke-width="4"/>
+    <ellipse cx="115" cy="310" rx="68" ry="16" stroke="#756753" stroke-width="4"/>
+    <path d="M38 90L47 310M192 90L183 310" stroke="#756753" stroke-width="4"/>
+    <path d="M191 132C268 119 278 276 185 284" stroke="#29251f" stroke-width="6"/>
+    <path d="M195 161C242 153 249 243 190 253" stroke="#756753" stroke-width="3"/>
+    <path d="M115 70V330" stroke="#c69631" stroke-width="2" stroke-dasharray="8 7"/>
+  </g>
+  <g transform="translate(655 118)" fill="none" stroke-linecap="round">
+    <ellipse cx="115" cy="90" rx="77" ry="18" stroke="#756753" stroke-width="4"/>
+    <ellipse cx="115" cy="310" rx="68" ry="16" stroke="#756753" stroke-width="4"/>
+    <path d="M38 90L47 310M192 90L183 310" stroke="#756753" stroke-width="4"/>
+    <path d="M191 132C268 119 278 276 185 284" stroke="#756753" stroke-width="4"/>
+    <path d="M195 161C242 153 249 243 190 253" stroke="#756753" stroke-width="3"/>
+    <path d="M34 90H197M43 310H188M183 132H270M183 284H270" stroke="#c69631" stroke-width="3"/>
+    <path d="M45 74L61 90L45 106M190 74L174 90L190 106M202 116L218 132L202 148M253 268L237 284L253 300" stroke="#c69631" stroke-width="3"/>
+    <circle cx="115" cy="90" r="5" fill="#a85b36" stroke="none"/><circle cx="225" cy="207" r="5" fill="#a85b36" stroke="none"/>
+  </g>
+  <g transform="translate(955 118)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M39 93C47 79 77 70 114 70C153 70 184 79 192 94" stroke-width="7"/>
+    <ellipse cx="115" cy="96" rx="76" ry="18" stroke-width="6"/>
+    <path d="M39 96C40 169 42 245 48 301C58 320 85 330 115 330C146 330 173 320 183 301C189 241 191 167 192 96" stroke-width="7"/>
+    <path d="M190 132C270 118 278 277 184 284" stroke-width="8"/>
+    <path d="M194 162C240 155 248 243 190 253" stroke-width="5"/>
+    <path d="M55 312C83 323 145 325 174 310" stroke="#a85b36" stroke-width="3"/>
+    <path d="M77 128C92 136 136 139 153 128" stroke="#7f8a60" stroke-width="3"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">A ESTRUTURA ORGANIZA O DETALHE — NÃO O CONTRÁRIO</text>
+</svg>
