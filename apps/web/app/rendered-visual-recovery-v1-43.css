@@ -1,0 +1,14 @@
+:root{--swd-grid-neutral:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M0 .5H24M.5 0V24' fill='none' stroke='%236f634e' stroke-opacity='.08' stroke-width='1'/%3E%3C/svg%3E");--swd-grid-blue:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M0 .5H24M.5 0V24' fill='none' stroke='%23315b83' stroke-opacity='.08' stroke-width='1'/%3E%3C/svg%3E");--swd-grid-green:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M0 .5H24M.5 0V24' fill='none' stroke='%2339745a' stroke-opacity='.08' stroke-width='1'/%3E%3C/svg%3E");--swd-grid-violet:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M0 .5H24M.5 0V24' fill='none' stroke='%2374567d' stroke-opacity='.08' stroke-width='1'/%3E%3C/svg%3E")}
+
+/* Rendered V1.42 evidence exposed a desktop x-scrollbar inside the mission rail. */
+.mission-scene-rail{overflow-x:hidden}
+@media(max-width:680px){.mission-scene-rail{overflow-x:auto}}
+
+/* Locked regions stay authored through pigment/opacity instead of CSS filters. */
+.campaign-region.is-locked{filter:none!important}
+
+/* The approved SWD direction forbids decorative gradients. Grids are authored SVG line plates. */
+.line-gym-board{background-image:var(--swd-grid-neutral)!important;background-size:24px 24px}
+.observation-visual{background-image:var(--swd-grid-blue)!important;background-size:24px 24px}
+.construction-visual{background-image:var(--swd-grid-green)!important;background-size:24px 24px}
+.form-visual{background-image:var(--swd-grid-violet)!important;background-size:24px 24px}
