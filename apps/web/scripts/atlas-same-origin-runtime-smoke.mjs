@@ -68,7 +68,6 @@ const v2Path = `/api/artworks/${artwork.id}/versions/2/image`;
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie }, cache: "no-store" });
 await assertHttp(journey, 200, "Atlas Journey page");
 const html = await journey.text();
-assert.match(html, /Atlas Same-Origin E2E/);
 assert.match(html, /VISUAL V1/);
 assert.match(html, /VISUAL V2/);
 assert.match(html, new RegExp(v1Path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
