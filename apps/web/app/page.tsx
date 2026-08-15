@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLearnerProfile } from "../server/learner-profile";
 import { getPlayerContinuity } from "../server/player-continuity";
 import { getSessionUserId } from "../server/session";
+import { CromaMark } from "./components/croma-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ export default async function HomePage() {
         </div>
 
         <aside className="hub-croma-panel">
-          <div className="hub-croma-avatar" aria-hidden="true"><span>◉</span><b>↻</b></div>
+          <div className="hub-croma-avatar" aria-hidden="true"><CromaMark /></div>
           <div><span>CROMA · BÚSSOLA</span><strong>{cromaTitle}</strong><p>{cromaText}</p></div>
           <Link href="/resume">Abrir minha rota →</Link>
         </aside>
