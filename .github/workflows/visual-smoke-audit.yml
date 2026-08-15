@@ -94,18 +94,35 @@ jobs:
           echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
           "$CHROME_BIN" --version
 
-      - name: Normalize authored V1.41 marker contract
+      - name: Normalize authored visual marker and runtime seed contract
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           path = Path("apps/web/scripts/visual-acceptance-audit.mjs")
           source = path.read_text(encoding="utf-8")
-          old = 'assert.match(svg, /<title id="title">HNK Form Check<\\/title>/);'
-          new = 'assert.match(svg, /<title id="title">HNK Form Check[^<]*<\\/title>/);'
-          if old not in source:
+
+          marker_old = 'assert.match(svg, /<title id="title">HNK Form Check<\\/title>/);'
+          marker_new = 'assert.match(svg, /<title id="title">HNK Form Check[^<]*<\\/title>/);'
+          if marker_old not in source:
               raise SystemExit("expected V1.41 marker assertion not found")
-          path.write_text(source.replace(old, new, 1), encoding="utf-8")
+          source = source.replace(marker_old, marker_new, 1)
+
+          baseline_old = '  const baseline = await createArtwork(cookieHeader, { bytes: pngA, title: "Drawing Zero", type: "BASELINE", notes: "Visual acceptance baseline" });'
+          baseline_new = '''  const baselineFileAssetId = await uploadPrivate(cookieHeader, pngA);
+          const baselineResponse = await fetch(`${baseUrl}/api/drawing-zero`, {
+            method: "POST",
+            headers: { cookie: cookieHeader, "content-type": "application/json" },
+            body: JSON.stringify({ fileAssetId: baselineFileAssetId, source: "UPLOAD" }),
+          });
+          await assertHttp(baselineResponse, 201, "create Drawing Zero");
+          const baselinePayload = await baselineResponse.json();
+          const baseline = { id: baselinePayload.id ?? baselinePayload.baseline?.id ?? "drawing-zero" };'''
+          if baseline_old not in source:
+              raise SystemExit("expected visual audit baseline seed not found")
+          source = source.replace(baseline_old, baseline_new, 1)
+
+          path.write_text(source, encoding="utf-8")
           PY
 
       - name: Capture desktop and mobile visual acceptance evidence
