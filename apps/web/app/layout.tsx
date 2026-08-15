@@ -27,6 +27,7 @@ import "./game-workspace-v1.css";
 import "./player-hub-v1-6.css";
 import "./croma-v1-43.css";
 import "./game-surfaces-v1-43.css";
+import "./rendered-visual-cleanup-v1-43-1.css";
 import "./mobile-studio-deck-v1-45.css";
 import "./mobile-studio-polish-v1-45.css";
 import { AppShell } from "./app-shell";
