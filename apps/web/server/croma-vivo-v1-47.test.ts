@@ -57,6 +57,15 @@ test("Mission Player maps scene meaning, feedback and mastery to Croma states", 
   assert.match(mission, /<CromaMark state=\{cromaState\} pigment=\{cromaPigment\}/);
 });
 
+test("Atlas changes Croma state and pigment with world progression and empty-state guidance", () => {
+  const atlas = source("app/journey/page.tsx");
+  assert.match(atlas, /worldComplete \? "celebrate" : foundationComplete \? "guide" : "observe"/);
+  assert.match(atlas, /creativeSummary\.completed > 0 \? "violet"/);
+  assert.match(atlas, /data-croma-state=\{atlasCromaState\}/);
+  assert.match(atlas, /<CromaMark state=\{atlasCromaState\} pigment=\{atlasCromaPigment\}/);
+  assert.match(atlas, /CromaMark state="guide" pigment="ultramarine"/);
+});
+
 test("Codex contains Croma Sketch and teaches the complete Expression Pack", () => {
   const codex = source("app/codex/page.tsx");
   for (const state of states) {
@@ -66,6 +75,15 @@ test("Codex contains Croma Sketch and teaches the complete Expression Pack", () 
   assert.match(codex, /variant="sketch"/);
   assert.match(codex, /Croma Vivo · Expression Pack/);
   assert.match(codex, /até uma criança que ainda lê pouco/);
+});
+
+test("Croma Vivo rendered evidence is part of the fail-closed Visual Smoke", () => {
+  const guard = source("scripts/croma-vivo-render-guard.mjs");
+  const workflow = source("../../../.github/workflows/visual-smoke-audit.yml");
+  for (const state of states) assert.match(guard, new RegExp(`"${state}"`));
+  assert.match(guard, /data-croma-variant=\\"sketch\\"/);
+  assert.match(guard, /CROMA_VIVO_RENDER_GUARD=PASS/);
+  assert.match(workflow, /node apps\/web\/scripts\/croma-vivo-render-guard\.mjs/);
 });
 
 test("Croma Vivo art layer stays authored without gradient or glow effects", () => {
