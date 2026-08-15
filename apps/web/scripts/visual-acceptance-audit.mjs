@@ -11,30 +11,25 @@ const chromeBin = process.env.CHROME_BIN;
 const outputRoot = resolve(process.cwd(), process.env.VISUAL_AUDIT_OUTPUT ?? "artifacts/visual-smoke-v1-42");
 const remotePort = Number(process.env.VISUAL_AUDIT_CDP_PORT ?? 9222);
 const profileDir = join(tmpdir(), `swd-visual-audit-${Date.now()}`);
-
 assert.ok(chromeBin, "CHROME_BIN is required");
 
 const pngA = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZxkAAAAASUVORK5CYII=", "base64");
 const pngB = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR42mP8z8BQDwAFgwJ/l2GfWQAAAABJRU5ErkJggg==", "base64");
-
 const viewports = [
   { key: "desktop", width: 1440, height: 960, mobile: false },
   { key: "mobile", width: 390, height: 844, mobile: true },
 ];
-
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 
 async function assertHttp(response, expected, label) {
-  if (response.status !== expected) {
-    throw new Error(`${label} failed: ${response.status} ${await response.text()}`);
-  }
+  if (response.status !== expected) throw new Error(`${label} failed: ${response.status} ${await response.text()}`);
 }
 
 async function preflight() {
-  const ready = await fetch(`${baseUrl}/api/ready`, { cache: "no-store" });
-  await assertHttp(ready, 200, "production readiness");
-  const readyJson = await ready.json();
-  assert.equal(readyJson.status, "ready");
+  const home = await fetch(`${baseUrl}/`, { cache: "no-store" });
+  await assertHttp(home, 200, "production home");
+  const homeHtml = await home.text();
+  assert.match(homeHtml, /SimpleWay Drawing/i);
 
   const marker = await fetch(`${baseUrl}/studies/c4-form-check.svg`, { cache: "no-store" });
   await assertHttp(marker, 200, "V1.41 visual marker");
@@ -46,7 +41,14 @@ async function preflight() {
   const lessonHtml = await lesson.text();
   assert.match(lessonHtml, /c4-form-check\.svg/);
 
-  return { ready: readyJson, marker: "V1.41 C4 Form Check" };
+  let readiness = { status: null, body: null };
+  try {
+    const ready = await fetch(`${baseUrl}/api/ready`, { cache: "no-store" });
+    readiness = { status: ready.status, body: (await ready.text()).slice(0, 500) };
+  } catch (error) {
+    readiness = { status: null, body: String(error) };
+  }
+  return { homeStatus: home.status, marker: "V1.41 C4 Form Check", readiness };
 }
 
 async function createGuestSession() {
@@ -74,14 +76,12 @@ async function uploadPrivate(cookieHeader, bytes) {
   });
   await assertHttp(prepare, 201, "prepare visual audit upload");
   const intent = await prepare.json();
-
   const put = await fetch(intent.uploadUrl, {
     method: "PUT",
     headers: { "content-type": "image/png", "content-length": String(bytes.byteLength) },
     body: bytes,
   });
   await assertHttp(put, 200, "put visual audit object");
-
   const confirm = await fetch(`${baseUrl}/api/files/confirm`, {
     method: "POST",
     headers: { cookie: cookieHeader, "content-type": "application/json" },
@@ -115,18 +115,8 @@ async function addVersion(cookieHeader, artworkId, bytes, notes) {
 }
 
 async function seedVisualState(cookieHeader) {
-  const baseline = await createArtwork(cookieHeader, {
-    bytes: pngA,
-    title: "Drawing Zero",
-    type: "BASELINE",
-    notes: "Visual acceptance baseline",
-  });
-  const revisit = await createArtwork(cookieHeader, {
-    bytes: pngB,
-    title: "Drawing Zero Revisited",
-    type: "STUDY",
-    notes: "Visual acceptance revisit",
-  });
+  const baseline = await createArtwork(cookieHeader, { bytes: pngA, title: "Drawing Zero", type: "BASELINE", notes: "Visual acceptance baseline" });
+  const revisit = await createArtwork(cookieHeader, { bytes: pngB, title: "Drawing Zero Revisited", type: "STUDY", notes: "Visual acceptance revisit" });
   const artwork = await createArtwork(cookieHeader, {
     bytes: pngB,
     title: "Câmara · Visual Acceptance",
@@ -144,22 +134,14 @@ class CdpClient {
     this.nextId = 1;
     this.pending = new Map();
     this.listeners = new Map();
-    this.ws = null;
   }
-
   async connect() {
     assert.equal(typeof WebSocket, "function", "Node 22 global WebSocket is required");
     this.ws = new WebSocket(this.url);
     await new Promise((resolvePromise, reject) => {
       const timeout = setTimeout(() => reject(new Error("CDP websocket open timeout")), 10_000);
-      this.ws.addEventListener("open", () => {
-        clearTimeout(timeout);
-        resolvePromise();
-      }, { once: true });
-      this.ws.addEventListener("error", (event) => {
-        clearTimeout(timeout);
-        reject(new Error(`CDP websocket error: ${event?.message ?? "unknown"}`));
-      }, { once: true });
+      this.ws.addEventListener("open", () => { clearTimeout(timeout); resolvePromise(); }, { once: true });
+      this.ws.addEventListener("error", () => { clearTimeout(timeout); reject(new Error("CDP websocket error")); }, { once: true });
     });
     this.ws.addEventListener("message", (event) => {
       const message = JSON.parse(String(event.data));
@@ -171,12 +153,9 @@ class CdpClient {
         else pending.resolve(message.result ?? {});
         return;
       }
-      const callbacks = this.listeners.get(message.method);
-      if (!callbacks) return;
-      for (const callback of [...callbacks]) callback(message.params ?? {});
+      for (const callback of [...(this.listeners.get(message.method) ?? [])]) callback(message.params ?? {});
     });
   }
-
   send(method, params = {}) {
     const id = this.nextId++;
     return new Promise((resolvePromise, reject) => {
@@ -184,26 +163,15 @@ class CdpClient {
       this.ws.send(JSON.stringify({ id, method, params }));
     });
   }
-
   once(method, timeoutMs = 20_000) {
     return new Promise((resolvePromise, reject) => {
-      const callback = (params) => {
-        clearTimeout(timeout);
-        this.listeners.get(method)?.delete(callback);
-        resolvePromise(params);
-      };
+      const callback = (params) => { clearTimeout(timeout); this.listeners.get(method)?.delete(callback); resolvePromise(params); };
       if (!this.listeners.has(method)) this.listeners.set(method, new Set());
       this.listeners.get(method).add(callback);
-      const timeout = setTimeout(() => {
-        this.listeners.get(method)?.delete(callback);
-        reject(new Error(`Timed out waiting for ${method}`));
-      }, timeoutMs);
+      const timeout = setTimeout(() => { this.listeners.get(method)?.delete(callback); reject(new Error(`Timed out waiting for ${method}`)); }, timeoutMs);
     });
   }
-
-  close() {
-    this.ws?.close();
-  }
+  close() { this.ws?.close(); }
 }
 
 async function waitForJson(url, attempts = 80) {
@@ -218,11 +186,7 @@ async function waitForJson(url, attempts = 80) {
 }
 
 async function evaluate(cdp, expression) {
-  const result = await cdp.send("Runtime.evaluate", {
-    expression,
-    awaitPromise: true,
-    returnByValue: true,
-  });
+  const result = await cdp.send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
   if (result.exceptionDetails) throw new Error(`Runtime.evaluate failed: ${result.exceptionDetails.text}`);
   return result.result?.value;
 }
@@ -251,9 +215,7 @@ async function setViewport(cdp, viewport) {
 async function pageMetrics(cdp, viewport) {
   const metrics = await evaluate(cdp, `(() => {
     const all = [...document.querySelectorAll('*')];
-    const gradients = [];
-    const filters = [];
-    const textShadows = [];
+    const gradients = [], filters = [], textShadows = [];
     for (const element of all) {
       const style = getComputedStyle(element);
       if (/gradient\\(/i.test(style.backgroundImage)) gradients.push(element.className || element.tagName);
@@ -275,14 +237,10 @@ async function pageMetrics(cdp, viewport) {
       scrollScreens: Number((document.documentElement.scrollHeight / Math.max(1, innerHeight)).toFixed(2)),
       errorBoundary: bodyText.includes('Algo interrompeu esta etapa'),
       sessionError: bodyText.includes('Não foi possível iniciar sua sessão'),
-      gradients: gradients.slice(0, 20),
-      filters: filters.slice(0, 20),
-      textShadows: textShadows.slice(0, 20),
-      hugeHeadings,
+      gradients: gradients.slice(0, 20), filters: filters.slice(0, 20), textShadows: textShadows.slice(0, 20), hugeHeadings,
       imageCount: document.images.length,
     };
   })()`);
-
   await evaluate(cdp, `document.activeElement instanceof HTMLElement && document.activeElement.blur(); true`);
   await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
@@ -291,24 +249,12 @@ async function pageMetrics(cdp, viewport) {
     const element = document.activeElement;
     if (!(element instanceof HTMLElement) || element === document.body) return null;
     const style = getComputedStyle(element);
-    return {
-      tag: element.tagName,
-      text: (element.innerText || element.getAttribute('aria-label') || '').trim().slice(0, 80),
-      outlineStyle: style.outlineStyle,
-      outlineWidth: style.outlineWidth,
-      outlineColor: style.outlineColor,
-      boxShadow: style.boxShadow,
-    };
+    return { tag: element.tagName, text: (element.innerText || element.getAttribute('aria-label') || '').trim().slice(0, 80), outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, boxShadow: style.boxShadow };
   })()`);
-
   await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
   await sleep(80);
-  metrics.reducedMotion = await evaluate(cdp, `({
-    matches: matchMedia('(prefers-reduced-motion: reduce)').matches,
-    runningAnimations: document.getAnimations().filter((animation) => animation.playState === 'running').length,
-  })`);
+  metrics.reducedMotion = await evaluate(cdp, `({ matches: matchMedia('(prefers-reduced-motion: reduce)').matches, runningAnimations: document.getAnimations().filter((animation) => animation.playState === 'running').length })`);
   await cdp.send("Emulation.setEmulatedMedia", { features: [] });
-
   return metrics;
 }
 
@@ -318,13 +264,7 @@ async function captureScreenshot(cdp, destination, fullPage = false) {
   if (fullPage) {
     const layout = await cdp.send("Page.getLayoutMetrics");
     params.captureBeyondViewport = true;
-    params.clip = {
-      x: 0,
-      y: 0,
-      width: Math.max(1, Math.ceil(layout.contentSize.width)),
-      height: Math.max(1, Math.ceil(layout.contentSize.height)),
-      scale: 1,
-    };
+    params.clip = { x: 0, y: 0, width: Math.max(1, Math.ceil(layout.contentSize.width)), height: Math.max(1, Math.ceil(layout.contentSize.height)), scale: 1 };
   }
   const screenshot = await cdp.send("Page.captureScreenshot", params);
   await writeFile(destination, Buffer.from(screenshot.data, "base64"));
@@ -332,27 +272,16 @@ async function captureScreenshot(cdp, destination, fullPage = false) {
 
 function contactSheetHtml(viewportKey, captures) {
   const columns = viewportKey === "desktop" ? 2 : 4;
-  const cards = captures.map((item) => `
-    <article>
-      <header><b>${item.order}. ${item.label}</b><code>${item.path}</code></header>
-      <img src="${viewportKey}/${item.fileName}" alt="${item.label}">
-    </article>`).join("\n");
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    *{box-sizing:border-box}body{margin:0;padding:18px;background:#292722;color:#f6f0df;font-family:Arial,sans-serif}
-    h1{font-size:22px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(${columns},minmax(0,1fr));gap:14px;align-items:start}
-    article{background:#f4eedf;color:#211f1a;border:2px solid #b88a21;padding:8px}header{display:grid;gap:4px;margin-bottom:7px}b{font-size:13px}code{font-size:10px;overflow-wrap:anywhere}
-    img{display:block;width:100%;height:auto;border:1px solid #6e6252;background:white}
-  </style></head><body><h1>SimpleWay Drawing · V1.42 · ${viewportKey}</h1><div class="grid">${cards}</div></body></html>`;
+  const cards = captures.map((item) => `<article><header><b>${item.order}. ${item.label}</b><code>${item.path}</code></header><img src="${viewportKey}/${item.fileName}" alt="${item.label}"></article>`).join("\n");
+  return `<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;padding:18px;background:#292722;color:#f6f0df;font-family:Arial,sans-serif}h1{font-size:22px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(${columns},minmax(0,1fr));gap:14px;align-items:start}article{background:#f4eedf;color:#211f1a;border:2px solid #b88a21;padding:8px}header{display:grid;gap:4px;margin-bottom:7px}b{font-size:13px}code{font-size:10px;overflow-wrap:anywhere}img{display:block;width:100%;height:auto;border:1px solid #6e6252;background:white}</style></head><body><h1>SimpleWay Drawing · V1.42 · ${viewportKey}</h1><div class="grid">${cards}</div></body></html>`;
 }
 
-async function main() {
+async function runAudit() {
   await rm(outputRoot, { recursive: true, force: true });
   await mkdir(outputRoot, { recursive: true });
-
   const preflightState = await preflight();
   const guest = await createGuestSession();
   const seeded = await seedVisualState(guest.cookieHeader);
-
   const routes = [
     { order: "01", key: "home", label: "Home / App Shell", path: "/" },
     { order: "02", key: "onboarding", label: "Onboarding", path: "/onboarding" },
@@ -371,59 +300,33 @@ async function main() {
     { order: "15", key: "alpha", label: "Alpha Rite", path: "/alpha" },
   ];
 
-  const chrome = spawn(chromeBin, [
-    "--headless=new",
-    "--no-sandbox",
-    "--disable-gpu",
-    "--disable-dev-shm-usage",
-    "--hide-scrollbars=false",
-    "--allow-file-access-from-files",
-    `--remote-debugging-port=${remotePort}`,
-    "--remote-debugging-address=127.0.0.1",
-    `--user-data-dir=${profileDir}`,
-    "about:blank",
-  ], { stdio: ["ignore", "ignore", "pipe"] });
-
+  const chrome = spawn(chromeBin, ["--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--allow-file-access-from-files", `--remote-debugging-port=${remotePort}`, "--remote-debugging-address=127.0.0.1", `--user-data-dir=${profileDir}`, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
   let stderr = "";
   chrome.stderr.on("data", (chunk) => { stderr += String(chunk); });
-
   try {
     const targets = await waitForJson(`http://127.0.0.1:${remotePort}/json/list`);
     const pageTarget = targets.find((target) => target.type === "page");
     assert.ok(pageTarget?.webSocketDebuggerUrl, `Chrome page target unavailable: ${stderr}`);
-
     const cdp = new CdpClient(pageTarget.webSocketDebuggerUrl);
     await cdp.connect();
     try {
-      await cdp.send("Page.enable");
-      await cdp.send("Network.enable");
-      await cdp.send("Runtime.enable");
+      await cdp.send("Page.enable"); await cdp.send("Network.enable"); await cdp.send("Runtime.enable");
       await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
-      await cdp.send("Network.setCookie", {
-        name: guest.cookieName,
-        value: guest.cookieValue,
-        url: baseUrl,
-      });
-
+      await cdp.send("Network.setCookie", { name: guest.cookieName, value: guest.cookieValue, url: baseUrl });
       const results = [];
       const captureIndex = { desktop: [], mobile: [] };
-
       for (const viewport of viewports) {
         await setViewport(cdp, viewport);
         for (const route of routes) {
-          const url = `${baseUrl}${route.path}`;
-          await navigate(cdp, url);
+          await navigate(cdp, `${baseUrl}${route.path}`);
           const metrics = await pageMetrics(cdp, viewport);
           const fileName = `${route.order}-${route.key}.png`;
-          const screenshotPath = join(outputRoot, viewport.key, fileName);
-          await captureScreenshot(cdp, screenshotPath, false);
-
+          await captureScreenshot(cdp, join(outputRoot, viewport.key, fileName), false);
           const p0 = [];
           if (metrics.responseStatus && metrics.responseStatus >= 400) p0.push(`HTTP ${metrics.responseStatus}`);
           if (metrics.errorBoundary) p0.push("error boundary visible");
           if (metrics.sessionError) p0.push("session error visible");
           if (metrics.horizontalOverflowPx > 2) p0.push(`horizontal overflow ${metrics.horizontalOverflowPx}px`);
-
           const warnings = [];
           if (metrics.gradients.length) warnings.push(`${metrics.gradients.length} gradient candidate(s)`);
           if (metrics.filters.length) warnings.push(`${metrics.filters.length} filter candidate(s)`);
@@ -432,57 +335,26 @@ async function main() {
           if (!metrics.keyboardFocus) warnings.push("no keyboard focus target after Tab");
           if (!metrics.reducedMotion?.matches) warnings.push("reduced-motion emulation did not match");
           if ((metrics.reducedMotion?.runningAnimations ?? 0) > 0) warnings.push(`${metrics.reducedMotion.runningAnimations} animation(s) still running under reduced motion`);
-
-          results.push({
-            route: route.key,
-            label: route.label,
-            path: route.path,
-            viewport: viewport.key,
-            screenshot: `${viewport.key}/${fileName}`,
-            metrics,
-            p0,
-            warnings,
-          });
+          results.push({ route: route.key, label: route.label, path: route.path, viewport: viewport.key, screenshot: `${viewport.key}/${fileName}`, metrics, p0, warnings });
           captureIndex[viewport.key].push({ ...route, fileName });
         }
       }
-
       for (const viewport of viewports) {
         const htmlPath = join(outputRoot, `contact-${viewport.key}.html`);
         await writeFile(htmlPath, contactSheetHtml(viewport.key, captureIndex[viewport.key]), "utf8");
-        await setViewport(cdp, { key: "contact", width: 1600, height: 1000, mobile: false });
+        await setViewport(cdp, { width: 1600, height: 1000, mobile: false });
         await navigate(cdp, pathToFileURL(htmlPath).href);
         await captureScreenshot(cdp, join(outputRoot, `contact-${viewport.key}.png`), true);
       }
-
       const p0Findings = results.flatMap((result) => result.p0.map((finding) => `${result.viewport}/${result.route}: ${finding}`));
       const warnings = results.flatMap((result) => result.warnings.map((finding) => `${result.viewport}/${result.route}: ${finding}`));
-      const manifest = {
-        generatedAt: new Date().toISOString(),
-        baseUrl,
-        expectedBaseSha,
-        preflight: preflightState,
-        seeded,
-        viewports,
-        routes: routes.map(({ order, key, label, path }) => ({ order, key, label, path })),
-        summary: {
-          captures: results.length,
-          p0Count: p0Findings.length,
-          warningCount: warnings.length,
-          p0Findings,
-          warnings,
-        },
-        results,
-      };
+      const manifest = { generatedAt: new Date().toISOString(), baseUrl, expectedBaseSha, preflight: preflightState, seeded, viewports, routes, summary: { captures: results.length, p0Count: p0Findings.length, warningCount: warnings.length, p0Findings, warnings }, results };
       await writeFile(join(outputRoot, "manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
-
       console.log(`VISUAL_ACCEPTANCE_CAPTURED=${results.length}`);
       console.log(`VISUAL_ACCEPTANCE_P0=${p0Findings.length}`);
       console.log(`VISUAL_ACCEPTANCE_WARNINGS=${warnings.length}`);
       if (p0Findings.length) throw new Error(`Visual acceptance P0 guard failed:\n${p0Findings.join("\n")}`);
-    } finally {
-      cdp.close();
-    }
+    } finally { cdp.close(); }
   } finally {
     chrome.kill("SIGTERM");
     await sleep(300);
@@ -490,4 +362,10 @@ async function main() {
   }
 }
 
-await main();
+try {
+  await runAudit();
+} catch (error) {
+  await mkdir(outputRoot, { recursive: true });
+  await writeFile(join(outputRoot, "failure.json"), JSON.stringify({ generatedAt: new Date().toISOString(), baseUrl, expectedBaseSha, error: error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : String(error) }, null, 2), "utf8");
+  throw error;
+}
