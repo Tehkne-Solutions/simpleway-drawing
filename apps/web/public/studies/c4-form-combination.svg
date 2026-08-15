@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Combine volumes antes de refinar a silhueta</title>
+  <desc id="desc">Cinco estágios mostram orientação espacial, volume principal, volumes secundários, interseções e silhueta final de um objeto construído com caixa, cilindro e massa arredondada.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M270 72V458M500 72V458M730 72V458M960 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="18" font-weight="700"><text x="52" y="84">01 · ORIENTE</text><text x="292" y="84">02 · VOLUME PRINCIPAL</text><text x="522" y="84">03 · SECUNDÁRIOS</text><text x="752" y="84">04 · INTERSEÇÕES</text><text x="982" y="84">05 · SILHUETA</text></g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M92 332L195 264L195 149L92 216Z" stroke="#756753" stroke-width="5"/><path d="M195 149L239 179L239 294L195 264M92 216L136 246L239 179" stroke="#756753" stroke-width="5"/><path d="M82 364L219 273M90 355L90 170" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+    <path d="M320 324L320 194L419 148L455 172L455 302L356 348Z" stroke="#29251f" stroke-width="7"/><path d="M320 194L356 218L455 172M356 218L356 348" stroke="#756753" stroke-width="4"/>
+    <path d="M548 324L548 194L647 148L683 172L683 302L584 348Z" stroke="#29251f" stroke-width="6"/><path d="M548 194L584 218L683 172M584 218L584 348" stroke="#756753" stroke-width="4"/><ellipse cx="680" cy="248" rx="49" ry="68" transform="rotate(-12 680 248)" stroke="#756753" stroke-width="6"/><ellipse cx="570" cy="172" rx="37" ry="20" stroke="#756753" stroke-width="5"/><path d="M570 152V112M553 112H587" stroke="#756753" stroke-width="5"/>
+    <path d="M778 324L778 194L877 148L913 172L913 302L814 348Z" stroke="#29251f" stroke-width="6"/><ellipse cx="910" cy="248" rx="49" ry="68" transform="rotate(-12 910 248)" stroke="#29251f" stroke-width="6"/><ellipse cx="800" cy="172" rx="37" ry="20" stroke="#29251f" stroke-width="5"/><path d="M800 152V112M783 112H817" stroke="#29251f" stroke-width="5"/><path d="M868 192C892 207 909 230 917 256M820 162C814 179 811 196 812 216" stroke="#a85b36" stroke-width="4"/>
+    <path d="M1009 321C995 287 997 224 1016 195C1027 178 1034 166 1037 145C1056 137 1076 139 1093 149C1096 168 1103 180 1118 197C1140 223 1148 275 1132 311C1114 344 1083 359 1049 352C1029 349 1017 338 1009 321Z" stroke="#29251f" stroke-width="8"/><path d="M1111 208C1150 199 1160 273 1125 292" stroke="#29251f" stroke-width="9"/><path d="M1037 145C1054 157 1078 157 1093 149" stroke="#7f8a60" stroke-width="4"/><path d="M1011 321C1042 336 1100 337 1132 311" stroke="#a85b36" stroke-width="3"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">ORIENTAÇÃO → VOLUME → COMBINAÇÃO → INTERSEÇÃO → SILHUETA</text>
+</svg>
