@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">HNK Form Check testa coerência espacial</title>
+  <desc id="desc">Cinco estágios revisam um cilindro e uma forma orgânica por eixos, planos, elipses, cross-contours e continuidade imaginada por trás do volume.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M270 72V458M500 72V458M730 72V458M960 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="18" font-weight="700"><text x="52" y="84">01 · EIXOS</text><text x="292" y="84">02 · PLANOS</text><text x="522" y="84">03 · ELIPSES</text><text x="752" y="84">04 · CROSS-CONTOURS</text><text x="982" y="84">05 · CONTINUIDADE</text></g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M134 150L196 322" stroke="#29251f" stroke-width="7"/><ellipse cx="135" cy="151" rx="45" ry="18" transform="rotate(70 135 151)" stroke="#756753" stroke-width="5"/><ellipse cx="195" cy="322" rx="45" ry="18" transform="rotate(70 195 322)" stroke="#756753" stroke-width="5"/><path d="M105 122L224 350" stroke="#c69631" stroke-width="3" stroke-dasharray="8 7"/>
+    <path d="M329 322L329 186L405 148L445 177L445 313L369 351Z" stroke="#29251f" stroke-width="7"/><path d="M329 186L369 214L445 177M369 214L369 351" stroke="#756753" stroke-width="4"/><path d="M329 186L405 148L445 177L369 214Z" stroke="#7f8a60" stroke-width="3"/>
+    <path d="M564 159L631 327" stroke="#29251f" stroke-width="7"/><ellipse cx="564" cy="159" rx="47" ry="19" transform="rotate(68 564 159)" stroke="#29251f" stroke-width="6"/><ellipse cx="631" cy="327" rx="47" ry="19" transform="rotate(68 631 327)" stroke="#29251f" stroke-width="6"/><path d="M578 190C595 187 616 194 624 208M592 226C610 222 632 230 640 244M606 264C624 260 646 268 654 282" stroke="#c69631" stroke-width="3"/>
+    <path d="M784 326C768 281 775 211 815 177C847 151 894 165 908 207C922 249 906 312 863 343C832 365 797 354 784 326Z" stroke="#29251f" stroke-width="7"/><path d="M781 250C813 232 875 236 913 260M790 291C827 272 876 278 900 300M805 209C836 193 879 199 903 219" stroke="#7f8a60" stroke-width="4"/>
+    <path d="M1012 326C997 280 1005 211 1044 177C1077 150 1125 165 1138 207C1152 249 1136 312 1092 343C1060 365 1025 354 1012 326Z" stroke="#29251f" stroke-width="7"/><path d="M1010 250C1042 233 1104 236 1142 260M1019 291C1056 272 1105 278 1129 300" stroke="#756753" stroke-width="3"/><path d="M1038 192C1060 213 1114 213 1140 194" stroke="#a85b36" stroke-width="3" stroke-dasharray="7 7"/><path d="M1043 342C1064 324 1114 325 1137 344" stroke="#a85b36" stroke-width="3" stroke-dasharray="7 7"/>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">EIXO · PLANO · ELIPSE · SUPERFÍCIE · VOLUME POR TRÁS</text>
+</svg>
