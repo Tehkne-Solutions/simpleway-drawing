@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Famílias de curvas C e S</title>
+  <desc id="desc">Quatro painéis com curvas C abertas, C fechadas, S suaves e S comprimidas em diferentes escalas e orientações.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="23" font-weight="700"><text x="62" y="84">01 · C ABERTA</text><text x="362" y="84">02 · C FECHADA</text><text x="662" y="84">03 · S SUAVE</text><text x="962" y="84">04 · S COMPRIMIDA</text></g>
+  <g fill="none" stroke-linecap="round">
+    <path d="M232 145C139 133 81 197 83 280C85 357 147 399 229 384" stroke="#29251f" stroke-width="10"/>
+    <path d="M217 170C153 160 113 207 114 275C116 334 158 367 216 357" stroke="#a85b36" stroke-width="4" stroke-dasharray="7 7"/>
+    <path d="M510 140C406 130 352 195 360 280C367 365 428 407 516 378C556 365 574 330 566 303" stroke="#29251f" stroke-width="10"/>
+    <path d="M488 171C427 163 390 209 396 275C402 333 446 365 506 348C532 340 544 322 540 306" stroke="#c69631" stroke-width="4" stroke-dasharray="7 7"/>
+    <path d="M675 374C731 416 827 385 829 309C831 246 754 241 751 188C748 139 808 123 868 155" stroke="#29251f" stroke-width="10"/>
+    <path d="M692 349C738 379 797 357 799 311C801 265 726 261 725 191C724 158 759 149 847 171" stroke="#7f8a60" stroke-width="4" stroke-dasharray="7 7"/>
+    <path d="M969 367C1011 407 1081 387 1081 327C1081 279 1028 277 1028 235C1028 194 1086 190 1119 218" stroke="#29251f" stroke-width="10"/>
+    <path d="M995 345C1020 367 1054 354 1054 327C1054 299 1001 295 1002 234C1003 208 1036 207 1098 232" stroke="#a85b36" stroke-width="4" stroke-dasharray="7 7"/>
+  </g>
+  <g fill="#6f604b" font-family="Arial,sans-serif" font-size="14" text-anchor="middle"><text x="150" y="430">GRANDE ARCO · BAIXA CURVATURA</text><text x="450" y="430">ARCO MAIS ENVOLVENTE</text><text x="750" y="430">DUAS MUDANÇAS DE DIREÇÃO</text><text x="1050" y="430">MESMA LÓGICA · MENOS ESPAÇO</text></g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">TREINE A TRAJETÓRIA INTEIRA — NÃO UMA COLAGEM DE PEQUENOS SEGMENTOS</text>
+</svg>

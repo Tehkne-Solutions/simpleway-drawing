@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Line economy usa menos marcas com mais intenção</title>
+  <desc id="desc">Quatro estágios de um sapato simples mostram excesso de linhas, seleção de estrutura, curvas longas e um contorno final econômico com peso seletivo.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="22" font-weight="700"><text x="62" y="84">01 · EXCESSO</text><text x="362" y="84">02 · ESTRUTURA</text><text x="662" y="84">03 · CURVAS LONGAS</text><text x="962" y="84">04 · LINHA ECONÔMICA</text></g>
+  <g transform="translate(57 130)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M33 275C64 211 94 153 132 130C166 109 187 142 196 186C205 230 238 244 271 253C289 258 294 286 273 296C212 326 89 330 43 310C29 304 26 291 33 275Z" stroke="#8c7b62" stroke-width="3"/>
+    <path d="M42 282C77 229 100 171 137 145M48 295C84 249 114 190 151 160M68 310C107 266 145 211 174 188M117 319C151 276 190 242 218 229M165 319C193 291 226 271 261 261" stroke="#a85b36" stroke-width="2"/>
+    <path d="M74 265L250 265M93 236L233 236M110 207L210 207" stroke="#c69631" stroke-width="2" stroke-dasharray="5 6"/>
+  </g>
+  <g transform="translate(357 130)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 275C65 213 96 154 132 131C166 109 188 142 197 186C206 230 238 244 272 253C289 258 294 286 273 296C214 326 89 330 43 310C29 304 27 291 35 275Z" stroke="#756753" stroke-width="4"/>
+    <path d="M42 292L274 292M132 131L197 186M197 186L272 253" stroke="#c69631" stroke-width="3" stroke-dasharray="7 7"/>
+    <circle cx="132" cy="131" r="5" fill="#a85b36" stroke="none"/><circle cx="197" cy="186" r="5" fill="#a85b36" stroke="none"/><circle cx="272" cy="253" r="5" fill="#a85b36" stroke="none"/>
+  </g>
+  <g transform="translate(657 130)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 275C66 214 98 154 132 132" stroke-width="7"/>
+    <path d="M132 132C166 111 188 142 197 186" stroke-width="7"/>
+    <path d="M197 186C207 228 239 244 271 253" stroke-width="7"/>
+    <path d="M271 253C290 259 294 285 273 296" stroke-width="7"/>
+    <path d="M273 296C214 326 89 330 43 310" stroke-width="7"/>
+    <path d="M43 310C29 304 27 291 35 275" stroke-width="7"/>
+    <path d="M57 300C111 305 206 303 262 283" stroke="#7f8a60" stroke-width="3"/>
+  </g>
+  <g transform="translate(957 130)" fill="none" stroke="#29251f" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 275C66 214 98 154 132 132C166 111 188 142 197 186C207 228 239 244 271 253C290 259 294 285 273 296C214 326 89 330 43 310C29 304 27 291 35 275Z" stroke-width="7"/>
+    <path d="M45 304C103 322 215 318 273 296" stroke-width="11"/>
+    <path d="M197 186C207 228 239 244 271 253" stroke-width="10"/>
+    <path d="M74 276C104 258 135 250 165 252" stroke="#756753" stroke-width="3"/>
+    <path d="M102 231C125 219 153 216 178 222" stroke="#756753" stroke-width="3"/>
+  </g>
+  <g fill="#6f604b" font-family="Arial,sans-serif" font-size="14" text-anchor="middle"><text x="150" y="431">MUITA INFORMAÇÃO · POUCA HIERARQUIA</text><text x="450" y="431">ESCOLHA EXTREMOS E QUEBRAS</text><text x="750" y="431">CONECTE DECISÕES EM GESTOS LONGOS</text><text x="1050" y="431">PESO SÓ ONDE ELE EXPLICA A FORMA</text></g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">MENOS TRAÇOS · MAIS ESTRUTURA · MAIS CLAREZA</text>
+</svg>

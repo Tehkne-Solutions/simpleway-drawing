@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Pulso, cotovelo e ombro mudam a escala do gesto</title>
+  <desc id="desc">Três estudos mostram movimentos curto, médio e longo executados principalmente pelo pulso, cotovelo e ombro, seguidos por uma comparação das trajetórias.</desc>
+  <rect width="1200" height="540" fill="#efe2c7"/>
+  <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
+  <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
+  <g fill="#5f4b2f" font-family="Georgia,serif" font-size="23" font-weight="700"><text x="64" y="84">01 · PULSO</text><text x="364" y="84">02 · COTOVELO</text><text x="664" y="84">03 · OMBRO</text><text x="964" y="84">04 · COMPARE</text></g>
+  <g transform="translate(58 120)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M55 266C85 245 116 224 146 205" stroke="#29251f" stroke-width="9"/>
+    <path d="M146 205L194 174" stroke="#756753" stroke-width="12"/>
+    <circle cx="146" cy="205" r="12" fill="#a85b36"/>
+    <path d="M178 299C198 270 206 239 201 210" stroke="#c69631" stroke-width="4"/>
+    <path d="M178 299C221 295 246 276 261 247" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+    <path d="M165 315H265" stroke="#7f8a60" stroke-width="7"/>
+    <text x="213" y="344" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="15">TRAÇO CURTO</text>
+  </g>
+  <g transform="translate(358 120)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 272L121 220L199 171" stroke="#29251f" stroke-width="11"/>
+    <circle cx="121" cy="220" r="13" fill="#a85b36"/>
+    <circle cx="199" cy="171" r="10" fill="#756753"/>
+    <path d="M85 316C150 291 198 251 227 201" stroke="#c69631" stroke-width="4"/>
+    <path d="M86 318C159 319 219 293 259 245" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+    <path d="M80 337H264" stroke="#7f8a60" stroke-width="7"/>
+    <text x="172" y="366" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="15">TRAÇO MÉDIO</text>
+  </g>
+  <g transform="translate(658 120)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M34 287L108 244L181 199L251 154" stroke="#29251f" stroke-width="12"/>
+    <circle cx="181" cy="199" r="13" fill="#756753"/>
+    <circle cx="251" cy="154" r="14" fill="#a85b36"/>
+    <path d="M38 333C118 299 187 251 245 189" stroke="#c69631" stroke-width="4"/>
+    <path d="M38 335C127 345 216 321 281 267" stroke="#c69631" stroke-width="2" stroke-dasharray="7 7"/>
+    <path d="M30 355H283" stroke="#7f8a60" stroke-width="7"/>
+    <text x="157" y="384" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="15">TRAÇO LONGO</text>
+  </g>
+  <g transform="translate(958 120)" fill="none" stroke-linecap="round">
+    <path d="M26 300C76 287 110 260 136 224" stroke="#a85b36" stroke-width="7"/>
+    <path d="M26 321C99 306 160 266 199 211" stroke="#c69631" stroke-width="7"/>
+    <path d="M26 342C112 331 203 284 270 207" stroke="#7f8a60" stroke-width="7"/>
+    <circle cx="136" cy="224" r="5" fill="#a85b36"/><circle cx="199" cy="211" r="5" fill="#c69631"/><circle cx="270" cy="207" r="5" fill="#7f8a60"/>
+    <text x="145" y="386" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="15">ESCOLHA A ARTICULAÇÃO PELA ESCALA</text>
+  </g>
+  <text x="600" y="493" text-anchor="middle" fill="#6f604b" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">MAIS OPÇÕES DE MOVIMENTO = MAIS CONTROLE</text>
+</svg>
