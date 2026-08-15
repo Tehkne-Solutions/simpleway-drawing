@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getArtworkRepository, getStorage } from "../../../../server/runtime";
+import { getArtworkRepository } from "../../../../server/runtime";
 import { requireSessionUserId } from "../../../../server/session";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export async function GET(_request: Request, context: { params: Promise<{ artwor
     const record = await getArtworkRepository().getOwned(userId, artworkId);
     if (!record) return NextResponse.json({ code: "ARTWORK_NOT_FOUND" }, { status: 404, headers: { "cache-control": "no-store" } });
 
-    const versions = await Promise.all(record.versions.map(async (version) => ({
+    const versions = record.versions.map((version) => ({
       id: version.id,
       versionNumber: version.versionNumber,
       fileAssetId: version.fileAssetId,
@@ -20,8 +20,8 @@ export async function GET(_request: Request, context: { params: Promise<{ artwor
       notes: version.notes,
       reviewPlan: version.reviewPlan,
       createdAt: version.createdAt,
-      readUrl: await getStorage().createPrivateReadUrl(version.storageKey, 300),
-    })));
+      readUrl: `/api/artworks/${encodeURIComponent(record.artwork.id)}/versions/${version.versionNumber}/image`,
+    }));
 
     return NextResponse.json({ artwork: record.artwork, versions }, { headers: { "cache-control": "no-store, private" } });
   } catch (error) {

@@ -76,6 +76,14 @@ await assertHttp(addV2, 201, "on-demand create artwork v2");
 
 const v1Path = `/api/artworks/${artwork.id}/versions/1/image`;
 const v2Path = `/api/artworks/${artwork.id}/versions/2/image`;
+
+const detailApi = await fetch(`${baseUrl}/api/artworks/${artwork.id}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
+await assertHttp(detailApi, 200, "on-demand artwork detail API");
+assert.equal(detailApi.headers.get("cache-control"), "no-store, private");
+const detailPayload = await detailApi.json();
+assert.deepEqual(detailPayload.versions.map((version) => version.readUrl), [v2Path, v1Path]);
+assert.doesNotMatch(JSON.stringify(detailPayload), /X-Amz-|X-Goog-|localhost:9000|127\.0\.0\.1:9000/i);
+
 const page = await fetch(`${baseUrl}/create/${artwork.id}`, { headers: { cookie: ownerCookie }, cache: "no-store" });
 await assertHttp(page, 200, "on-demand artwork detail page");
 const html = await page.text();
@@ -105,4 +113,4 @@ const outsider = await fetch(`${baseUrl}${v1Path}`, { headers: { cookie: outside
 await assertHttp(outsider, 404, "on-demand outsider rejected");
 assert.equal((await outsider.json()).code, "ARTWORK_VERSION_NOT_FOUND");
 
-console.log("ON_DEMAND_VERSION_IMAGES_E2E=PASS same_origin_html exact_version_bytes owner_scoped storage_on_request private_no_store nosniff invalid_version_404 missing_version_404 unauthenticated_401 outsider_404");
+console.log("ON_DEMAND_VERSION_IMAGES_E2E=PASS same_origin_detail_api same_origin_html exact_version_bytes owner_scoped storage_on_request private_no_store nosniff invalid_version_404 missing_version_404 unauthenticated_401 outsider_404");
