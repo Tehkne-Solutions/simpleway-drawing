@@ -21,9 +21,9 @@ export function CromaCoach({
   state = "teach",
 }: CromaCoachProps) {
   return (
-    <aside className={`croma-coach croma-tone-${tone} croma-coach-state-${state}`} data-croma-state={state}>
+    <aside className={`croma-coach croma-tone-${tone} croma-coach-state-${state}`} data-croma-state={state} data-croma-pigment={tone}>
       <div className="croma-coach-avatar">
-        <CromaMark state={state} label={`${eyebrow}: ${title}`} />
+        <CromaMark state={state} pigment={tone} label={`${eyebrow}: ${title}`} />
       </div>
       <div className="croma-coach-copy">
         <p className="croma-coach-eyebrow">{eyebrow}</p>
