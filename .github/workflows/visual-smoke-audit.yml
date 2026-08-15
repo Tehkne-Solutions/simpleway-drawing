@@ -1,0 +1,52 @@
+name: Visual Smoke Audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/workflows/visual-smoke-audit.yml"
+      - "apps/web/scripts/visual-acceptance-audit.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Locate Chrome
+        shell: bash
+        run: |
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "Chrome/Chromium not found on runner" >&2
+            exit 1
+          fi
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          "$CHROME_BIN" --version
+
+      - name: Capture desktop and mobile visual acceptance evidence
+        env:
+          VISUAL_AUDIT_BASE_URL: https://simpleway-drawing.vercel.app
+          VISUAL_AUDIT_EXPECTED_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          VISUAL_AUDIT_OUTPUT: artifacts/visual-smoke-v1-42
+        run: node apps/web/scripts/visual-acceptance-audit.mjs
+
+      - name: Upload visual acceptance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-smoke-v1-42
+          path: artifacts/visual-smoke-v1-42
+          if-no-files-found: error
+          retention-days: 7
