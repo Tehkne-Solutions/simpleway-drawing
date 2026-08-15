@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getArtworkRepository, getStorage } from "../../../server/runtime";
+import { getArtworkRepository } from "../../../server/runtime";
 import { getSessionUserId } from "../../../server/session";
 import "../historical-comparison-v128.css";
 import "../review-cycle-v125.css";
@@ -28,10 +28,10 @@ export default async function ArtworkDetailPage({ params, searchParams }: { para
   const record = await getArtworkRepository().getOwned(userId, artworkId);
   if (!record) notFound();
 
-  const versions = await Promise.all(record.versions.map(async (version) => ({
+  const versions = record.versions.map((version) => ({
     ...version,
-    readUrl: await getStorage().createPrivateReadUrl(version.storageKey, 600),
-  })));
+    readUrl: `/api/artworks/${encodeURIComponent(record.artwork.id)}/versions/${version.versionNumber}/image`,
+  }));
   const chamberEligible = record.artwork.type === "ARTWORK";
   const artworkTitle = record.artwork.title ?? "Sem título";
   const comparisonVersions = versions.map((version) => ({

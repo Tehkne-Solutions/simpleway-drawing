@@ -33,15 +33,15 @@ export async function GET(request: Request, context: { params: Promise<{ artwork
 
     if (!row) return NextResponse.json({ code: "ARTWORK_VERSION_NOT_FOUND" }, { status: 404, headers: { "cache-control": "no-store" } });
 
-    const bytes = await getStorage().readPrivateFile(row.storageKey);
-    const body = new Uint8Array(bytes.byteLength);
-    body.set(bytes);
-    return new Response(body.buffer, {
+    const file = await getStorage().readPrivateFile(row.storageKey);
+    const body = new ArrayBuffer(file.body.byteLength);
+    new Uint8Array(body).set(file.body);
+    return new Response(body, {
       status: 200,
       headers: {
         "content-type": row.mimeType,
-        "content-length": String(body.byteLength),
-        "cache-control": "private, max-age=600, immutable",
+        "content-length": String(file.byteSize),
+        "cache-control": "private, no-store",
         "x-content-type-options": "nosniff",
       },
     });
