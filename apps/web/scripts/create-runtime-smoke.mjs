@@ -62,9 +62,10 @@ assert.equal(detailV1Payload.artwork.title, "Estudo E2E");
 assert.equal(detailV1Payload.versions.length, 1);
 assert.equal(detailV1Payload.versions[0].versionNumber, 1);
 assert.equal(detailV1Payload.versions[0].notes, "Primeira versão E2E");
-assert.match(detailV1Payload.versions[0].readUrl, /^http:\/\/127\.0\.0\.1:9000\//);
-const privateRead = await fetch(detailV1Payload.versions[0].readUrl);
-await assertHttp(privateRead, 200, "private signed artwork read");
+assert.equal(detailV1Payload.versions[0].readUrl, `/api/artworks/${created.id}/versions/1/image`);
+assert.doesNotMatch(JSON.stringify(detailV1Payload), /X-Amz-|X-Goog-|localhost:9000|127\.0\.0\.1:9000/i);
+const privateRead = await fetch(`${baseUrl}${detailV1Payload.versions[0].readUrl}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(privateRead, 200, "same-origin artwork detail read v1");
 assert.deepEqual(Buffer.from(await privateRead.arrayBuffer()), png1);
 
 const ownerPage = await fetch(`${baseUrl}/create/${created.id}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
@@ -94,6 +95,7 @@ const canvasDetailV1Payload = await canvasDetailV1.json();
 assert.equal(canvasDetailV1Payload.versions.length, 1);
 assert.equal(canvasDetailV1Payload.versions[0].source, "CANVAS");
 assert.equal(canvasDetailV1Payload.versions[0].notes, "Materializada dentro da Câmara da Obra");
+assert.equal(canvasDetailV1Payload.versions[0].readUrl, `/api/artworks/${canvasArtwork.id}/versions/1/image`);
 
 const canvasVersionV1 = await fetch(`${baseUrl}/api/artworks/${canvasArtwork.id}/versions/1/image`, { headers: { cookie: owner.cookie }, cache: "no-store" });
 await assertHttp(canvasVersionV1, 200, "Work Chamber canonical version image v1");
@@ -142,6 +144,10 @@ assert.equal(canvasDetailV2Payload.artwork.id, canvasArtwork.id);
 assert.equal(canvasDetailV2Payload.versions.length, 2);
 assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.versionNumber), [2, 1]);
 assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.source), ["CANVAS", "CANVAS"]);
+assert.deepEqual(canvasDetailV2Payload.versions.map((item) => item.readUrl), [
+  `/api/artworks/${canvasArtwork.id}/versions/2/image`,
+  `/api/artworks/${canvasArtwork.id}/versions/1/image`,
+]);
 assert.equal(canvasDetailV2Payload.versions[0].notes, "Segunda passagem dentro da Câmara");
 assert.equal(canvasDetailV2Payload.versions[1].notes, "Materializada dentro da Câmara da Obra");
 
@@ -202,10 +208,15 @@ await assertHttp(detailV2, 200, "owned artwork detail v2");
 const detailV2Payload = await detailV2.json();
 assert.equal(detailV2Payload.versions.length, 2);
 assert.deepEqual(detailV2Payload.versions.map((item) => item.versionNumber), [2, 1]);
+assert.deepEqual(detailV2Payload.versions.map((item) => item.readUrl), [
+  `/api/artworks/${created.id}/versions/2/image`,
+  `/api/artworks/${created.id}/versions/1/image`,
+]);
 assert.equal(detailV2Payload.versions[0].notes, "Segunda versão E2E");
 assert.equal(detailV2Payload.versions[1].notes, "Primeira versão E2E");
-const privateReadV2 = await fetch(detailV2Payload.versions[0].readUrl);
-await assertHttp(privateReadV2, 200, "private signed artwork read v2");
+assert.doesNotMatch(JSON.stringify(detailV2Payload), /X-Amz-|X-Goog-|localhost:9000|127\.0\.0\.1:9000/i);
+const privateReadV2 = await fetch(`${baseUrl}${detailV2Payload.versions[0].readUrl}`, { headers: { cookie: owner.cookie }, cache: "no-store" });
+await assertHttp(privateReadV2, 200, "same-origin artwork detail read v2");
 assert.deepEqual(Buffer.from(await privateReadV2.arrayBuffer()), png2);
 
 const journey = await fetch(`${baseUrl}/journey`, { headers: { cookie: owner.cookie }, cache: "no-store" });
@@ -216,4 +227,4 @@ assert.match(journeyHtml, /Versão 2 registrada/);
 assert.match(journeyHtml, /VISUAL V1/);
 assert.match(journeyHtml, /VISUAL V2/);
 
-console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing signed_private_read work_chamber_ssr canvas_artwork_materialization canonical_version_reads canvas_roundtrip_owner_isolation canvas_same_artwork_versioning chamber_exact_version_pinning chamber_version_immutability retired_current_image living_visual_archive version_faithful_journey version_csrf immutable_version_history journey_projection");
+console.log("CREATE_RUNTIME_E2E=PASS private_upload create_csrf artwork_create private_listing same_origin_api_detail_read work_chamber_ssr canvas_artwork_materialization canonical_version_reads canvas_roundtrip_owner_isolation canvas_same_artwork_versioning chamber_exact_version_pinning chamber_version_immutability retired_current_image living_visual_archive version_faithful_journey version_csrf immutable_version_history journey_projection");
