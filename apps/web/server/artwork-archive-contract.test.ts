@@ -22,13 +22,17 @@ test("Atelier library is visual and pins each preview to its current version num
   assert.match(css, /\.artwork-version-badge/);
 });
 
-test("Journey artwork preview can resolve an exact historical version instead of currentVersionId", () => {
+test("Journey artwork preview resolves an exact historical version through the canonical same-origin image boundary", () => {
   const archive = source("server/artwork-archive.ts");
   const historicalPreview = archive.slice(archive.indexOf("export async function getJourneyArtworkPreview"));
   assert.match(historicalPreview, /versionNumber: number \| null/);
   assert.match(historicalPreview, /filters\.push\(eq\(artworkVersions\.versionNumber, versionNumber\)\)/);
   assert.match(historicalPreview, /innerJoin\(artworkVersions, eq\(artworkVersions\.artworkId, artworks\.id\)\)/);
   assert.doesNotMatch(historicalPreview, /currentVersionId/);
+  assert.doesNotMatch(historicalPreview, /getStorage/);
+  assert.doesNotMatch(historicalPreview, /createPrivateReadUrl/);
+  assert.doesNotMatch(historicalPreview, /storageKey/);
+  assert.match(historicalPreview, /imageUrl: `\/api\/artworks\/\$\{encodeURIComponent\(artworkId\)\}\/versions\/\$\{row\.versionNumber\}\/image`/);
 });
 
 test("Atlas uses journey metadata versionNumber for ARTWORK_CREATED and ARTWORK_VERSION visuals", () => {

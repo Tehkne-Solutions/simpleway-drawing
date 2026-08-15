@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test server/**/*.test.ts",
     "e2e:smoke": "node scripts/e2e-smoke.mjs",
-    "e2e:create": "node scripts/create-runtime-smoke.mjs && node scripts/version-comparison-runtime-smoke.mjs && node scripts/on-demand-version-images-runtime-smoke.mjs",
+    "e2e:create": "node scripts/create-runtime-smoke.mjs && node scripts/version-comparison-runtime-smoke.mjs && node scripts/on-demand-version-images-runtime-smoke.mjs && node scripts/atlas-same-origin-runtime-smoke.mjs",
     "e2e:learning": "node scripts/learning-runtime-smoke.mjs",
     "e2e:practice": "node scripts/practice-runtime-smoke.mjs",
     "e2e:visual-labs": "node scripts/visual-labs-runtime-smoke.mjs",
