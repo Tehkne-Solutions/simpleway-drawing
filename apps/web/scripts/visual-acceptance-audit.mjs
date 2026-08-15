@@ -94,6 +94,17 @@ async function uploadPrivate(cookieHeader, bytes) {
 
 async function createArtwork(cookieHeader, { bytes, title, type, source = "UPLOAD", notes }) {
   const fileAssetId = await uploadPrivate(cookieHeader, bytes);
+  if (type === "BASELINE") {
+    const response = await fetch(`${baseUrl}/api/drawing-zero`, {
+      method: "POST",
+      headers: { cookie: cookieHeader, "content-type": "application/json" },
+      body: JSON.stringify({ fileAssetId, source }),
+    });
+    await assertHttp(response, 201, "create Drawing Zero");
+    const baseline = await response.json();
+    return { id: baseline.artworkId };
+  }
+
   const response = await fetch(`${baseUrl}/api/artworks`, {
     method: "POST",
     headers: { cookie: cookieHeader, "content-type": "application/json" },
