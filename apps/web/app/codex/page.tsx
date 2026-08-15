@@ -1,12 +1,22 @@
 import Link from "next/link";
 import { CROMA_CANON, SWD_ATELIERS } from "../../game/croma-canon";
+import { CromaMark, type CromaState } from "../components/croma-mark";
 import "./codex-v13.css";
+
+const cromaStates: Array<{ state: CromaState; title: string; role: string }> = [
+  { state: "observe", title: "Olhar", role: "Croma desacelera a resposta e pede que você veja relações antes de tocar no canvas." },
+  { state: "teach", title: "Oficina", role: "Croma demonstra uma ferramenta, uma regra visual ou um jeito de testar uma hipótese." },
+  { state: "challenge", title: "Missão", role: "Croma transforma a habilidade em problema jogável: uma prova curta, clara e verificável." },
+  { state: "correct", title: "Ajuste", role: "Croma aponta incoerências e sugere outra tentativa sem transformar erro em punição." },
+  { state: "celebrate", title: "Marco", role: "Croma reconhece Evidence real, território consagrado e mudança observável de processo." },
+  { state: "guide", title: "Bússola", role: "Croma conecta o que você já demonstrou ao próximo território mais útil da jornada." },
+];
 
 export default function CodexPage() {
   return (
     <main className="codex-page">
       <header className="codex-hero">
-        <div className="codex-seal" aria-hidden="true">C</div>
+        <div className="codex-hero-croma"><CromaMark state="guide" label="Croma di Vinci, guia da Sociedade Croma" /></div>
         <div>
           <p className="eyebrow">{CROMA_CANON.codex} · Registro 001</p>
           <h1>{CROMA_CANON.name}</h1>
@@ -21,6 +31,21 @@ export default function CodexPage() {
         <p>Segundo a tradição da Sociedade Croma, um camaleão chamado <strong>Cromatico</strong> teria vivido entre instrumentos, papéis e estudos de um atelier renascentista ligado à figura de Leonardo da Vinci. Em vez de copiar desenhos, ele teria aprendido algo mais raro: observar como um mestre observa.</p>
         <p>Seus descendentes preservaram esse princípio por gerações. A linhagem ficou conhecida como <strong>Camaleões do Olhar</strong>: artistas e investigadores cuja habilidade verdadeira não é mudar de cor, mas perceber relações que outros ainda não aprenderam a enxergar.</p>
         <p><strong>Croma di Vinci</strong> é um herdeiro contemporâneo dessa tradição. Ele não aparece como mestre perfeito. Aprende junto com o jogador, abre missões, provoca novas tentativas e registra descobertas no Codex.</p>
+      </section>
+
+      <section className="codex-sheet" aria-labelledby="croma-expression-title">
+        <p className="eyebrow">Croma Vivo · linguagem pedagógica</p>
+        <h2 id="croma-expression-title">A expressão diz o que ele está fazendo por você.</h2>
+        <p>Croma mantém a mesma silhueta e identidade, mas muda olhar, boca, postura do pincel e sinais gráficos conforme sua função. Assim, até uma criança que ainda lê pouco consegue perceber se é hora de observar, aprender, tentar, ajustar, comemorar ou seguir uma rota.</p>
+        <div className="croma-expression-atlas">
+          {cromaStates.map((item) => (
+            <article className="croma-expression-card" key={item.state} data-croma-state={item.state}>
+              <CromaMark state={item.state} label={`Croma em estado ${item.title}`} />
+              <strong>{item.title}</strong>
+              <span>{item.role}</span>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="codex-sheet">
