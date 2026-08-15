@@ -1,24 +1,26 @@
 import Link from "next/link";
 import { CROMA_CANON, SWD_ATELIERS } from "../../game/croma-canon";
-import { CromaMark, type CromaState } from "../components/croma-mark";
+import { CromaMark, type CromaPigment, type CromaState } from "../components/croma-mark";
 import "./codex-v13.css";
 
-const cromaStates: Array<{ state: CromaState; title: string; role: string }> = [
-  { state: "observe", title: "Olhar", role: "Croma desacelera a resposta e pede que você veja relações antes de tocar no canvas." },
-  { state: "teach", title: "Oficina", role: "Croma demonstra uma ferramenta, uma regra visual ou um jeito de testar uma hipótese." },
-  { state: "challenge", title: "Missão", role: "Croma transforma a habilidade em problema jogável: uma prova curta, clara e verificável." },
-  { state: "correct", title: "Ajuste", role: "Croma aponta incoerências e sugere outra tentativa sem transformar erro em punição." },
-  { state: "celebrate", title: "Marco", role: "Croma reconhece Evidence real, território consagrado e mudança observável de processo." },
-  { state: "guide", title: "Bússola", role: "Croma conecta o que você já demonstrou ao próximo território mais útil da jornada." },
+const cromaStates: Array<{ state: CromaState; pigment: CromaPigment; title: string; role: string }> = [
+  { state: "observe", pigment: "gold", title: "Observando", role: "Croma desacelera a resposta e pede que você veja relações antes de tocar no canvas." },
+  { state: "focus", pigment: "violet", title: "Concentrado", role: "Croma reduz o ruído e mantém a atenção em uma única variável visual por vez." },
+  { state: "curious", pigment: "ultramarine", title: "Curioso", role: "Croma transforma estranheza em pergunta e incentiva investigação em vez de resposta pronta." },
+  { state: "teach", pigment: "veronese", title: "Ensinando", role: "Croma demonstra uma ferramenta, uma regra visual ou um jeito de testar uma hipótese." },
+  { state: "challenge", pigment: "terracotta", title: "Alerta / Desafio", role: "Croma transforma a habilidade em problema jogável: uma prova curta, clara e verificável." },
+  { state: "correct", pigment: "veronese", title: "Ajuste", role: "Croma aponta incoerências e sugere outra tentativa sem transformar erro em punição." },
+  { state: "celebrate", pigment: "gold", title: "Celebração", role: "Croma reconhece Evidence real, território consagrado e mudança observável de processo." },
+  { state: "guide", pigment: "ultramarine", title: "Bússola", role: "Croma conecta o que você já demonstrou ao próximo território mais útil da jornada." },
 ];
 
 export default function CodexPage() {
   return (
     <main className="codex-page">
       <header className="codex-hero">
-        <div className="codex-hero-croma"><CromaMark state="guide" label="Croma di Vinci, guia da Sociedade Croma" /></div>
+        <div className="codex-hero-croma"><CromaMark state="curious" pigment="terracotta" variant="sketch" label="Croma Sketch no caderno da Sociedade Croma" /></div>
         <div>
-          <p className="eyebrow">{CROMA_CANON.codex} · Registro 001</p>
+          <p className="eyebrow">{CROMA_CANON.codex} · Registro 001 · Croma Sketch</p>
           <h1>{CROMA_CANON.name}</h1>
           <p className="codex-subtitle">{CROMA_CANON.title} · {CROMA_CANON.lineage}</p>
           <blockquote>{CROMA_CANON.motto} <span>{CROMA_CANON.mottoPt}</span></blockquote>
@@ -34,13 +36,13 @@ export default function CodexPage() {
       </section>
 
       <section className="codex-sheet" aria-labelledby="croma-expression-title">
-        <p className="eyebrow">Croma Vivo · linguagem pedagógica</p>
+        <p className="eyebrow">Croma Vivo · Expression Pack</p>
         <h2 id="croma-expression-title">A expressão diz o que ele está fazendo por você.</h2>
-        <p>Croma mantém a mesma silhueta e identidade, mas muda olhar, boca, postura do pincel e sinais gráficos conforme sua função. Assim, até uma criança que ainda lê pouco consegue perceber se é hora de observar, aprender, tentar, ajustar, comemorar ou seguir uma rota.</p>
+        <p>Croma mantém a mesma silhueta e identidade, mas muda olhar, boca, postura do pincel, sinais gráficos e pigmento conforme sua função. Assim, até uma criança que ainda lê pouco consegue perceber se é hora de observar, concentrar, investigar, aprender, tentar, ajustar, comemorar ou seguir uma rota.</p>
         <div className="croma-expression-atlas">
           {cromaStates.map((item) => (
-            <article className="croma-expression-card" key={item.state} data-croma-state={item.state}>
-              <CromaMark state={item.state} label={`Croma em estado ${item.title}`} />
+            <article className="croma-expression-card" key={item.state} data-croma-state={item.state} data-croma-pigment={item.pigment}>
+              <CromaMark state={item.state} pigment={item.pigment} label={`Croma em estado ${item.title}`} />
               <strong>{item.title}</strong>
               <span>{item.role}</span>
             </article>
