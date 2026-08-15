@@ -1,5 +1,6 @@
 import { C4_LESSONS, getC4Lesson } from "@swd/content/c4";
 import { notFound } from "next/navigation";
+import "../../foundation-visual-study-v137.css";
 import { FoundationLessonPlayer } from "../../lesson-player";
 
 export default async function C4LessonPage({ params }: { params: Promise<{ lessonKey: string }> }) {
