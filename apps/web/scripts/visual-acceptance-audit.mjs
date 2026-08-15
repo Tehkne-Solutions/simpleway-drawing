@@ -353,7 +353,7 @@ function contactSheetHtml(viewportKey, captures) {
     h1{font-size:22px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(${columns},minmax(0,1fr));gap:14px;align-items:start}
     article{background:#f4eedf;color:#211f1a;border:2px solid #b88a21;padding:8px}header{display:grid;gap:4px;margin-bottom:7px}b{font-size:13px}code{font-size:10px;overflow-wrap:anywhere}
     img{display:block;width:100%;height:auto;border:1px solid #6e6252;background:white}
-  </style></head><body><h1>SimpleWay Drawing · V1.42 · ${viewportKey}</h1><div class="grid">${cards}</div></body></html>`;
+  </style></head><body><h1>SimpleWay Drawing · V1.44 · ${viewportKey}</h1><div class="grid">${cards}</div></body></html>`;
 }
 
 async function main() {
@@ -380,6 +380,14 @@ async function main() {
     { order: "13", key: "skills", label: "Skills", path: "/skills" },
     { order: "14", key: "resume", label: "Resume / Bússola", path: "/resume" },
     { order: "15", key: "alpha", label: "Alpha Rite", path: "/alpha" },
+    { order: "16", key: "work-studio", label: "Câmara da Obra", path: "/create/work" },
+    { order: "17", key: "manga-studio", label: "Manga Canvas", path: "/create/manga" },
+    { order: "18", key: "isometric-studio", label: "Isometric Canvas", path: "/create/isometric" },
+    { order: "19", key: "pixel-studio", label: "Pixel Studio", path: "/create/pixel" },
+    { order: "20", key: "pixel-sprite", label: "Pixel Sprite Lab", path: "/create/pixel/sprite" },
+    { order: "21", key: "pixel-tile", label: "Pixel Tile Lab", path: "/create/pixel/tile" },
+    { order: "22", key: "pixel-animation", label: "Pixel Animation Lab", path: "/create/pixel/animation" },
+    { order: "23", key: "pixel-quest", label: "Pixel Expedition", path: "/create/pixel/quest" },
   ];
 
   const chrome = spawn(chromeBin, [
@@ -422,10 +430,10 @@ async function main() {
         for (const route of routes) {
           const url = `${baseUrl}${route.path}`;
           await navigate(cdp, url);
-          const metrics = await pageMetrics(cdp, viewport);
           const fileName = `${route.order}-${route.key}.png`;
           const screenshotPath = join(outputRoot, viewport.key, fileName);
           await captureScreenshot(cdp, screenshotPath, false);
+          const metrics = await pageMetrics(cdp, viewport);
 
           const p0 = [];
           if (metrics.responseStatus && metrics.responseStatus >= 400) p0.push(`HTTP ${metrics.responseStatus}`);
