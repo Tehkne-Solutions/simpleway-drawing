@@ -39,7 +39,7 @@ async function preflight() {
   const marker = await fetch(`${baseUrl}/studies/c4-form-check.svg`, { cache: "no-store" });
   await assertHttp(marker, 200, "V1.41 visual marker");
   const svg = await marker.text();
-  assert.match(svg, /<title id="title">HNK Form Check<\/title>/);
+  assert.match(svg, /<title id="title">HNK Form Check testa coerência espacial<\/title>/);
 
   const lesson = await fetch(`${baseUrl}/learn/c4/lesson.swd.c4.self_check`, { cache: "no-store" });
   await assertHttp(lesson, 200, "V1.41 lesson marker");
