@@ -14,6 +14,16 @@ test("artwork detail builds deterministic same-origin version image URLs without
   assert.match(page, /loading=\{index === 0 \? "eager" : "lazy"\}/);
 });
 
+test("artwork detail API preserves readUrl compatibility without signing private storage URLs", () => {
+  const route = source("app/api/artworks/[artworkId]/route.ts");
+  assert.doesNotMatch(route, /getStorage/);
+  assert.doesNotMatch(route, /createPrivateReadUrl/);
+  assert.doesNotMatch(route, /Promise\.all\(record\.versions/);
+  assert.match(route, /const versions = record\.versions\.map/);
+  assert.match(route, /readUrl: `\/api\/artworks\/\$\{encodeURIComponent\(record\.artwork\.id\)\}\/versions\/\$\{version\.versionNumber\}\/image`/);
+  assert.match(route, /"cache-control": "no-store, private"/);
+});
+
 test("version image route validates an exact owned version before reading private storage", () => {
   const route = source("app/api/artworks/[artworkId]/versions/[versionNumber]/image/route.ts");
   assert.match(route, /const parsedVersion = Number\(versionNumber\)/);
