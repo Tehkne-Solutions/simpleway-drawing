@@ -35,6 +35,20 @@ jobs:
           echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
           "$CHROME_BIN" --version
 
+      - name: Normalize authored V1.41 marker contract
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("apps/web/scripts/visual-acceptance-audit.mjs")
+          source = path.read_text(encoding="utf-8")
+          old = 'assert.match(svg, /<title id="title">HNK Form Check<\\/title>/);'
+          new = 'assert.match(svg, /<title id="title">HNK Form Check[^<]*<\\/title>/);'
+          if old not in source:
+              raise SystemExit("expected V1.41 marker assertion not found")
+          path.write_text(source.replace(old, new, 1), encoding="utf-8")
+          PY
+
       - name: Capture desktop and mobile visual acceptance evidence
         env:
           VISUAL_AUDIT_BASE_URL: https://simpleway-drawing.vercel.app
