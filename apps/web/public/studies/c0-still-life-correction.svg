@@ -5,7 +5,7 @@
   <path d="M34 34H1166V506H34Z" fill="none" stroke="#6f604b" stroke-width="2"/>
   <path d="M300 72V458M600 72V458M900 72V458" stroke="#b9a482" stroke-width="1" stroke-dasharray="7 9"/>
   <g fill="#5f4b2f" font-family="Georgia,serif" font-size="23" font-weight="700">
-    <text x="62" y="84">01 · ERRO GRANDE</text><text x="362" y="84">02 · MEÇA</text><text x="662" y="84">03 · CORRIJA</text><text x="962" y="84">04 · REFINe</text>
+    <text x="62" y="84">01 · ERRO GRANDE</text><text x="362" y="84">02 · MEÇA</text><text x="662" y="84">03 · CORRIJA</text><text x="962" y="84">04 · REFINE</text>
   </g>
   <g transform="translate(63 116)" fill="none" stroke="#3d3529" stroke-linecap="round" stroke-linejoin="round">
     <path d="M75 300C67 272 69 203 78 174C85 153 101 143 106 125L109 74H148L151 125C157 143 171 153 178 174C188 204 189 273 181 300C162 324 96 324 75 300Z" stroke-width="7"/>
