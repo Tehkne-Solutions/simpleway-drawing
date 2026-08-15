@@ -28,6 +28,7 @@ import "./player-hub-v1-6.css";
 import "./croma-v1-43.css";
 import "./game-surfaces-v1-43.css";
 import "./rendered-visual-cleanup-v1-43-1.css";
+import "./mobile-studio-canvas-first-v1-46.css";
 import { AppShell } from "./app-shell";
 
 export const metadata: Metadata = {
